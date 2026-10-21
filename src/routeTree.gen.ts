@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
@@ -52,6 +53,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetPasswordRoute = SetPasswordRouteImport.update({
+  id: '/set-password',
+  path: '/set-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
+  '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/series/$slug': typeof SeriesSlugRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
+  '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -144,6 +152,7 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
+  '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/series/$slug': typeof SeriesSlugRoute
@@ -162,6 +171,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/forgot-password'
     | '/privacy'
+    | '/set-password'
     | '/terms'
     | '/account'
     | '/series/$slug'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/forgot-password'
     | '/privacy'
+    | '/set-password'
     | '/terms'
     | '/series/$slug'
     | '/account/library'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/browse'
     | '/forgot-password'
     | '/privacy'
+    | '/set-password'
     | '/terms'
     | '/_authenticated/account'
     | '/series/$slug'
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PrivacyRoute: typeof PrivacyRoute
+  SetPasswordRoute: typeof SetPasswordRoute
   TermsRoute: typeof TermsRoute
   SeriesSlugRoute: typeof SeriesSlugRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
@@ -259,6 +272,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/set-password': {
+      id: '/set-password'
+      path: '/set-password'
+      fullPath: '/set-password'
+      preLoaderRoute: typeof SetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -364,6 +384,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PrivacyRoute: PrivacyRoute,
+  SetPasswordRoute: SetPasswordRoute,
   TermsRoute: TermsRoute,
   SeriesSlugRoute: SeriesSlugRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,

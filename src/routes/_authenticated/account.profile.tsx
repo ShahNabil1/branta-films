@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Mail, UserRound } from "lucide-react";
+import { Camera, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { SmartField } from "@/components/forms/SmartField";
 import { UserAvatar } from "@/components/site/UserMenu";
+import { ChangeEmailSection } from "@/components/account/ChangeEmailSection";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -27,7 +28,6 @@ export const Route = createFileRoute("/_authenticated/account/profile")({
   component: ProfilePage,
 });
 
-
 function ProfilePage() {
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
@@ -49,7 +49,10 @@ function ProfilePage() {
     setError(err);
     if (err || !dirty || !user) return;
     setBusy("save");
-    const { error: dbErr } = await supabase.from("profiles").update({ full_name: name.trim() }).eq("id", user.id);
+    const { error: dbErr } = await supabase
+      .from("profiles")
+      .update({ full_name: name.trim() })
+      .eq("id", user.id);
     setBusy(null);
     if (dbErr) {
       toast.error("Could not save your name.");
@@ -77,7 +80,9 @@ function ProfilePage() {
       toast.success("Profile picture updated");
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch (err) {
-      toast.error(err instanceof Error && err.message ? err.message : "Upload failed. Please try again.");
+      toast.error(
+        err instanceof Error && err.message ? err.message : "Upload failed. Please try again.",
+      );
     } finally {
       setBusy(null);
     }
@@ -91,7 +96,13 @@ function ProfilePage() {
       <section className="mt-10 flex items-center gap-5">
         <UserAvatar size="size-20" />
         <div>
-          <Button type="button" variant="outline" className="rounded-sm bg-transparent" disabled={busy !== null} onClick={() => fileRef.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-sm bg-transparent"
+            disabled={busy !== null}
+            onClick={() => fileRef.current?.click()}
+          >
             <Camera /> {busy === "avatar" ? "Uploading…" : "Change picture"}
           </Button>
           <p className="mt-2 text-xs text-muted-foreground">PNG, JPG or WebP, up to 2 MB.</p>
@@ -125,11 +136,12 @@ function ProfilePage() {
           autoComplete="name"
           disabled={busy === "save"}
         />
-        <SmartField id="email" label="Email address" type="email" value={user?.email ?? ""} onValueChange={() => undefined} icon={<Mail />} readOnly disabled hint="Your sign-in email can't be changed here." />
         <Button type="submit" disabled={!dirty || busy !== null} className="h-11 rounded-sm px-6">
           {busy === "save" ? "Saving…" : "Save changes"}
         </Button>
       </form>
+
+      <ChangeEmailSection />
     </div>
   );
 }

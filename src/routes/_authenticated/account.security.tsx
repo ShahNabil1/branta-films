@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Fingerprint, KeyRound, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { SmartField } from "@/components/forms/SmartField";
-import { FormAlert } from "@/components/auth/AuthLayout";
+import { FormAlert, GoogleIcon } from "@/components/auth/AuthLayout";
 import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,10 +18,16 @@ export const Route = createFileRoute("/_authenticated/account/security")({
   head: () => ({
     meta: [
       { title: "Sign-in & security — Branta Films" },
-      { name: "description", content: "Manage your password, passkeys and connected sign-in methods." },
+      {
+        name: "description",
+        content: "Manage your password, passkeys and connected sign-in methods.",
+      },
       { name: "robots", content: "noindex" },
       { property: "og:title", content: "Sign-in & security — Branta Films" },
-      { property: "og:description", content: "Manage your password, passkeys and connected sign-in methods." },
+      {
+        property: "og:description",
+        content: "Manage your password, passkeys and connected sign-in methods.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -33,7 +39,10 @@ const PROVIDER_LABEL: Record<string, string> = { email: "Email & password", goog
 
 function SecurityPage() {
   const getOverview = useServerFn(getSecurityOverview);
-  const { data: overview, refetch } = useQuery({ queryKey: ["security-overview"], queryFn: () => getOverview() });
+  const { data: overview, refetch } = useQuery({
+    queryKey: ["security-overview"],
+    queryFn: () => getOverview(),
+  });
 
   return (
     <div className="max-w-2xl space-y-14">
@@ -45,14 +54,19 @@ function SecurityPage() {
       <section>
         <h2 className="text-h3">Connected sign-in methods</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Signing in with Google using the same email automatically joins this account.
+          Signing in with Google using the same email opens this same account. You can also connect
+          Google here.
         </p>
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           {(overview?.providers ?? []).map((p) => (
-            <span key={p} className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm">
+            <span
+              key={p}
+              className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm"
+            >
               {PROVIDER_LABEL[p] ?? p}
             </span>
           ))}
+          {overview && !overview.providers.includes("google") ? <ConnectGoogleButton /> : null}
         </div>
       </section>
 
@@ -84,7 +98,9 @@ function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone
     setBusy(true);
     setFormError(null);
     try {
-      await change({ data: { currentPassword: hasPassword ? current : undefined, newPassword: next } });
+      await change({
+        data: { currentPassword: hasPassword ? current : undefined, newPassword: next },
+      });
       toast.success(hasPassword ? "Password changed" : "Password set");
       setCurrent("");
       setNext("");
@@ -100,13 +116,46 @@ function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone
   return (
     <section>
       <h2 className="text-h3">{hasPassword ? "Change password" : "Set a password"}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">Your new password must differ from your current and previous passwords.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Your new password must differ from your current and previous passwords.
+      </p>
       <form onSubmit={submit} noValidate className="mt-6 space-y-5">
         {hasPassword ? (
-          <SmartField id="current-password" label="Current password" password value={current} onValueChange={setCurrent} error={errors["current"]} icon={<KeyRound />} autoComplete="current-password" disabled={busy} />
+          <SmartField
+            id="current-password"
+            label="Current password"
+            password
+            value={current}
+            onValueChange={setCurrent}
+            error={errors["current"]}
+            icon={<KeyRound />}
+            autoComplete="current-password"
+            disabled={busy}
+          />
         ) : null}
-        <SmartField id="new-password" label="New password" password value={next} onValueChange={setNext} error={errors["next"]} icon={<KeyRound />} autoComplete="new-password" hint="At least 8 characters, including a letter and a number." disabled={busy} />
-        <SmartField id="confirm-password" label="Confirm new password" password value={confirm} onValueChange={setConfirm} error={errors["confirm"]} icon={<KeyRound />} autoComplete="new-password" disabled={busy} />
+        <SmartField
+          id="new-password"
+          label="New password"
+          password
+          value={next}
+          onValueChange={setNext}
+          error={errors["next"]}
+          icon={<KeyRound />}
+          autoComplete="new-password"
+          hint="At least 8 characters, including a letter and a number."
+          disabled={busy}
+        />
+        <SmartField
+          id="confirm-password"
+          label="Confirm new password"
+          password
+          value={confirm}
+          onValueChange={setConfirm}
+          error={errors["confirm"]}
+          icon={<KeyRound />}
+          autoComplete="new-password"
+          disabled={busy}
+        />
         {formError ? <FormAlert>{formError}</FormAlert> : null}
         <Button type="submit" disabled={!dirty || busy} className="h-11 rounded-sm px-6">
           {busy ? "Saving…" : hasPassword ? "Change password" : "Set password"}
@@ -129,7 +178,10 @@ function PasskeySection() {
     queryKey: ["passkeys", user?.id],
     enabled: Boolean(user),
     queryFn: async () => {
-      const { data } = await supabase.from("passkey_credentials").select("id, device_name, created_at, last_used_at").order("created_at");
+      const { data } = await supabase
+        .from("passkey_credentials")
+        .select("id, device_name, created_at, last_used_at")
+        .order("created_at");
       return data ?? [];
     },
   });
@@ -141,13 +193,25 @@ function PasskeySection() {
       const { challengeId, optionsJson } = await getOptions();
       const response = await startRegistration({ optionsJSON: JSON.parse(optionsJson) });
       const ua = navigator.userAgent;
-      const deviceName = /iPhone|iPad/.test(ua) ? "iPhone / iPad" : /Android/.test(ua) ? "Android" : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows PC" : "Passkey";
+      const deviceName = /iPhone|iPad/.test(ua)
+        ? "iPhone / iPad"
+        : /Android/.test(ua)
+          ? "Android"
+          : /Mac/.test(ua)
+            ? "Mac"
+            : /Windows/.test(ua)
+              ? "Windows PC"
+              : "Passkey";
       await verify({ data: { challengeId, response: response as never, deviceName } });
       toast.success("Passkey added");
       await queryClient.invalidateQueries({ queryKey: ["passkeys"] });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "";
-      toast.error(/NotAllowed|abort|cancel/i.test(msg) ? "Passkey setup was cancelled." : msg || "Could not add a passkey.");
+      toast.error(
+        /NotAllowed|abort|cancel/i.test(msg)
+          ? "Passkey setup was cancelled."
+          : msg || "Could not add a passkey.",
+      );
     } finally {
       setBusy(false);
     }
@@ -166,7 +230,9 @@ function PasskeySection() {
   return (
     <section>
       <h2 className="text-h3">Passkeys</h2>
-      <p className="mt-2 text-sm text-muted-foreground">Sign in with your fingerprint, face or device PIN — no password needed.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Sign in with your fingerprint, face or device PIN — no password needed.
+      </p>
       <ul className="mt-6 divide-y divide-border rounded-md border border-border">
         {(keys ?? []).map((k) => (
           <li key={k.id} className="flex items-center gap-4 px-4 py-3">
@@ -175,17 +241,32 @@ function PasskeySection() {
               <p className="text-sm font-medium">{k.device_name}</p>
               <p className="font-mono text-xs text-muted-foreground">
                 Added {new Date(k.created_at).toLocaleDateString("en-GB")}
-                {k.last_used_at ? ` · last used ${new Date(k.last_used_at).toLocaleDateString("en-GB")}` : ""}
+                {k.last_used_at
+                  ? ` · last used ${new Date(k.last_used_at).toLocaleDateString("en-GB")}`
+                  : ""}
               </p>
             </div>
-            <Button variant="ghost" size="icon" aria-label={`Remove ${k.device_name}`} onClick={() => setRemoving({ id: k.id, name: k.device_name })}>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={`Remove ${k.device_name}`}
+              onClick={() => setRemoving({ id: k.id, name: k.device_name })}
+            >
               <Trash2 />
             </Button>
           </li>
         ))}
-        {!keys?.length ? <li className="px-4 py-4 text-sm text-muted-foreground">No passkeys yet.</li> : null}
+        {!keys?.length ? (
+          <li className="px-4 py-4 text-sm text-muted-foreground">No passkeys yet.</li>
+        ) : null}
       </ul>
-      <Button type="button" variant="outline" className="mt-4 rounded-sm bg-transparent" onClick={add} disabled={busy}>
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-4 rounded-sm bg-transparent"
+        onClick={add}
+        disabled={busy}
+      >
         <Fingerprint /> {busy ? "Waiting for your device…" : "Add a passkey"}
       </Button>
       <ConfirmDialog
@@ -199,5 +280,38 @@ function PasskeySection() {
         busy={removeBusy}
       />
     </section>
+  );
+}
+
+function ConnectGoogleButton() {
+  const [busy, setBusy] = useState(false);
+  async function connect() {
+    setBusy(true);
+    const { error } = await supabase.auth.linkIdentity({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/account/security`,
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) {
+      setBusy(false);
+      toast.error(
+        /not enabled|unsupported provider/i.test(error.message)
+          ? "Google sign-in isn't switched on yet."
+          : error.message,
+      );
+    }
+  }
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => void connect()}
+      disabled={busy}
+      className="h-9 gap-2 rounded-sm bg-transparent"
+    >
+      <GoogleIcon /> {busy ? "Connecting…" : "Connect Google"}
+    </Button>
   );
 }

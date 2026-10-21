@@ -26,7 +26,7 @@
 - [ ] Series & episode create/edit as full pages, Word-style rich text editor
 - [ ] Direct-to-R2 multipart video upload with live progress
 - [ ] Poster/backdrop upload
-- [ ] Staff/Manager section: invite/create (no self sign-up)
+- [ ] Staff/Manager section: invite/create (no self sign-up) — invite email must redirect to /set-password (page done)
 - [ ] Users + staff lists, activity history, one-click impersonation with amber exit banner
 
 ## Phase 3 — Payments
