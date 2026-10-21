@@ -18,7 +18,8 @@
 ## Backend move
 - [x] Full backup kit saved (supabase/restore)
 - [x] Restored on owner's own Supabase (schema, catalogue, posters, bucket)
-- [ ] Google sign-in — waiting for owner to enable Google provider + redirect URLs in Supabase dashboard
+- [ ] Google sign-in — owner will enable + configure Google provider later (redirect URLs already set)
+- [x] All images moved to R2 (images/series, images/avatars); Supabase bucket removed
 
 ## Phase 2 — Admin panel
 - [ ] Admin shell (independent sidebar, no layout shift), staff-only
