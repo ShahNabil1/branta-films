@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { amrFromAccessToken, isFreshInviteSession } from "./invite";
 
 export type AppRole = "admin" | "manager";
 
@@ -31,9 +32,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Someone who just clicked a staff invite must first choose their password.
+    const routeInvite = (next: Session | null) => {
+      if (!next || window.location.pathname === "/set-password") return;
+      if (isFreshInviteSession(amrFromAccessToken(next.access_token), Date.now() / 1000)) {
+        void router.navigate({ to: "/set-password", replace: true });
+      }
+    };
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       setLoading(false);
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") routeInvite(next);
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       void router.invalidate();
       if (event !== "SIGNED_OUT") void queryClient.invalidateQueries();
