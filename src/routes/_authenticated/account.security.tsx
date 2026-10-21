@@ -45,14 +45,15 @@ function SecurityPage() {
       <section>
         <h2 className="text-h3">Connected sign-in methods</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Signing in with Google using the same email automatically joins this account.
+          Signing in with Google using the same email opens this same account. You can also connect Google here.
         </p>
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-5 flex flex-wrap items-center gap-2">
           {(overview?.providers ?? []).map((p) => (
             <span key={p} className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm">
               {PROVIDER_LABEL[p] ?? p}
             </span>
           ))}
+          {overview && !overview.providers.includes("google") ? <ConnectGoogleButton /> : null}
         </div>
       </section>
 
