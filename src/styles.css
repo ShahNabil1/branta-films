@@ -272,7 +272,8 @@
   line-height: 0.8;
   letter-spacing: -0.08em;
   color: var(--color-background);
-  -webkit-text-stroke: 2px color-mix(in oklab, var(--color-foreground) 45%, transparent);
+  -webkit-text-stroke: 3px color-mix(in oklab, var(--color-foreground) 55%, transparent);
+  text-shadow: 0 0 40px color-mix(in oklab, var(--color-primary) 25%, transparent);
 }
 
 /* Horizontal rows: fade the far edge so cards slide in and out softly. */

@@ -39,7 +39,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         overlay && "-mb-16",
       )}
     >
-      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-6 px-[clamp(1.25rem,4vw,3rem)] md:gap-10">
+      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-3 px-[clamp(1rem,4vw,3rem)] sm:gap-6 md:gap-10">
         <BrandLogo />
         <nav aria-label="Main" className="flex items-center gap-1">
           {NAV.map((item) => (
@@ -47,13 +47,13 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.to === "/" }}
-              className="relative rounded-sm px-3 py-2 text-sm text-foreground/70 transition-colors after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-primary after:transition-transform after:duration-300 hover:text-foreground data-[status=active]:font-medium data-[status=active]:text-foreground data-[status=active]:after:scale-x-100"
+              className="relative rounded-sm px-2 py-2 text-sm sm:px-3 text-foreground/70 transition-colors after:absolute after:inset-x-2 after:bottom-0.5 sm:after:inset-x-3 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-primary after:transition-transform after:duration-300 hover:text-foreground data-[status=active]:font-medium data-[status=active]:text-foreground data-[status=active]:after:scale-x-100"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <div className="ml-auto flex items-center justify-end gap-2">
+        <div className="ml-auto flex items-center justify-end gap-1 sm:gap-2">
           <Link
             to="/browse"
             aria-label="Search series"
@@ -67,7 +67,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             ) : user ? (
               <UserMenu />
             ) : (
-              <Button asChild variant="hero" size="sm" className="h-9 rounded-full px-5 text-sm">
+              <Button asChild variant="hero" size="sm" className="h-9 rounded-full px-4 text-sm sm:px-5">
                 <Link to="/auth">Sign in</Link>
               </Button>
             )}

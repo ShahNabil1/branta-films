@@ -53,7 +53,7 @@ function HomePage() {
           <MediaRow eyebrow="Top on Branta" title="Trending now" seeAll>
             {catalog.slice(0, 10).map((s, i) => (
               <div key={s.id} className="flex shrink-0 snap-start items-end">
-                <span aria-hidden="true" className="ranked-numeral -mr-4 mb-12 select-none text-[7rem] sm:-mr-6 sm:text-[9.5rem]">
+                <span aria-hidden="true" className="ranked-numeral -mr-2 mb-12 select-none text-[7.5rem] sm:-mr-3 sm:text-[10rem]">
                   {i + 1}
                 </span>
                 <SeriesCard {...cardProps(s)} className="relative w-[8.5rem] sm:w-[10.5rem]" />
@@ -64,7 +64,7 @@ function HomePage() {
           <p className="pt-24 text-sm text-muted-foreground">New series are coming soon.</p>
         )}
 
-        {free.length ? (
+        {free.length && free.length < catalog.length ? (
           <MediaRow eyebrow="On the house" title="Start free — episode 1 on us">
             {free.map((s) => (
               <SeriesCard key={s.id} {...cardProps(s)} className={posterItem} />

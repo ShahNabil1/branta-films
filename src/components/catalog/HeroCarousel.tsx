@@ -56,7 +56,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                 height={1080}
                 fetchPriority={i === 0 ? "high" : "low"}
                 loading={i === 0 ? "eager" : "lazy"}
-                className={cn("size-full object-cover", active && "animate-ken-burns")}
+                className={cn("size-full object-cover object-[70%_center] md:object-center", active && "animate-ken-burns")}
               />
             ) : null}
           </div>
@@ -68,7 +68,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
         <span key={index} aria-hidden="true" className="animate-fill-x pointer-events-none absolute size-px opacity-0" style={fillStyle} onAnimationEnd={next} />
       ) : null}
 
-      <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-32 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
+      <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-36 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div key={current.id} className="max-w-2xl">
           <p className="animate-fade-up inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-eyebrow text-foreground/90">
             <span className="size-1.5 rounded-full bg-primary shadow-glow-soft" />
