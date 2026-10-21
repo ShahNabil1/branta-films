@@ -6,7 +6,6 @@ import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout
 import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { completePasswordReset } from "@/lib/account.functions";
 import { validateField, validateNewPassword } from "@/lib/validation";
