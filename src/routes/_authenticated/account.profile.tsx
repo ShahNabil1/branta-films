@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { SmartField } from "@/components/forms/SmartField";
 import { UserAvatar } from "@/components/site/UserMenu";
 import { ChangeEmailSection } from "@/components/account/ChangeEmailSection";
+import { PageHeader, Panel } from "@/components/dashboard/DashboardKit";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -89,23 +90,25 @@ function ProfilePage() {
   }
 
   return (
-    <div className="max-w-xl">
-      <p className="text-eyebrow text-primary">Account</p>
-      <h1 className="mt-3 text-h2">Profile</h1>
+    <>
+      <PageHeader
+        icon={UserRound}
+        eyebrow="Account"
+        title="Profile"
+        description="Your name and picture appear on your account and comments."
+      />
 
-      <section className="mt-10 flex items-center gap-5">
-        <UserAvatar size="size-20" />
-        <div>
+      <Panel title="Profile picture" description="PNG, JPG or WebP, up to 2 MB." delay={60}>
+        <div className="flex flex-wrap items-center gap-5">
+          <UserAvatar size="size-20" />
           <Button
             type="button"
             variant="outline"
-            className="rounded-sm bg-transparent"
             disabled={busy !== null}
             onClick={() => fileRef.current?.click()}
           >
             <Camera /> {busy === "avatar" ? "Uploading…" : "Change picture"}
           </Button>
-          <p className="mt-2 text-xs text-muted-foreground">PNG, JPG or WebP, up to 2 MB.</p>
           <input
             ref={fileRef}
             type="file"
@@ -118,30 +121,32 @@ function ProfilePage() {
             }}
           />
         </div>
-      </section>
+      </Panel>
 
-      <form onSubmit={save} noValidate className="mt-10 space-y-6">
-        <SmartField
-          id="full-name"
-          label="Full name"
-          value={name}
-          onValueChange={(v) => {
-            setName(v);
-            if (error) setError(validateField("fullName", v));
-          }}
-          onBlur={() => setError(validateField("fullName", name))}
-          error={error}
-          icon={<UserRound />}
-          maxLength={100}
-          autoComplete="name"
-          disabled={busy === "save"}
-        />
-        <Button type="submit" disabled={!dirty || busy !== null} className="h-11 rounded-sm px-6">
-          {busy === "save" ? "Saving…" : "Save changes"}
-        </Button>
-      </form>
+      <Panel title="Your name" description="Shown on your dashboard and account menu." delay={120}>
+        <form onSubmit={save} noValidate className="max-w-xl space-y-6">
+          <SmartField
+            id="full-name"
+            label="Full name"
+            value={name}
+            onValueChange={(v) => {
+              setName(v);
+              if (error) setError(validateField("fullName", v));
+            }}
+            onBlur={() => setError(validateField("fullName", name))}
+            error={error}
+            icon={<UserRound />}
+            maxLength={100}
+            autoComplete="name"
+            disabled={busy === "save"}
+          />
+          <Button type="submit" disabled={!dirty || busy !== null}>
+            {busy === "save" ? "Saving…" : "Save changes"}
+          </Button>
+        </form>
+      </Panel>
 
       <ChangeEmailSection />
-    </div>
+    </>
   );
 }

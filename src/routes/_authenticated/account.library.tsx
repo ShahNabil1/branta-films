@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { Compass, Film } from "lucide-react";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
+import { PageHeader, Panel } from "@/components/dashboard/DashboardKit";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
@@ -44,30 +47,43 @@ function LibraryPage() {
   });
 
   return (
-    <div>
-      <p className="text-eyebrow text-primary">Library</p>
-      <h1 className="mt-3 text-h2">My library</h1>
-      <p className="mt-2 text-sm text-muted-foreground">Series you've unlocked appear here.</p>
-      {isPending ? (
-        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="aspect-[2/3] animate-pulse rounded-md bg-surface" />
-          ))}
-        </div>
-      ) : data?.length ? (
-        <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
-          {data.map((s) => (
-            <SeriesCard key={s.id} {...s} />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-8 rounded-md border border-dashed border-border p-10 text-center">
-          <p className="text-sm text-muted-foreground">You haven't unlocked any series yet.</p>
-          <Link to="/browse" className="mt-3 inline-block text-sm text-primary hover:underline">
-            Browse series →
-          </Link>
-        </div>
-      )}
-    </div>
+    <>
+      <PageHeader
+        icon={Film}
+        eyebrow="Library"
+        title="My library"
+        description="Every series you've unlocked lives here — all episodes, on every device."
+      />
+      <Panel delay={80}>
+        {isPending ? (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="aspect-[2/3] animate-pulse rounded-md bg-muted" />
+            ))}
+          </div>
+        ) : data?.length ? (
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
+            {data.map((s) => (
+              <SeriesCard key={s.id} {...s} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center rounded-xl border border-dashed border-border px-6 py-14 text-center">
+            <span className="inline-flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              <Film className="size-5" aria-hidden />
+            </span>
+            <p className="text-h4 mt-5 font-semibold">Nothing unlocked yet</p>
+            <p className="text-small mt-2 max-w-sm text-muted-foreground">
+              Every series starts free with episode one. Unlock a full season to keep it here.
+            </p>
+            <Button asChild size="sm" className="mt-6">
+              <Link to="/browse">
+                <Compass /> Browse series
+              </Link>
+            </Button>
+          </div>
+        )}
+      </Panel>
+    </>
   );
 }
