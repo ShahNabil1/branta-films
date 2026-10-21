@@ -7,7 +7,7 @@ import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { catalogQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
-type BrowseSearch = { genre?: string };
+type BrowseSearch = { genre?: string | undefined };
 
 export const Route = createFileRoute("/browse")({
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
