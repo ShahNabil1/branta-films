@@ -2,10 +2,10 @@
 
 ## Current request — Owner administration
 - [x] Assign requested existing account the admin role
-- [ ] Admin login destination and protected dashboard
-- [ ] Series and episode full-page CRUD, media controls
-- [ ] User/staff access controls, invites, activity and unlock management
-- [ ] Verify permissions and a real signed-in CRUD flow
+- [x] Admin login destination and protected dashboard
+- [x] Series and episode full-page CRUD, artwork upload and direct R2 video controls
+- [x] User/staff access controls, invites, activity and unlock management
+- [ ] Real signed-in CRUD and video upload verification — blocked: external Supabase provides no managed test session; R2 browser upload also needs allowed-origin CORS
 
 ## Phase 1 — Foundation (done)
 - [x] Branta Tech dark theme, logo, favicon, Geist + SolaimanLipi/Kalpurush fonts
@@ -30,11 +30,11 @@
 - [x] All images moved to R2 (images/series, images/avatars); Supabase bucket removed
 
 ## Phase 2 — Admin panel
-- [ ] Admin panel pages inside the shared dashboard shell (shell done), staff-only
-- [ ] Series & episode create/edit as full pages, Word-style rich text editor
+- [x] Admin panel pages inside the shared dashboard shell, admin-only full controls
+- [x] Series & episode create/edit as full pages, Word-style rich text editor
 - [ ] Direct-to-R2 multipart video upload with live progress
-- [ ] Poster/backdrop upload
-- [ ] Staff/Manager section: invite/create (no self sign-up) — invite email must redirect to /set-password (page done)
+- [x] Poster/backdrop upload
+- [x] Staff/Manager section: invite and role management (no self sign-up) — invite email redirects to /set-password
 - [ ] Users + staff lists, activity history, one-click impersonation with amber exit banner
 
 ## Phase 3 — Payments
