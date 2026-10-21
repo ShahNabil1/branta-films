@@ -27,6 +27,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
   const current = slides[index] ?? slides[0]!;
   const freeEp = current.episodes.find((e) => e.is_free);
   const next = () => setIndex((i) => (i + 1) % count);
+  const fillStyle = { ["--fill-duration" as string]: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" };
 
   return (
     <section
@@ -62,6 +63,10 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
         );
       })}
       <div className="cinema-mask absolute inset-0 -z-10" />
+      {autoplay ? (
+        // Invisible timer shared by every screen size; the visible bars run the same animation in sync.
+        <span key={index} aria-hidden="true" className="animate-fill-x pointer-events-none absolute size-px opacity-0" style={fillStyle} onAnimationEnd={next} />
+      ) : null}
 
       <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-32 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div key={current.id} className="max-w-2xl">
@@ -131,8 +136,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                         <span
                           key={index}
                           className="animate-fill-x block h-full bg-primary"
-                          style={{ ["--fill-duration" as string]: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" }}
-                          onAnimationEnd={next}
+                          style={fillStyle}
                         />
                       ) : (
                         <span className="block h-full bg-primary" />
