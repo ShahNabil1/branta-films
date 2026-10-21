@@ -11,7 +11,7 @@ type BrowseSearch = { genre?: string | undefined };
 
 export const Route = createFileRoute("/browse")({
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
-    genre: typeof search.genre === "string" && search.genre.length <= 60 ? search.genre : undefined,
+    genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
   }),
   head: () => ({
     meta: [
