@@ -14,16 +14,422 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          ip: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          ip?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      episode_media: {
+        Row: {
+          content_type: string
+          episode_id: string
+          size_bytes: number | null
+          uploaded_at: string
+          video_key: string
+        }
+        Insert: {
+          content_type?: string
+          episode_id: string
+          size_bytes?: number | null
+          uploaded_at?: string
+          video_key: string
+        }
+        Update: {
+          content_type?: string
+          episode_id?: string
+          size_bytes?: number | null
+          uploaded_at?: string
+          video_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_media_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: true
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      episodes: {
+        Row: {
+          created_at: string
+          duration_seconds: number
+          episode_number: number
+          id: string
+          is_free: boolean
+          is_published: boolean
+          series_id: string
+          synopsis_html: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number
+          episode_number: number
+          id?: string
+          is_free?: boolean
+          is_published?: boolean
+          series_id: string
+          synopsis_html?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number
+          episode_number?: number
+          id?: string
+          is_free?: boolean
+          is_published?: boolean
+          series_id?: string
+          synopsis_html?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passkey_credentials: {
+        Row: {
+          counter: number
+          created_at: string
+          credential_id: string
+          device_name: string
+          id: string
+          last_used_at: string | null
+          public_key: string
+          transports: string[]
+          user_id: string
+        }
+        Insert: {
+          counter?: number
+          created_at?: string
+          credential_id: string
+          device_name?: string
+          id?: string
+          last_used_at?: string | null
+          public_key: string
+          transports?: string[]
+          user_id: string
+        }
+        Update: {
+          counter?: number
+          created_at?: string
+          credential_id?: string
+          device_name?: string
+          id?: string
+          last_used_at?: string | null
+          public_key?: string
+          transports?: string[]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      password_history: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      series: {
+        Row: {
+          backdrop_url: string | null
+          created_at: string
+          description_html: string
+          genres: string[]
+          id: string
+          is_featured: boolean
+          is_published: boolean
+          maturity_rating: string
+          poster_url: string | null
+          price_bdt: number
+          release_year: number | null
+          slug: string
+          sort_order: number
+          tagline: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          backdrop_url?: string | null
+          created_at?: string
+          description_html?: string
+          genres?: string[]
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          maturity_rating?: string
+          poster_url?: string | null
+          price_bdt?: number
+          release_year?: number | null
+          slug: string
+          sort_order?: number
+          tagline?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          backdrop_url?: string | null
+          created_at?: string
+          description_html?: string
+          genres?: string[]
+          id?: string
+          is_featured?: boolean
+          is_published?: boolean
+          maturity_rating?: string
+          poster_url?: string | null
+          price_bdt?: number
+          release_year?: number | null
+          slug?: string
+          sort_order?: number
+          tagline?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      series_unlocks: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          payment_id: string | null
+          series_id: string
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          payment_id?: string | null
+          series_id: string
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          payment_id?: string | null
+          series_id?: string
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_unlocks_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watch_progress: {
+        Row: {
+          completed: boolean
+          duration_seconds: number
+          episode_id: string
+          position_seconds: number
+          series_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          duration_seconds?: number
+          episode_id: string
+          position_seconds?: number
+          series_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          duration_seconds?: number
+          episode_id?: string
+          position_seconds?: number
+          series_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "watch_progress_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "watch_progress_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webauthn_challenges: {
+        Row: {
+          challenge: string
+          created_at: string
+          expires_at: string
+          id: string
+          kind: string
+          user_id: string | null
+        }
+        Insert: {
+          challenge: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind: string
+          user_id?: string | null
+        }
+        Update: {
+          challenge?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          kind?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      password_is_reused: {
+        Args: { _password: string; _user_id: string }
+        Returns: boolean
+      }
+      snapshot_current_password: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      user_has_password: { Args: { _user_id: string }; Returns: boolean }
+      verify_current_password: {
+        Args: { _password: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +556,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "manager"],
+    },
   },
 } as const
