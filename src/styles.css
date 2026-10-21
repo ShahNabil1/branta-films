@@ -126,7 +126,24 @@
   --gradient-hero:
     linear-gradient(90deg, #0b0b0b 0%, rgb(11 11 11 / 0.85) 35%, rgb(11 11 11 / 0) 70%),
     linear-gradient(0deg, #0b0b0b 0%, rgb(11 11 11 / 0) 45%);
+  /* Cinematic hero: side vignette, deep bottom fade into the page, soft top fade under the nav. */
+  --gradient-cinema:
+    linear-gradient(90deg, rgb(11 11 11 / 0.96) 0%, rgb(11 11 11 / 0.78) 28%, rgb(11 11 11 / 0.2) 58%, rgb(11 11 11 / 0) 75%),
+    linear-gradient(0deg, #0b0b0b 0%, rgb(11 11 11 / 0.85) 14%, rgb(11 11 11 / 0) 48%),
+    linear-gradient(180deg, rgb(11 11 11 / 0.7) 0%, rgb(11 11 11 / 0) 22%);
+  --gradient-card: linear-gradient(0deg, rgb(8 8 8 / 0.96) 0%, rgb(8 8 8 / 0.7) 38%, rgb(8 8 8 / 0) 70%);
+  --gradient-hairline: linear-gradient(90deg, transparent, color-mix(in oklab, #ff5d00 70%, transparent), transparent);
   --glow-orange: radial-gradient(45% 55% at 100% 100%, color-mix(in oklab, #7a2100 30%, transparent), transparent 70%);
+  --glow-ambient: radial-gradient(60% 50% at 15% 0%, color-mix(in oklab, #ff5d00 14%, transparent), transparent 70%);
+  --glass-bg: rgb(22 22 22 / 0.55);
+  --glass-bg-strong: rgb(14 14 14 / 0.78);
+  --glass-border: rgb(255 255 255 / 0.08);
+  --glass-highlight: rgb(255 255 255 / 0.06);
+  --shadow-card: 0 24px 48px -24px rgb(0 0 0 / 0.9);
+  --shadow-glow-soft: 0 10px 30px -10px color-mix(in oklab, #ff5d00 55%, transparent);
+  --shadow-glow:
+    0 0 0 1px color-mix(in oklab, #ff5d00 60%, transparent),
+    0 20px 50px -14px color-mix(in oklab, #ff5d00 50%, transparent);
   color-scheme: dark;
 }
 
