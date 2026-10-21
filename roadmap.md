@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Panjabi Shop BD admin design
+- [x] Adapt reference sidebar and top bar for admin only
+- [x] Redesign overview, record lists and full-page editors
+- [x] Verify desktop/mobile layout with a temporary fixture, collapse/drawer, search and editor save state; permission tests pass. Live authenticated CRUD remains blocked by external Supabase session access as noted below.
+
 ## Current request — Owner administration
 - [x] Assign requested existing account the admin role
 - [x] Admin login destination and protected dashboard
