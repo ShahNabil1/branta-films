@@ -62,7 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       const [{ data: roles }, { data: profile }] = await Promise.all([
         supabase.from("user_roles").select("role").eq("user_id", userId!),
-        supabase.from("profiles").select("full_name, email, avatar_url").eq("id", userId!).maybeSingle(),
+        supabase
+          .from("profiles")
+          .select("full_name, email, avatar_url")
+          .eq("id", userId!)
+          .maybeSingle(),
       ]);
       return { roles: (roles ?? []).map((r) => r.role as AppRole), profile: profile ?? null };
     },
@@ -99,5 +103,10 @@ export function useSignOut() {
 }
 
 export function displayName(profile: AuthState["profile"], user: User | null) {
-  return profile?.full_name?.trim() || (user?.user_metadata?.["full_name"] as string | undefined) || user?.email?.split("@")[0] || "Member";
+  return (
+    profile?.full_name?.trim() ||
+    (user?.user_metadata?.["full_name"] as string | undefined) ||
+    user?.email?.split("@")[0] ||
+    "Member"
+  );
 }

@@ -9,11 +9,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { validateField } from "@/lib/validation";
 
-function CodeInput({ label, value, onChange, disabled }: { label: string; value: string; onChange: (v: string) => void; disabled: boolean }) {
+function CodeInput({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  disabled: boolean;
+}) {
   return (
     <div className="space-y-2">
       <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-      <InputOTP maxLength={6} value={value} onChange={(v) => onChange(v.replace(/\D/g, ""))} inputMode="numeric" disabled={disabled}>
+      <InputOTP
+        maxLength={6}
+        value={value}
+        onChange={(v) => onChange(v.replace(/\D/g, ""))}
+        inputMode="numeric"
+        disabled={disabled}
+      >
         <InputOTPGroup>
           {[0, 1, 2, 3, 4, 5].map((i) => (
             <InputOTPSlot key={i} index={i} className="size-12 bg-surface font-mono text-lg" />
@@ -42,7 +58,9 @@ export function ChangeEmailSection() {
   async function request(e?: React.FormEvent) {
     e?.preventDefault();
     const target = (pending ?? newEmail).trim();
-    const err = validateField("email", target) ?? (target.toLowerCase() === current.toLowerCase() ? "That's already your email." : undefined);
+    const err =
+      validateField("email", target) ??
+      (target.toLowerCase() === current.toLowerCase() ? "That's already your email." : undefined);
     setEmailError(err);
     if (err || busy) return;
     setBusy(true);
@@ -73,13 +91,21 @@ export function ChangeEmailSection() {
     }
     setBusy(true);
     setFormError(null);
-    const first = await supabase.auth.verifyOtp({ email: current, token: oldCode, type: "email_change" });
+    const first = await supabase.auth.verifyOtp({
+      email: current,
+      token: oldCode,
+      type: "email_change",
+    });
     if (first.error) {
       setBusy(false);
       setFormError(`The code sent to ${current} is incorrect or has expired.`);
       return;
     }
-    const second = await supabase.auth.verifyOtp({ email: pending, token: newCode, type: "email_change" });
+    const second = await supabase.auth.verifyOtp({
+      email: pending,
+      token: newCode,
+      type: "email_change",
+    });
     if (second.error) {
       setBusy(false);
       setFormError(`The code sent to ${pending} is incorrect or has expired.`);
@@ -122,23 +148,47 @@ export function ChangeEmailSection() {
             disabled={busy}
           />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
-          <Button type="submit" disabled={busy || !newEmail.trim()} className="h-11 rounded-sm px-6">
+          <Button
+            type="submit"
+            disabled={busy || !newEmail.trim()}
+            className="h-11 rounded-sm px-6"
+          >
             {busy ? "Sending codes…" : "Send codes"}
           </Button>
         </form>
       ) : (
         <form onSubmit={confirm} noValidate className="mt-6 space-y-6">
           <FormAlert tone="success">
-            We emailed a 6-digit code to {current} and another to {pending}. Both expire in 10 minutes.
+            We emailed a 6-digit code to {current} and another to {pending}. Both expire in 10
+            minutes.
           </FormAlert>
-          <CodeInput label={`Code sent to ${current}`} value={oldCode} onChange={setOldCode} disabled={busy} />
-          <CodeInput label={`Code sent to ${pending}`} value={newCode} onChange={setNewCode} disabled={busy} />
+          <CodeInput
+            label={`Code sent to ${current}`}
+            value={oldCode}
+            onChange={setOldCode}
+            disabled={busy}
+          />
+          <CodeInput
+            label={`Code sent to ${pending}`}
+            value={newCode}
+            onChange={setNewCode}
+            disabled={busy}
+          />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <div className="flex flex-wrap items-center gap-4">
-            <Button type="submit" disabled={busy || oldCode.length !== 6 || newCode.length !== 6} className="h-11 rounded-sm px-6">
+            <Button
+              type="submit"
+              disabled={busy || oldCode.length !== 6 || newCode.length !== 6}
+              className="h-11 rounded-sm px-6"
+            >
               {busy ? "Checking…" : "Confirm new email"}
             </Button>
-            <button type="button" onClick={() => void request()} disabled={busy} className="text-xs text-muted-foreground hover:text-primary">
+            <button
+              type="button"
+              onClick={() => void request()}
+              disabled={busy}
+              className="text-xs text-muted-foreground hover:text-primary"
+            >
               Send new codes
             </button>
             <button

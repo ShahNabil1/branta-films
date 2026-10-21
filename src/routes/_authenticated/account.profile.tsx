@@ -28,7 +28,6 @@ export const Route = createFileRoute("/_authenticated/account/profile")({
   component: ProfilePage,
 });
 
-
 function ProfilePage() {
   const { profile, user } = useAuth();
   const queryClient = useQueryClient();
@@ -50,7 +49,10 @@ function ProfilePage() {
     setError(err);
     if (err || !dirty || !user) return;
     setBusy("save");
-    const { error: dbErr } = await supabase.from("profiles").update({ full_name: name.trim() }).eq("id", user.id);
+    const { error: dbErr } = await supabase
+      .from("profiles")
+      .update({ full_name: name.trim() })
+      .eq("id", user.id);
     setBusy(null);
     if (dbErr) {
       toast.error("Could not save your name.");
@@ -78,7 +80,9 @@ function ProfilePage() {
       toast.success("Profile picture updated");
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch (err) {
-      toast.error(err instanceof Error && err.message ? err.message : "Upload failed. Please try again.");
+      toast.error(
+        err instanceof Error && err.message ? err.message : "Upload failed. Please try again.",
+      );
     } finally {
       setBusy(null);
     }
@@ -92,7 +96,13 @@ function ProfilePage() {
       <section className="mt-10 flex items-center gap-5">
         <UserAvatar size="size-20" />
         <div>
-          <Button type="button" variant="outline" className="rounded-sm bg-transparent" disabled={busy !== null} onClick={() => fileRef.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-sm bg-transparent"
+            disabled={busy !== null}
+            onClick={() => fileRef.current?.click()}
+          >
             <Camera /> {busy === "avatar" ? "Uploading…" : "Change picture"}
           </Button>
           <p className="mt-2 text-xs text-muted-foreground">PNG, JPG or WebP, up to 2 MB.</p>
