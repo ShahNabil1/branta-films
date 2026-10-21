@@ -203,7 +203,6 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           }
         }}
         muted={muted}
-        ref-volume={volume}
       />
 
       {loading && !error ? (
