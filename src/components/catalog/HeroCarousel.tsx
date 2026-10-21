@@ -75,21 +75,24 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
             Branta Original
             <span className="text-muted-foreground">· {current.genres.join(" / ")}</span>
           </p>
-          <h1 className="animate-fade-up text-cinema-shadow mt-5 max-w-[14ch] text-display [animation-delay:60ms]">{current.title}</h1>
+          <h1 className="animate-fade-up text-cinema-shadow text-hero mt-6 max-w-[14ch] [animation-delay:60ms]">
+            {current.title}
+            <span className="text-primary">.</span>
+          </h1>
           {current.tagline ? (
-            <p className="animate-fade-up text-cinema-shadow mt-5 max-w-xl text-lg leading-relaxed text-foreground/85 [animation-delay:120ms]">
+            <p className="animate-fade-up text-cinema-shadow text-body-lg mt-6 max-w-xl text-foreground/85 [animation-delay:120ms]">
               {current.tagline}
             </p>
           ) : null}
           <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs text-foreground/75 [animation-delay:160ms]">
-            {current.maturity_rating ? <span className="rounded-sm border border-foreground/30 px-1.5 py-0.5">{current.maturity_rating}</span> : null}
+            {current.maturity_rating ? <span className="rounded-full border border-foreground/30 px-2 py-0.5">{current.maturity_rating}</span> : null}
             {current.release_year ? <span>{current.release_year}</span> : null}
             <span>{current.episodes.length} episodes</span>
             {freeEp ? <span className="text-primary">Episode 1 free</span> : null}
             {current.price_bdt > 0 ? <span>Full season {formatTaka(current.price_bdt)}</span> : null}
           </div>
           <div className="animate-fade-up mt-8 flex flex-wrap gap-3 [animation-delay:220ms]">
-            <Button asChild variant="hero" size="xl" className="rounded-full">
+            <Button asChild variant="hero" size="xl">
               {freeEp ? (
                 <Link to="/watch/$episodeId" params={{ episodeId: freeEp.id }}>
                   <Play className="fill-current" /> Watch now
@@ -100,7 +103,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                 </Link>
               )}
             </Button>
-            <Button asChild variant="glass" size="xl" className="rounded-full">
+            <Button asChild variant="glass" size="xl">
               <Link to="/series/$slug" params={{ slug: current.slug }}>
                 <Info /> Details
               </Link>
