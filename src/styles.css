@@ -291,10 +291,10 @@
   line-height: 1.5;
 }
 @utility text-eyebrow {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   line-height: 1;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 500;
 }

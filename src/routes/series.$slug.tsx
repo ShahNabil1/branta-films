@@ -91,7 +91,7 @@ function SeriesPage() {
               <span className="text-primary">.</span>
             </h1>
             {series.tagline ? <p className="animate-fade-up text-cinema-shadow text-body-lg mt-6 max-w-2xl text-foreground/85 [animation-delay:120ms]">{series.tagline}</p> : null}
-            <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs text-foreground/75 [animation-delay:160ms]">
+            <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-small text-foreground/75 [animation-delay:160ms]">
               {series.maturity_rating ? <span className="rounded-full border border-foreground/30 px-2 py-0.5">{series.maturity_rating}</span> : null}
               {series.release_year ? <span>{series.release_year}</span> : null}
               <span>{series.episodes.length} episodes</span>
@@ -149,12 +149,12 @@ function SeriesPage() {
                           {open ? <Play className="size-4 translate-x-px fill-current" /> : <Lock className="size-4" />}
                         </span>
                       </span>
-                      <span className="text-caption absolute bottom-1.5 right-1.5 rounded-sm bg-scrim px-1.5 py-0.5 font-mono text-media-ink">{formatDuration(ep.duration_seconds)}</span>
+                      <span className="text-caption absolute bottom-1.5 right-1.5 rounded-sm bg-scrim px-1.5 py-0.5 tabular-nums text-media-ink">{formatDuration(ep.duration_seconds)}</span>
                     </div>
                     <div className="min-w-0 flex-1 py-0.5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-body font-medium text-foreground/85 transition-colors duration-300 group-hover/ep:text-foreground">
-                          <span className="mr-2 font-mono text-sm text-muted-foreground">{String(ep.episode_number).padStart(2, "0")}</span>
+                          <span className="mr-2 text-small tabular-nums text-muted-foreground">{String(ep.episode_number).padStart(2, "0")}</span>
                           {ep.title}
                         </p>
                         <span
@@ -184,17 +184,17 @@ function SeriesPage() {
               {series.release_year ? (
                 <>
                   <dt className="text-muted-foreground">Released</dt>
-                  <dd className="font-mono">{series.release_year}</dd>
+                  <dd className="tabular-nums">{series.release_year}</dd>
                 </>
               ) : null}
               {series.maturity_rating ? (
                 <>
                   <dt className="text-muted-foreground">Rating</dt>
-                  <dd className="font-mono">{series.maturity_rating}</dd>
+                  <dd className="tabular-nums">{series.maturity_rating}</dd>
                 </>
               ) : null}
               <dt className="text-muted-foreground">Price</dt>
-              <dd className="font-mono">{series.price_bdt > 0 ? `${formatTaka(series.price_bdt)} · full season` : "Free"}</dd>
+              <dd className="tabular-nums">{series.price_bdt > 0 ? `${formatTaka(series.price_bdt)} · full season` : "Free"}</dd>
             </dl>
           </div>
         </aside>

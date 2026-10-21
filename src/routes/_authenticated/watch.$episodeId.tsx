@@ -176,10 +176,10 @@ function WatchPage() {
                       s.id === episodeId && "bg-surface text-primary",
                     )}
                   >
-                    <span className="w-6 font-mono text-xs text-muted-foreground">{String(s.episode_number).padStart(2, "0")}</span>
+                    <span className="w-6 text-caption tabular-nums text-muted-foreground">{String(s.episode_number).padStart(2, "0")}</span>
                     <span className="min-w-0 flex-1 truncate">{s.title}</span>
                     {s.id === episodeId ? <Play className="size-3.5 fill-current" /> : null}
-                    <span className="font-mono text-xs text-muted-foreground">{s.is_free ? "Free" : formatDuration(s.duration_seconds)}</span>
+                    <span className="text-caption tabular-nums text-muted-foreground">{s.is_free ? "Free" : formatDuration(s.duration_seconds)}</span>
                   </Link>
                 </li>
               ))}
