@@ -1,5 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Compass, Film, LayoutDashboard, Shield } from "lucide-react";
 import { ContinueWatching } from "@/components/catalog/ContinueWatching";
+import { PageHeader, Panel, StatTile } from "@/components/dashboard/DashboardKit";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { displayName, useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/account/")({
@@ -19,22 +25,42 @@ export const Route = createFileRoute("/_authenticated/account/")({
 
 function AccountOverview() {
   const { profile, user } = useAuth();
+  const { data: counts } = useQuery({
+    queryKey: ["account-counts", user?.id],
+    enabled: Boolean(user),
+    queryFn: async () => {
+      const [unlocks, progress, keys] = await Promise.all([
+        supabase.from("series_unlocks").select("series_id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("watch_progress").select("episode_id", { count: "exact", head: true }).eq("user_id", user!.id),
+        supabase.from("passkey_credentials").select("id", { count: "exact", head: true }),
+      ]);
+      return { unlocks: unlocks.count ?? 0, progress: progress.count ?? 0, passkeys: keys.count ?? 0 };
+    },
+  });
+
   return (
-    <div className="space-y-12">
-      <div>
-        <p className="text-eyebrow text-primary">Dashboard</p>
-        <h1 className="mt-3 text-h2">Hi, {displayName(profile, user)}</h1>
-      </div>
-      <ContinueWatching
-        emptyText="Nothing in progress yet. Start an episode and it will appear here."
+    <>
+      <PageHeader
+        icon={LayoutDashboard}
+        eyebrow="Dashboard"
+        title={`Hi, ${displayName(profile, user)}`}
+        description="Pick up where you left off, see what you've unlocked and keep your account secure."
+        action={
+          <Button asChild size="sm">
+            <Link to="/browse">
+              <Compass /> Browse series
+            </Link>
+          </Button>
+        }
       />
-      <div className="rounded-md border border-border bg-surface p-6">
-        <h2 className="font-medium">Find something new</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Every series starts with a free first episode.</p>
-        <Link to="/browse" className="mt-4 inline-block text-sm text-primary hover:underline">
-          Browse series →
-        </Link>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatTile to="/account" icon={LayoutDashboard} label="Episodes in progress" value={counts?.progress ?? "–"} delay={60} />
+        <StatTile to="/account/library" icon={Film} label="Series unlocked" value={counts?.unlocks ?? "–"} delay={120} />
+        <StatTile to="/account/security" icon={Shield} label="Passkeys" value={counts?.passkeys ?? "–"} hint="Sign in without a password" delay={180} />
       </div>
-    </div>
+      <Panel delay={240}>
+        <ContinueWatching emptyText="Nothing in progress yet. Start an episode and it will appear here." />
+      </Panel>
+    </>
   );
 }
