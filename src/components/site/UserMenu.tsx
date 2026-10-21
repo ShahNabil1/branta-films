@@ -30,10 +30,10 @@ export function UserMenu() {
   const signOut = useSignOut();
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger className="rounded-full" aria-label="Account menu">
+      <DropdownMenuTrigger className="rounded-full ring-2 ring-transparent transition-shadow hover:ring-primary/60" aria-label="Account menu">
         <UserAvatar />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60">
+      <DropdownMenuContent align="end" sideOffset={10} className="w-60 rounded-xl border-foreground/10 bg-popover/80 p-1.5 shadow-[var(--shadow-card)] backdrop-blur-xl">
         <DropdownMenuLabel className="font-normal">
           <p className="truncate text-sm font-medium text-foreground">{displayName(profile, user)}</p>
           <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
