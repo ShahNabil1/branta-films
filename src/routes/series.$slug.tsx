@@ -135,11 +135,11 @@ function SeriesPage() {
               const open = ep.is_free || hasAccess;
               const thumb = mediaUrl(ep.thumbnail_url ?? series.backdrop_url);
               return (
-                <li key={ep.id}>
+                <li key={ep.id} className="border-b border-border last:border-0">
                   <Link
                     to="/watch/$episodeId"
                     params={{ episodeId: ep.id }}
-                    className="group/ep flex gap-4 border-b border-border py-4 transition-colors duration-300 first:pt-0"
+                    className="group/ep flex gap-4 py-4"
                   >
                     <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[4px] bg-muted sm:w-52">
                       {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 ease-out group-hover/ep:scale-[1.03]" /> : null}

@@ -54,7 +54,7 @@ export function MediaRow({ title, eyebrow, seeAll, children, className }: Props)
       <div className="flex items-end justify-between gap-4">
         <div>
           {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
-          <h2 className={cn("text-h3 font-semibold", eyebrow && "mt-3")}>{title}</h2>
+          <h2 className={cn("text-h3", eyebrow && "mt-3")}>{title}</h2>
         </div>
         {seeAll ? (
           <Link to="/browse" className="text-small group/all inline-flex items-center gap-1 font-medium text-muted-foreground underline decoration-border underline-offset-[6px] transition-colors hover:text-foreground hover:decoration-primary">
