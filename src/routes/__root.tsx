@@ -15,22 +15,21 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { Toaster } from "@/components/ui/sonner";
+import { buttonVariants } from "@/components/ui/button";
+import { Eyebrow } from "@/components/layout/primitives";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <p className="text-eyebrow text-primary">Error 404</p>
-        <h1 className="mt-4 text-h2 text-foreground">This page isn't playing</h1>
-        <p className="mt-3 text-sm text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
-          >
-            Back to Branta Films
-          </Link>
-        </div>
+    <div className="hero-glow flex min-h-screen items-center px-[var(--gutter)]">
+      <div className="mx-auto w-full max-w-[var(--content-max)]">
+        <Eyebrow>Error 404</Eyebrow>
+        <h1 className="text-display-xl mt-6 max-w-[12ch] text-foreground">
+          This page isn't playing<span className="text-primary">.</span>
+        </h1>
+        <p className="text-body-lg mt-8 max-w-xl text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
+        <Link to="/" className={`${buttonVariants({ size: "lg" })} mt-10`}>
+          Back to Branta Films <span aria-hidden>→</span>
+        </Link>
       </div>
     </div>
   );
@@ -44,23 +43,24 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">This page didn't load</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Something went wrong on our end. You can try again or head back home.</p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+    <div className="hero-glow flex min-h-screen items-center px-[var(--gutter)]">
+      <div className="mx-auto w-full max-w-[var(--content-max)]">
+        <Eyebrow>Something went wrong</Eyebrow>
+        <h1 className="text-display mt-6 max-w-[14ch] text-foreground">This page didn't load.</h1>
+        <p className="text-body-lg mt-8 max-w-xl text-muted-foreground">Something went wrong on our end. You can try again or head back home.</p>
+        <div className="mt-10 flex flex-wrap gap-3">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-sm bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+            className={buttonVariants({ size: "lg" })}
           >
             Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-sm border border-input px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            className={buttonVariants({ variant: "secondary", size: "lg" })}
           >
             Go home
           </a>

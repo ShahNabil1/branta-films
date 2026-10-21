@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertTriangle } from "lucide-react";
 import logo from "@/assets/brand/branta-logo-light.png";
 
 /**
- * DevToolsShield — same architecture as Branta Hub:
+ * DevToolsShield:
  *  - Blocks right-click, F12, Ctrl+Shift+I/J/C, Cmd+Opt+I/J/C, Ctrl+U, Ctrl+S.
  *  - Detects an open DevTools panel via `disable-devtool`, with a
  *    debugger-timing fallback loop.
@@ -73,18 +72,18 @@ function Blackout() {
       aria-labelledby="shield-title"
       aria-describedby="shield-desc"
       tabIndex={-1}
-      className="fixed inset-0 z-[2147483647] flex items-center justify-center bg-background px-6 outline-none"
+      className="hero-glow fixed inset-0 z-[2147483647] isolate flex items-center overflow-hidden px-[var(--gutter)] outline-none"
     >
-      <div className="max-w-md text-center">
-        <img src={logo} alt="Branta Tech" className="mx-auto h-8 w-auto" draggable={false} />
-        <div className="mx-auto mt-8 flex size-14 items-center justify-center rounded-full bg-primary/10" aria-hidden="true">
-          <AlertTriangle className="size-8 text-primary" />
-        </div>
-        <p className="mt-5 text-eyebrow text-muted-foreground">Branta Films · Security</p>
-        <h1 id="shield-title" className="mt-2 text-lg font-semibold tracking-tight text-foreground">
-          Security Alert
+      <div className="mx-auto w-full max-w-[var(--content-max)]">
+        <img src={logo} alt="Branta Tech" className="h-7 w-auto" draggable={false} />
+        <p className="text-eyebrow mt-16 flex items-center gap-2 text-muted-foreground">
+          <span aria-hidden className="size-1.5 rounded-full bg-primary" />
+          Branta Films · Security
+        </p>
+        <h1 id="shield-title" className="text-display mt-6 max-w-[14ch] text-foreground">
+          Close developer tools to keep watching<span className="text-primary">.</span>
         </h1>
-        <p id="shield-desc" className="mt-2 text-sm leading-relaxed text-muted-foreground">
+        <p id="shield-desc" className="text-body-lg mt-8 max-w-xl text-muted-foreground">
           {WARNING_TEXT}
         </p>
       </div>
