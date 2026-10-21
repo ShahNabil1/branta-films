@@ -34,11 +34,12 @@ describe("Redirect safety", () => {
 });
 
 describe("Media route", () => {
-  it("serves only posters and avatars", () => {
-    expect(isAllowedMediaPath("posters/demo/a.webp")).toBe(true);
-    expect(isAllowedMediaPath("avatars/u/1.png")).toBe(true);
-    expect(isAllowedMediaPath("series/neon-rain/e01.mp4")).toBe(false);
-    expect(isAllowedMediaPath("posters/../secret")).toBe(false);
+  it("serves only images, never videos", () => {
+    expect(isAllowedMediaPath("images/series/neon-rain/poster.webp")).toBe(true);
+    expect(isAllowedMediaPath("images/avatars/u/1.png")).toBe(true);
+    expect(isAllowedMediaPath("videos/series/neon-rain/e01.mp4")).toBe(false);
+    expect(isAllowedMediaPath("images/series/neon-rain/e01.mp4")).toBe(false);
+    expect(isAllowedMediaPath("images/series/../../videos/x.webp")).toBe(false);
   });
 });
 

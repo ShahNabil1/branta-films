@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { validateField } from "@/lib/validation";
+import { AVATAR_TYPES, MAX_AVATAR_BYTES } from "@/lib/media";
+import { uploadAvatar as uploadAvatarFn } from "@/lib/avatar.functions";
 
 export const Route = createFileRoute("/_authenticated/account/profile")({
   head: () => ({
@@ -25,7 +27,6 @@ export const Route = createFileRoute("/_authenticated/account/profile")({
   component: ProfilePage,
 });
 
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 function ProfilePage() {
   const { profile, user } = useAuth();
@@ -60,7 +61,7 @@ function ProfilePage() {
 
   async function uploadAvatar(file: File) {
     if (!user) return;
-    if (!/^image\/(png|jpe?g|webp)$/.test(file.type)) {
+    if (!(file.type in AVATAR_TYPES)) {
       toast.error("Use a PNG, JPG or WebP image.");
       return;
     }
@@ -69,20 +70,17 @@ function ProfilePage() {
       return;
     }
     setBusy("avatar");
-    const ext = file.type.split("/")[1]!.replace("jpeg", "jpg");
-    const path = `avatars/${user.id}/${Date.now()}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("media").upload(path, file, { contentType: file.type, upsert: false });
-    if (upErr) {
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      await uploadAvatarFn({ data: form });
+      toast.success("Profile picture updated");
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+    } catch (err) {
+      toast.error(err instanceof Error && err.message ? err.message : "Upload failed. Please try again.");
+    } finally {
       setBusy(null);
-      toast.error("Upload failed. Please try again.");
-      return;
     }
-    const old = profile?.avatar_url;
-    await supabase.from("profiles").update({ avatar_url: path }).eq("id", user.id);
-    if (old?.startsWith(`avatars/${user.id}/`)) await supabase.storage.from("media").remove([old]);
-    setBusy(null);
-    toast.success("Profile picture updated");
-    await queryClient.invalidateQueries({ queryKey: ["me"] });
   }
 
   return (
