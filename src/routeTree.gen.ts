@@ -18,6 +18,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
 import { Route as AuthenticatedAccountLibraryRouteImport } from './routes/_authenticated/account.library'
@@ -70,6 +71,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const SeriesSlugRoute = SeriesSlugRouteImport.update({
   id: '/series/$slug',
   path: '/series/$slug',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
+  '/admin': typeof AuthenticatedAdminRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -155,6 +163,7 @@ export interface FileRoutesById {
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
   '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -174,6 +183,7 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/terms'
     | '/account'
+    | '/admin'
     | '/series/$slug'
     | '/account/library'
     | '/account/profile'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/set-password'
     | '/terms'
+    | '/admin'
     | '/series/$slug'
     | '/account/library'
     | '/account/profile'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/set-password'
     | '/terms'
     | '/_authenticated/account'
+    | '/_authenticated/admin'
     | '/series/$slug'
     | '/_authenticated/account/library'
     | '/_authenticated/account/profile'
@@ -295,6 +307,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/series/$slug': {
       id: '/series/$slug'
       path: '/series/$slug'
@@ -366,11 +385,13 @@ const AuthenticatedAccountRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedWatchEpisodeIdRoute: typeof AuthenticatedWatchEpisodeIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedWatchEpisodeIdRoute: AuthenticatedWatchEpisodeIdRoute,
 }
 
