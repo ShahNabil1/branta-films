@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Search } from "lucide-react";
+import { ArrowUpRight, Search } from "lucide-react";
 import { BrandLogo } from "@/components/brand/Logo";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
@@ -12,9 +11,12 @@ const NAV = [
   { to: "/browse", label: "Browse" },
 ] as const;
 
+const itemCls =
+  "text-small relative flex h-9 items-center rounded-sm px-3 font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground data-[status=active]:text-foreground";
+
 /**
- * Over a cinematic hero the bar starts transparent (soft top fade only) and turns into frosted glass
- * once the page scrolls. Everywhere else it is glass from the start.
+ * Branta Tech header: logo, centred nav with an orange dot under the active page,
+ * sign-in link + pill CTA. Over a cinematic hero it starts transparent and turns solid on scroll.
  */
 export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   const { user, loading } = useAuth();
@@ -32,46 +34,61 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 h-16 border-b transition-[background-color,border-color,backdrop-filter] duration-500",
-        clear
-          ? "border-transparent bg-linear-to-b from-background/80 to-transparent"
-          : "border-foreground/10 bg-background/65 backdrop-blur-xl backdrop-saturate-150",
-        overlay && "-mb-16",
+        "sticky top-0 z-40 h-16 border-b transition-[background-color,border-color] duration-500 xl:h-[68px]",
+        clear ? "border-transparent bg-linear-to-b from-background/85 to-transparent" : "border-border bg-background/90 backdrop-blur-xl",
+        overlay && "-mb-16 xl:-mb-[68px]",
       )}
     >
-      <div className="mx-auto flex h-full max-w-[1440px] items-center gap-3 px-[clamp(1rem,4vw,3rem)] sm:gap-6 md:gap-10">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-3 px-5 sm:gap-6 md:px-8">
         <BrandLogo />
-        <nav aria-label="Main" className="flex items-center gap-1">
-          {NAV.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              activeOptions={{ exact: item.to === "/" }}
-              className="relative rounded-sm px-2 py-2 text-sm sm:px-3 text-foreground/70 transition-colors after:absolute after:inset-x-2 after:bottom-0.5 sm:after:inset-x-3 after:h-0.5 after:origin-left after:scale-x-0 after:rounded-full after:bg-primary after:transition-transform after:duration-300 hover:text-foreground data-[status=active]:font-medium data-[status=active]:text-foreground data-[status=active]:after:scale-x-100"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <nav aria-label="Main" className="flex flex-1 items-center md:justify-center">
+          <ul className="flex items-center gap-0.5">
+            {NAV.map((item) => (
+              <li key={item.to}>
+                <Link to={item.to} activeOptions={{ exact: item.to === "/" }} className={cn(itemCls, "group")}>
+                  {item.label}
+                  <span
+                    aria-hidden
+                    className="absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 scale-0 rounded-full bg-primary transition-transform duration-200 group-data-[status=active]:scale-100"
+                  />
+                </Link>
+              </li>
+            ))}
+          </ul>
         </nav>
-        <div className="ml-auto flex items-center justify-end gap-1 sm:gap-2">
+        <div className="flex items-center justify-end gap-1 sm:gap-2">
           <Link
             to="/browse"
             aria-label="Search series"
-            className="grid size-9 place-items-center rounded-full text-foreground/80 transition-colors hover:bg-foreground/10 hover:text-foreground"
+            className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
           >
             <Search className="size-[18px]" />
           </Link>
-          <div className="flex min-w-9 justify-end">
-            {loading ? (
-              <div className="size-9" aria-hidden="true" />
-            ) : user ? (
-              <UserMenu />
-            ) : (
-              <Button asChild variant="hero" size="sm" className="h-9 rounded-full px-4 text-sm sm:px-5">
-                <Link to="/auth">Sign in</Link>
-              </Button>
-            )}
-          </div>
+          {loading ? (
+            <div className="size-9" aria-hidden="true" />
+          ) : user ? (
+            <UserMenu />
+          ) : (
+            <>
+              <Link to="/auth" className={cn(itemCls, "hidden sm:flex")}>
+                Sign in
+              </Link>
+              <Link
+                to="/auth"
+                search={{ mode: "signup" }}
+                className="text-small group ml-1 hidden h-10 items-center gap-1.5 rounded-full bg-primary px-5 font-medium text-primary-foreground transition-colors hover:bg-primary-hover sm:inline-flex"
+              >
+                Start watching
+                <ArrowUpRight aria-hidden className="size-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                to="/auth"
+                className="text-small inline-flex h-9 items-center rounded-full bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary-hover sm:hidden"
+              >
+                Sign in
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>
