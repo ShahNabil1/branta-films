@@ -15,6 +15,10 @@
 - [ ] First admin account — waiting for owner's admin email
 - [ ] Branded sign-in emails from films.brantatech.com showing the 6-digit code — waiting for owner to set up the email domain; owner sets code expiry to 600 s in Auth settings → One-time codes
 
+## Backend move
+- [x] Full backup kit saved (supabase/restore)
+- [ ] Restore on owner's own Supabase — waiting for owner to remove Cloud and connect Supabase
+
 ## Phase 2 — Admin panel
 - [ ] Admin shell (independent sidebar, no layout shift), staff-only
 - [ ] Series & episode create/edit as full pages, Word-style rich text editor
