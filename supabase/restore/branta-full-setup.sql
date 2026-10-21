@@ -1,4 +1,4 @@
--- Branta Films — complete database setup (schema, security rules, functions, triggers, storage rules, sample catalogue).
+-- Branta Films — complete database setup (schema, security rules, functions, triggers, sample catalogue).
 -- Built from drizzle/migrations 0000 + 0001 on 2026-10-21. Run once on an empty project.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -279,8 +279,6 @@ grant execute on function public.user_has_password(uuid) to service_role;
 grant execute on function public.verify_current_password(uuid, text) to service_role;
 grant execute on function public.password_is_reused(uuid, text) to service_role;
 grant execute on function public.snapshot_current_password(uuid) to service_role;
-
--- Storage rules for the private "media" bucket (served through the app).
 
 
 -- Sample catalogue (replace from the admin panel later).
