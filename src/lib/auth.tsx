@@ -55,17 +55,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [router, queryClient]);
 
   const userId = session?.user.id;
-  const { data: meta } = useQuery({
+  const { data: meta, isPending: metaPending } = useQuery({
     queryKey: ["me", userId],
     enabled: Boolean(userId),
     staleTime: 60_000,
     queryFn: async () => {
+      if (!userId) return { roles: [] as AppRole[], profile: null };
       const [{ data: roles }, { data: profile }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", userId!),
+        supabase.from("user_roles").select("role").eq("user_id", userId),
         supabase
           .from("profiles")
           .select("full_name, email, avatar_url")
-          .eq("id", userId!)
+          .eq("id", userId)
           .maybeSingle(),
       ]);
       return { roles: (roles ?? []).map((r) => r.role as AppRole), profile: profile ?? null };
@@ -76,12 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       session,
       user: session?.user ?? null,
-      loading,
+      loading: loading || (Boolean(userId) && metaPending),
       roles: meta?.roles ?? [],
       isStaff: (meta?.roles ?? []).length > 0,
       profile: meta?.profile ?? null,
     }),
-    [session, loading, meta],
+    [session, loading, meta, metaPending, userId],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

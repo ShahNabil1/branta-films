@@ -12,6 +12,8 @@ import { useAuth } from "@/lib/auth";
 import { recordSignIn } from "@/lib/account.functions";
 import { passkeyLoginOptions, passkeyLoginVerify } from "@/lib/passkey.functions";
 import { safeRedirect, validateField } from "@/lib/validation";
+import { loginDestination } from "@/lib/admin-rules";
+import { amrFromAccessToken, isFreshInviteSession } from "@/lib/invite";
 
 const search = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/auth")({
       {
         name: "description",
         content:
-          "Sign in or create your Branta Films account with Google, email code, password or passkey.",
+          "Sign in or create your Branta Films account with Google, password or passkey.",
       },
       { property: "og:title", content: "Sign in — Branta Films" },
       { property: "og:description", content: "Sign in to keep watching Branta Films originals." },
@@ -43,7 +45,7 @@ function AuthPage() {
   const { mode: modeParam, redirect } = Route.useSearch();
   const mode = modeParam ?? "signin";
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, loading, roles, session } = useAuth();
   const target = safeRedirect(redirect, "/");
 
   const [fullName, setFullName] = useState("");
@@ -61,13 +63,14 @@ function AuthPage() {
 
   useEffect(() => {
     if (loading || !user) return;
+    if (session && isFreshInviteSession(amrFromAccessToken(session.access_token), Date.now() / 1000)) return;
     if (!recorded.current && sessionStorage.getItem(GOOGLE_FLAG)) {
       recorded.current = true;
       sessionStorage.removeItem(GOOGLE_FLAG);
       void recordSignIn({ data: { method: "google" } }).catch(() => undefined);
     }
-    void navigate({ to: target, replace: true });
-  }, [user, loading, navigate, target]);
+    void navigate({ to: loginDestination(roles, target), replace: true });
+  }, [user, loading, roles, session, navigate, target]);
 
   const fieldFor = (name: "email" | "fullName" | "password", value: string) => {
     if (name === "password")

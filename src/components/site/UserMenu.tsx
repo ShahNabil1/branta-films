@@ -55,8 +55,8 @@ export function UserMenu() {
           </Link>
         </DropdownMenuItem>
         {isStaff ? (
-          <DropdownMenuItem disabled>
-            <Shield /> Admin panel (coming next)
+          <DropdownMenuItem asChild>
+            <Link to="/admin"><Shield /> Admin panel</Link>
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />
