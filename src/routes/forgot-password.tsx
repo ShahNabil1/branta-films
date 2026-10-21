@@ -1,19 +1,23 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail } from "lucide-react";
+import { ArrowRight, KeyRound, Mail } from "lucide-react";
+import { toast } from "sonner";
 import { AuthLayout, FormAlert } from "@/components/auth/AuthLayout";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { validateField } from "@/lib/validation";
+import { completePasswordReset } from "@/lib/account.functions";
+import { validateField, validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
       { title: "Reset your password — Branta Films" },
-      { name: "description", content: "Get a secure link to reset your Branta Films password." },
+      { name: "description", content: "Get a 6-digit code by email and choose a new Branta Films password." },
+      { name: "robots", content: "noindex" },
       { property: "og:title", content: "Reset your password — Branta Films" },
-      { property: "og:description", content: "Get a secure link to reset your Branta Films password." },
+      { property: "og:description", content: "Get a 6-digit code by email and choose a new Branta Films password." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -21,29 +25,92 @@ export const Route = createFileRoute("/forgot-password")({
   component: ForgotPasswordPage,
 });
 
-function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState<string | undefined>();
-  const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState(false);
+type Step = "email" | "code" | "password";
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  const [step, setStep] = useState<Step>("email");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | undefined>();
+  const [code, setCode] = useState("");
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [pwErrors, setPwErrors] = useState<{ pw?: string | undefined; confirm?: string | undefined }>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function sendCode(e?: React.FormEvent) {
+    e?.preventDefault();
     const err = validateField("email", email);
-    setError(err);
+    setEmailError(err);
     if (err || busy) return;
     setBusy(true);
-    await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/reset-password` });
+    setFormError(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
     setBusy(false);
-    setSent(true);
+    if (error && /rate|seconds/i.test(error.message)) {
+      setFormError("Please wait a minute before requesting another code.");
+      return;
+    }
+    // Same message whether or not the account exists, so emails can't be probed.
+    setCode("");
+    setStep("code");
+    setNotice(`If an account exists for ${email.trim()}, we emailed it a 6-digit code. It expires in 10 minutes.`);
   }
 
+  async function verifyCode(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    if (code.length !== 6) {
+      setFormError("Enter the 6-digit code from your email.");
+      return;
+    }
+    setBusy(true);
+    setFormError(null);
+    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code, type: "recovery" });
+    setBusy(false);
+    if (error) {
+      setFormError("That code is incorrect or has expired. Request a new one.");
+      return;
+    }
+    setNotice(null);
+    setStep("password");
+  }
+
+  async function savePassword(e: React.FormEvent) {
+    e.preventDefault();
+    const next = {
+      pw: validateNewPassword(pw),
+      confirm: pw !== confirm ? "Passwords don't match." : undefined,
+    };
+    setPwErrors(next);
+    if (next.pw || next.confirm || busy) return;
+    setBusy(true);
+    setFormError(null);
+    try {
+      await completePasswordReset({ data: { newPassword: pw } });
+      toast.success("Password updated");
+      await navigate({ to: "/account", replace: true });
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Could not update your password.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const titles: Record<Step, [string, string]> = {
+    email: ["Forgot your password?", "Enter your email and we'll send you a 6-digit code."],
+    code: ["Enter your code", `Type the 6-digit code we sent to ${email.trim()}.`],
+    password: ["Choose a new password", "It must differ from your current and previous passwords."],
+  };
+
   return (
-    <AuthLayout title="Forgot your password?" subtitle="Enter your email and we'll send you a secure reset link.">
-      {sent ? (
-        <FormAlert tone="success">If an account exists for {email.trim()}, a reset link is on its way. The link works once.</FormAlert>
-      ) : (
-        <form onSubmit={submit} noValidate className="space-y-5">
+    <AuthLayout title={titles[step][0]} subtitle={titles[step][1]}>
+      {notice ? <div className="mb-5"><FormAlert tone="success">{notice}</FormAlert></div> : null}
+
+      {step === "email" ? (
+        <form onSubmit={sendCode} noValidate className="space-y-5">
           <SmartField
             id="email"
             label="Email"
@@ -51,25 +118,81 @@ function ForgotPasswordPage() {
             value={email}
             onValueChange={(v) => {
               setEmail(v);
-              if (error) setError(validateField("email", v));
+              if (emailError) setEmailError(validateField("email", v));
             }}
-            onBlur={() => setError(validateField("email", email))}
-            error={error}
+            onBlur={() => setEmailError(validateField("email", email))}
+            error={emailError}
             icon={<Mail />}
             autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
             placeholder="name@example.com"
+            maxLength={254}
             disabled={busy}
           />
-          <Button type="submit" disabled={busy} className="h-12 w-full rounded-sm text-base font-semibold">
-            {busy ? "Sending…" : "Send reset link"}
+          {formError ? <FormAlert>{formError}</FormAlert> : null}
+          <Button type="submit" disabled={busy} className="group h-12 w-full rounded-sm text-base font-semibold">
+            {busy ? "Sending…" : "Send code"}
+            {!busy ? <ArrowRight className="transition-transform group-hover:translate-x-1" /> : null}
           </Button>
         </form>
-      )}
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        <Link to="/auth" className="text-foreground underline decoration-primary underline-offset-4 hover:text-primary">
-          Back to sign in
-        </Link>
-      </p>
+      ) : null}
+
+      {step === "code" ? (
+        <form onSubmit={verifyCode} noValidate className="space-y-5">
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">6-digit code</p>
+            <InputOTP maxLength={6} value={code} onChange={(v) => setCode(v.replace(/\D/g, ""))} inputMode="numeric" autoFocus disabled={busy}>
+              <InputOTPGroup>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <InputOTPSlot key={i} index={i} className="size-12 bg-surface font-mono text-lg" />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+            <div className="flex gap-4 text-xs text-muted-foreground">
+              <button type="button" onClick={() => void sendCode()} disabled={busy} className="hover:text-primary">
+                Send a new code
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep("email");
+                  setNotice(null);
+                  setFormError(null);
+                }}
+                disabled={busy}
+                className="hover:text-primary"
+              >
+                Use a different email
+              </button>
+            </div>
+          </div>
+          {formError ? <FormAlert>{formError}</FormAlert> : null}
+          <Button type="submit" disabled={busy || code.length !== 6} className="group h-12 w-full rounded-sm text-base font-semibold">
+            {busy ? "Checking…" : "Verify code"}
+            {!busy ? <ArrowRight className="transition-transform group-hover:translate-x-1" /> : null}
+          </Button>
+        </form>
+      ) : null}
+
+      {step === "password" ? (
+        <form onSubmit={savePassword} noValidate className="space-y-5">
+          <SmartField id="new-password" label="New password" password value={pw} onValueChange={setPw} error={pwErrors.pw} icon={<KeyRound />} autoComplete="new-password" hint="At least 8 characters, including a letter and a number." disabled={busy} />
+          <SmartField id="confirm-password" label="Confirm new password" password value={confirm} onValueChange={setConfirm} error={pwErrors.confirm} icon={<KeyRound />} autoComplete="new-password" disabled={busy} />
+          {formError ? <FormAlert>{formError}</FormAlert> : null}
+          <Button type="submit" disabled={busy || !pw || !confirm} className="h-12 w-full rounded-sm text-base font-semibold">
+            {busy ? "Saving…" : "Update password"}
+          </Button>
+        </form>
+      ) : null}
+
+      {step !== "password" ? (
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <Link to="/auth" className="text-foreground underline decoration-primary underline-offset-4 hover:text-primary">
+            Back to sign in
+          </Link>
+        </p>
+      ) : null}
     </AuthLayout>
   );
 }

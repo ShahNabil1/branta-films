@@ -54,7 +54,7 @@ export const changePassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Password reset after the emailed recovery link (recovery session only, within 15 minutes). */
+/** Password reset after the emailed 6-digit recovery code (recovery session only, within 15 minutes). */
 export const completePasswordReset = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ newPassword: z.string().max(200) }).parse(input))
@@ -63,7 +63,7 @@ export const completePasswordReset = createServerFn({ method: "POST" })
       (m) => m.method === "recovery" || m.method === "otp",
     );
     if (!amr || Date.now() / 1000 - amr.timestamp > 15 * 60) {
-      throw new Error("This reset link has expired. Request a new one.");
+      throw new Error("This reset code has expired. Request a new one.");
     }
     const invalid = validateNewPassword(data.newPassword);
     if (invalid) throw new Error(invalid);
