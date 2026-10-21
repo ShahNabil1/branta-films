@@ -29,5 +29,7 @@ export async function presignR2Get(key: string, expiresSeconds: number): Promise
 export async function r2ObjectExists(key: string): Promise<boolean> {
   const { accountId, bucket, client } = r2Config();
   const res = await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "HEAD" });
-  return res.ok;
+  if (res.ok) return true;
+  if (res.status === 404) return false;
+  throw new Error(`Video storage rejected the request (status ${res.status}).`);
 }
