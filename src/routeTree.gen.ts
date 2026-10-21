@@ -14,7 +14,9 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
@@ -48,9 +50,19 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
@@ -104,7 +116,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -119,7 +133,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -135,7 +151,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/series/$slug': typeof SeriesSlugRoute
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -152,7 +170,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/account'
     | '/series/$slug'
     | '/account/library'
@@ -167,7 +187,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/series/$slug'
     | '/account/library'
     | '/account/profile'
@@ -182,7 +204,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/_authenticated/account'
     | '/series/$slug'
     | '/_authenticated/account/library'
@@ -199,7 +223,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   SeriesSlugRoute: typeof SeriesSlugRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -241,11 +267,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/account': {
@@ -343,7 +383,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   SeriesSlugRoute: SeriesSlugRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }
