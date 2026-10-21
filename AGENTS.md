@@ -11,6 +11,8 @@
 
 # Architecture rules
 
+- Reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: mixing old React DOM URLs with a newer React dependency generation crashes hooks during preview updates.
+
 - Video files live only in private Cloudflare R2; `episode_media.video_key` is service-role only and links are issued by `getPlaybackSource` after `decidePlayback` (src/lib/access.ts). Why: no client can ever learn a permanent video address.
 - Playback access rules live in one pure function (`decidePlayback`) with tests. Why: one place to change who can watch what.
 - All files (images and videos) live only in the private R2 bucket; Supabase Storage is not used. Images sit under `images/` (series/, episodes/, avatars/) and are proxied by `/api/public/media/*` (prefix + extension allow-list); videos sit under `videos/` and are never proxied. Why: owner wants every file in R2, and videos must stay behind access checks.
