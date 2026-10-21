@@ -1,5 +1,12 @@
 # Branta Films roadmap
 
+## Current request — Owner administration
+- [x] Assign requested existing account the admin role
+- [ ] Admin login destination and protected dashboard
+- [ ] Series and episode full-page CRUD, media controls
+- [ ] User/staff access controls, invites, activity and unlock management
+- [ ] Verify permissions and a real signed-in CRUD flow
+
 ## Phase 1 — Foundation (done)
 - [x] Branta Tech dark theme, logo, favicon, Geist + SolaimanLipi/Kalpurush fonts
 - [x] DevToolsShield (production only)
@@ -13,7 +20,7 @@
 - [x] Privacy Policy + Terms of Service
 - [x] Cinematic streaming redesign: rotating hero, trending + category rows
 - [x] Full redesign on brantatech-com design (type, colours, pill buttons, header/footer, sign-in, legal, security screen); account dashboard on Upoharkabbo /admin layout; all Branta Hub styling removed
-- [ ] First admin account — waiting for owner's admin email
+- [x] First admin account assigned
 - [ ] Branded sign-in emails from films.brantatech.com showing the 6-digit code — waiting for owner to set up the email domain; owner sets code expiry to 600 s in Auth settings → One-time codes
 
 ## Backend move
