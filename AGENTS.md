@@ -11,7 +11,7 @@
 
 # Architecture rules
 
-- Reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: mixing old React DOM URLs with a newer React dependency generation crashes hooks during preview updates.
+- Prebundle all Tiptap editor packages at startup and reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: late editor discovery invalidates in-flight module URLs, while mixing dependency generations crashes React hooks.
 
 - Video files live only in private Cloudflare R2; `episode_media.video_key` is service-role only and links are issued by `getPlaybackSource` after `decidePlayback` (src/lib/access.ts). Why: no client can ever learn a permanent video address.
 - Playback access rules live in one pure function (`decidePlayback`) with tests. Why: one place to change who can watch what.
