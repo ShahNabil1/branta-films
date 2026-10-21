@@ -73,6 +73,27 @@ export const completePasswordReset = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Invited staff choose their first password (invite session only, account must have no password yet). */
+export const completeInvite = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ newPassword: z.string().max(200) }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { isFreshInviteSession } = await import("./invite");
+    const amr = (context.claims as { amr?: { method: string; timestamp: number }[] }).amr ?? [];
+    if (!isFreshInviteSession(amr, Date.now() / 1000)) {
+      throw new Error("This invite link has expired. Ask an admin to send a new one.");
+    }
+    const invalid = validateNewPassword(data.newPassword);
+    if (invalid) throw new Error(invalid);
+    const sb = await admin();
+    const { data: hasPassword } = await sb.rpc("user_has_password", { _user_id: context.userId });
+    if (hasPassword) throw new Error("Your password is already set. Sign in with your email and password.");
+    await applyNewPassword(context.userId, data.newPassword);
+    const { logActivityAs } = await import("./request-meta.server");
+    await logActivityAs(context.userId, "invite_accepted");
+    return { ok: true };
+  });
+
 export const recordSignIn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ method: z.string().max(30) }).parse(input))
