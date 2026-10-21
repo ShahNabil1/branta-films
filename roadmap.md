@@ -1,0 +1,26 @@
+# Branta Films roadmap
+
+## Phase 1 — Foundation (done)
+- [x] Branta Tech dark theme, logo, favicon, Geist + SolaimanLipi/Kalpurush fonts
+- [x] DevToolsShield (production only)
+- [x] Home, browse, series pages with sample catalogue
+- [x] Sign-in: Google, email code, email + password, passkey; forgot/reset password
+- [x] Inputs: validation, Caps Lock, typing-language indicator, show/hide password
+- [x] Password change: current required, no reuse of current/previous passwords
+- [x] Secure playback: private R2 + short-lived signed links after access check
+- [x] Branded player, progress saved every 10 s + on pause, Continue Watching
+- [x] User dashboard with independent sidebar (overview, library, profile, security)
+- [x] Privacy Policy + Terms of Service
+- [ ] First admin account — waiting for owner's admin email
+
+## Phase 2 — Admin panel
+- [ ] Admin shell (independent sidebar, no layout shift), staff-only
+- [ ] Series & episode create/edit as full pages, Word-style rich text editor
+- [ ] Direct-to-R2 multipart video upload with live progress
+- [ ] Poster/backdrop upload
+- [ ] Staff/Manager section: invite/create (no self sign-up)
+- [ ] Users + staff lists, activity history, one-click impersonation with amber exit banner
+
+## Phase 3 — Payments
+- [ ] bKash/Nagad manual payment (TrxID + phone, unique TrxID), admin approve → unlock
+- [ ] Gateway-ready webhook architecture
