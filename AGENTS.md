@@ -11,6 +11,8 @@
 
 # Architecture rules
 
+- Reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: mixing old React DOM URLs with a newer React dependency generation crashes hooks during preview updates.
+
 - Video files live only in private Cloudflare R2; `episode_media.video_key` is service-role only and links are issued by `getPlaybackSource` after `decidePlayback` (src/lib/access.ts). Why: no client can ever learn a permanent video address.
 - Playback access rules live in one pure function (`decidePlayback`) with tests. Why: one place to change who can watch what.
 - All files (images and videos) live only in the private R2 bucket; Supabase Storage is not used. Images sit under `images/` (series/, episodes/, avatars/) and are proxied by `/api/public/media/*` (prefix + extension allow-list); videos sit under `videos/` and are never proxied. Why: owner wants every file in R2, and videos must stay behind access checks.
@@ -24,5 +26,6 @@
 - Viewer-facing catalogue UI is built from `MediaRow` (snap-scroll rows), `SeriesCard` (hover preview) and `HeroCarousel` (its CSS progress animation drives auto-advance, so pause = paused animation); glass/cinema effects are `@utility` classes in `src/styles.css`. Why: one place for row, hover and glass behaviour across pages.
 - Design system mirrors the brantatech-com project: typography scale/motion are `@utility` classes in `src/styles.css`, `:root` is the dark palette and the `.light` class re-themes a subtree to the warm light palette; page primitives (`SiteContainer`, `Eyebrow`) live in `src/components/layout/primitives.tsx`; shadcn `Button` is the pill button. Why: one place to keep every page on the reference design.
 - Every dashboard (viewer account, admin panel) renders inside `DashboardShell` (src/components/dashboard) with sections passed as data, and builds pages from `DashboardKit` (`PageHeader`, `Panel`, `StatTile`, `Chip`). Why: identical sidebar/drawer/switcher behaviour across dashboards.
+- Admin operations use shared server middleware validating `has_role` as the caller before privileged access; full-page content editors use Tiptap, sanitized on save, and protected loaders query paginated collections. Why: all CRUD paths enforce the same permissions and drafts remain visible to administrators.
 - Backend is the owner's own Supabase project (not Lovable Cloud); OAuth (Google) uses `supabase.auth.signInWithOAuth` directly, never the Lovable broker, and providers/redirect URLs are configured in the Supabase dashboard. Why: the Lovable broker only serves Cloud projects.
 - Staff invites land on `/set-password` (AuthProvider routes any fresh `invite` session there; `completeInvite` requires an invite `amr` < 24h and no existing password), then the user signs out and signs in with email + password. Staff-section invites must pass `redirectTo: <origin>/set-password`. Why: invite is the only link-based auth email; all others use 6-digit codes.

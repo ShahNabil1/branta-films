@@ -34,6 +34,15 @@ export async function presignR2Get(key: string, expiresSeconds: number): Promise
 }
 
 /** Checks whether the object exists (used to give a clear "not uploaded yet" message). */
+export async function presignR2Put(key: string, expiresSeconds: number): Promise<string> {
+  const { accountId, bucket, client } = r2Config();
+  const url = objectUrl(accountId, bucket, key);
+  url.searchParams.set("X-Amz-Expires", String(expiresSeconds));
+  const signed = await client.sign(new Request(url, { method: "PUT", headers: { "content-type": "video/mp4" } }), { aws: { signQuery: true } });
+  return signed.url;
+}
+
+/** Checks whether the object exists (used to give a clear "not uploaded yet" message). */
 export async function r2ObjectExists(key: string): Promise<boolean> {
   const { accountId, bucket, client } = r2Config();
   const res = await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "HEAD" });

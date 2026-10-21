@@ -1,0 +1,66 @@
+import { Link, useRouter } from "@tanstack/react-router";
+import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { Film, Users, Shield, Activity, KeyRound, Plus, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { PageHeader, Panel, StatTile, Chip } from "@/components/dashboard/DashboardKit";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/branded-dialog";
+import { adminQuery } from "@/lib/admin-queries";
+import { deleteAdminContent, deleteAdminUser, inviteAdminStaff, manageAdminUnlock, saveAdminUser } from "@/lib/admin.functions";
+import { useAuth } from "@/lib/auth";
+import { mediaUrl } from "@/lib/media";
+
+type Section = "overview" | "series" | "episodes" | "users" | "staff" | "activity" | "unlocks";
+export function AdminSection({ section }: { section: Section }) {
+  const { data } = useSuspenseQuery(adminQuery);
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { user } = useAuth();
+  const [search, setSearch] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ title: string; action: () => Promise<unknown> } | null>(null);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [role, setRole] = useState<"admin" | "manager" | "viewer">("viewer");
+  const [invite, setInvite] = useState({ email: "", full_name: "", role: "manager" as "manager" | "admin" });
+  const [unlock, setUnlock] = useState({ user_id: "", series_id: "" });
+  async function run(action: () => Promise<unknown>) {
+    setBusy(true);
+    try { await action(); await queryClient.invalidateQueries({ queryKey: adminQuery.queryKey }); await router.invalidate(); toast.success("Changes saved"); setEditing(null); setConfirmation(null); }
+    catch (e) { toast.error(e instanceof Error ? e.message : "Could not save changes"); }
+    finally { setBusy(false); }
+  }
+  const getRole = (id: string) => data.roles.some((r) => r.user_id === id && r.role === "admin") ? "admin" : data.roles.some((r) => r.user_id === id && r.role === "manager") ? "manager" : "viewer";
+  const titles = { overview: "Admin overview", series: "Series", episodes: "Episodes", users: "Users", staff: "Staff", activity: "Activity", unlocks: "Series access" };
+  const matches = (value: string) => value.toLowerCase().includes(search.toLowerCase());
+  const tableClass = "w-full text-left text-small [&_th]:pb-4 [&_th]:font-medium [&_th]:text-muted-foreground [&_td]:border-t [&_td]:border-border [&_td]:py-4 [&_td]:pr-5";
+  return <>
+    <PageHeader title={titles[section]} eyebrow="Administration" icon={section === "users" || section === "staff" ? Users : Film} action={section === "series" ? <Button asChild><Link to="/admin/series/$id" params={{ id: "new" }}><Plus />New series</Link></Button> : section === "episodes" ? <Button asChild disabled={!data.series.length}><Link to="/admin/episodes/$id" params={{ id: "new" }}><Plus />New episode</Link></Button> : undefined} />
+    {section === "overview" ? <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatTile to="/admin/series" label="Series" value={data.series.length} icon={Film} />
+        <StatTile to="/admin/episodes" label="Episodes" value={data.episodes.length} icon={Film} />
+        <StatTile to="/admin/users" label="Users" value={data.users.length} icon={Users} />
+        <StatTile to="/admin/staff" label="Staff" value={new Set(data.roles.map((r) => r.user_id)).size} icon={Shield} />
+      </div>
+      <Panel title="Latest activity"><div className="divide-y divide-border">{data.activity.slice(0, 8).map((a) => <div className="flex flex-wrap justify-between gap-2 py-4 text-small" key={a.id}><span>{data.users.find((u) => u.id === a.user_id)?.email ?? "Deleted account"} · {a.action.replaceAll("_", " ")}</span><time className="text-muted-foreground">{new Date(a.created_at).toLocaleString()}</time></div>)}{!data.activity.length ? <p className="text-muted-foreground">No activity yet.</p> : null}</div></Panel>
+    </> : null}
+    {section !== "overview" ? <Panel>
+      <Input aria-label="Search records" placeholder="Search…" value={search} onChange={(e) => setSearch(e.target.value)} className="mb-5 max-w-sm" />
+      <div className="overflow-x-auto">
+      {section === "series" || section === "episodes" ? <table className={tableClass}><thead><tr><th>Title</th><th>Status</th><th>{section === "series" ? "Price" : "Series"}</th><th>Actions</th></tr></thead><tbody>
+        {section === "series" ? data.series.filter((s) => matches(s.title)).map((s) => <tr key={s.id}><td><div className="flex min-w-48 items-center gap-3">{s.poster_url ? <img src={mediaUrl(s.poster_url) ?? undefined} className="h-16 w-11 rounded-sm object-cover" alt="" /> : null}<span>{s.title}</span></div></td><td><Chip tone={s.is_published ? "success" : "neutral"}>{s.is_published ? "Published" : "Draft"}</Chip></td><td>৳{s.price_bdt}</td><td><div className="flex gap-2"><Button asChild size="icon" variant="ghost" title="Edit series"><Link to="/admin/series/$id" params={{ id: s.id }} aria-label={`Edit ${s.title}`}><Pencil /></Link></Button><Button size="icon" variant="ghost" aria-label={`Delete ${s.title}`} onClick={() => setConfirmation({ title: `Delete ${s.title}?`, action: () => deleteAdminContent({ data: { id: s.id, kind: "series" } }) })}><Trash2 /></Button></div></td></tr>) : data.episodes.filter((e) => matches(e.title)).map((e) => <tr key={e.id}><td className="min-w-48">{e.episode_number}. {e.title}</td><td><Chip tone={e.is_published ? "success" : "neutral"}>{e.is_published ? "Published" : "Draft"}</Chip></td><td>{data.series.find((s) => s.id === e.series_id)?.title}</td><td><div className="flex gap-2"><Button asChild size="icon" variant="ghost"><Link to="/admin/episodes/$id" params={{ id: e.id }} aria-label={`Edit ${e.title}`}><Pencil /></Link></Button><Button size="icon" variant="ghost" aria-label={`Delete ${e.title}`} onClick={() => setConfirmation({ title: `Delete ${e.title}?`, action: () => deleteAdminContent({ data: { id: e.id, kind: "episodes" } }) })}><Trash2 /></Button></div></td></tr>)}
+      </tbody></table> : null}
+      {section === "users" || section === "staff" ? <table className={tableClass}><thead><tr><th>Name / Email</th><th>Access</th><th>Joined</th><th>Actions</th></tr></thead><tbody>{data.users.filter((u) => (section !== "staff" || getRole(u.id) !== "viewer") && matches(`${u.full_name} ${u.email}`)).map((u) => <tr key={u.id}><td><p>{u.full_name || "Member"}</p><p className="text-muted-foreground">{u.email}</p></td><td><Chip tone={getRole(u.id) === "admin" ? "brand" : "neutral"}>{getRole(u.id)}</Chip></td><td className="whitespace-nowrap">{new Date(u.created_at).toLocaleDateString()}</td><td><div className="flex gap-2"><Button size="icon" variant="ghost" aria-label={`Edit ${u.email}`} onClick={() => { setEditing(u.id); setName(u.full_name); setRole(getRole(u.id)); }}><Pencil /></Button><Button size="icon" variant="ghost" disabled={user?.id === u.id} aria-label={`Delete ${u.email}`} onClick={() => setConfirmation({ title: `Delete ${u.email}?`, action: () => deleteAdminUser({ data: { id: u.id } }) })}><Trash2 /></Button></div></td></tr>)}</tbody></table> : null}
+      {section === "activity" ? <table className={tableClass}><thead><tr><th>User</th><th>Action</th><th>Time</th><th>IP</th></tr></thead><tbody>{data.activity.filter((a) => matches(a.action + (data.users.find((u) => u.id === a.user_id)?.email ?? ""))).map((a) => <tr key={a.id}><td>{data.users.find((u) => u.id === a.user_id)?.email ?? "Deleted account"}</td><td>{a.action.replaceAll("_", " ")}</td><td className="whitespace-nowrap">{new Date(a.created_at).toLocaleString()}</td><td>{a.ip ?? "—"}</td></tr>)}</tbody></table> : null}
+      {section === "unlocks" ? <table className={tableClass}><thead><tr><th>User</th><th>Series</th><th>Source</th><th>Actions</th></tr></thead><tbody>{data.unlocks.filter((u) => matches(data.users.find((p) => p.id === u.user_id)?.email ?? "")).map((u) => <tr key={u.id}><td>{data.users.find((p) => p.id === u.user_id)?.email ?? "Deleted account"}</td><td>{data.series.find((s) => s.id === u.series_id)?.title}</td><td>{u.source}</td><td><Button size="icon" variant="ghost" aria-label="Revoke series access" onClick={() => setConfirmation({ title: "Revoke series access?", action: () => manageAdminUnlock({ data: { user_id: u.user_id, series_id: u.series_id, revoke: true } }) })}><Trash2 /></Button></td></tr>)}</tbody></table> : null}
+      </div>
+    </Panel> : null}
+    {editing ? <Panel title="Edit account"><form className="max-w-lg space-y-4" onSubmit={(e) => { e.preventDefault(); void run(() => saveAdminUser({ data: { id: editing, full_name: name, role } })); }}><label className="block space-y-2"><span>Full name</span><Input value={name} onChange={(e) => setName(e.target.value)} required /></label><label className="block space-y-2"><span>Access</span><select aria-label="Account access" value={role} disabled={user?.id === editing} onChange={(e) => setRole(e.target.value as typeof role)} className="w-full rounded-md border border-input bg-background p-3"><option value="viewer">Viewer</option><option value="manager">Manager</option><option value="admin">Admin</option></select></label><div className="flex gap-3"><Button disabled={busy || !name.trim() || (name === data.users.find((u) => u.id === editing)?.full_name && role === getRole(editing))}>Save account</Button><Button type="button" variant="outline" onClick={() => setEditing(null)}>Cancel</Button></div></form></Panel> : null}
+    {section === "staff" ? <Panel title="Invite staff"><form className="grid gap-4 sm:grid-cols-2" onSubmit={(e) => { e.preventDefault(); void run(async () => { await inviteAdminStaff({ data: invite }); setInvite({ email: "", full_name: "", role: "manager" }); }); }}><label className="space-y-2"><span>Full name</span><Input value={invite.full_name} onChange={(e) => setInvite({ ...invite, full_name: e.target.value })} required /></label><label className="space-y-2"><span>Email</span><Input type="email" value={invite.email} onChange={(e) => setInvite({ ...invite, email: e.target.value })} required /></label><select aria-label="Invite access" className="rounded-md border border-input bg-background p-3" value={invite.role} onChange={(e) => setInvite({ ...invite, role: e.target.value as typeof invite.role })}><option value="manager">Manager</option><option value="admin">Admin</option></select><Button disabled={busy || !invite.email || !invite.full_name}><Plus />Send invite</Button></form></Panel> : null}
+    {section === "unlocks" ? <Panel title="Grant series access"><form className="flex flex-wrap gap-4" onSubmit={(e) => { e.preventDefault(); void run(() => manageAdminUnlock({ data: { ...unlock, revoke: false } })); }}><select required aria-label="User for series access" className="max-w-full rounded-md border border-input bg-background p-3" value={unlock.user_id} onChange={(e) => setUnlock({ ...unlock, user_id: e.target.value })}><option value="">Select user</option>{data.users.map((u) => <option key={u.id} value={u.id}>{u.email}</option>)}</select><select required aria-label="Series to unlock" className="max-w-full rounded-md border border-input bg-background p-3" value={unlock.series_id} onChange={(e) => setUnlock({ ...unlock, series_id: e.target.value })}><option value="">Select series</option>{data.series.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}</select><Button disabled={busy || !unlock.user_id || !unlock.series_id}><KeyRound />Grant access</Button></form></Panel> : null}
+    <ConfirmDialog open={Boolean(confirmation)} onClose={() => !busy && setConfirmation(null)} title={confirmation?.title ?? "Delete record?"} description="This removes the record and its associated access. This action cannot be undone." confirmLabel="Confirm" destructive busy={busy} onConfirm={() => confirmation && void run(confirmation.action)} />
+  </>;
+}
