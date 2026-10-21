@@ -26,7 +26,7 @@ export function UserAvatar({ size = "size-9" }: { size?: string }) {
 }
 
 export function UserMenu() {
-  const { profile, user, isStaff } = useAuth();
+  const { profile, user, roles } = useAuth();
   const signOut = useSignOut();
   return (
     <DropdownMenu modal={false}>
@@ -54,7 +54,7 @@ export function UserMenu() {
             <Shield /> Sign-in & security
           </Link>
         </DropdownMenuItem>
-        {isStaff ? (
+        {roles.includes("admin") ? (
           <DropdownMenuItem asChild>
             <Link to="/admin"><Shield /> Admin panel</Link>
           </DropdownMenuItem>

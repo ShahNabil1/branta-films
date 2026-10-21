@@ -5,7 +5,7 @@ import { adminQuery } from "@/lib/admin-queries";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   loader: ({ context }) => context.queryClient.ensureQueryData(adminQuery),
-  errorComponent: ({ error }) => <main className="light min-h-svh bg-background p-8"><h1 className="text-h3">Admin panel unavailable</h1><p className="mt-4 text-muted-foreground">{error.message}</p><a href="/account" className="mt-6 inline-block text-primary">Back to account</a></main>,
+  errorComponent: ({ error }) => <main className="light min-h-svh bg-background p-8"><h1 className="text-h3">Admin panel unavailable</h1><p className="mt-4 text-muted-foreground">{error instanceof Error ? error.message : "Administrator access required."}</p><a href="/account" className="mt-6 inline-block text-primary">Back to account</a></main>,
   component: () => <DashboardShell sections={sections} storageKey="bf-admin-nav"><Outlet /></DashboardShell>,
 });
 
