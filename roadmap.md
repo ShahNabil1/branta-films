@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Panjabi Shop BD admin design
+- [ ] Adapt reference sidebar and top bar for admin only
+- [ ] Redesign overview, record lists and full-page editors
+- [ ] Verify desktop/mobile layout and preserve existing operations
+
 ## Current request — Owner administration
 - [x] Assign requested existing account the admin role
 - [x] Admin login destination and protected dashboard
