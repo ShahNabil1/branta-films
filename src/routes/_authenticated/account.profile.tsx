@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { Camera, Mail, UserRound } from "lucide-react";
+import { Camera, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { SmartField } from "@/components/forms/SmartField";
 import { UserAvatar } from "@/components/site/UserMenu";
+import { ChangeEmailSection } from "@/components/account/ChangeEmailSection";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -125,11 +126,12 @@ function ProfilePage() {
           autoComplete="name"
           disabled={busy === "save"}
         />
-        <SmartField id="email" label="Email address" type="email" value={user?.email ?? ""} onValueChange={() => undefined} icon={<Mail />} readOnly disabled hint="Your sign-in email can't be changed here." />
         <Button type="submit" disabled={!dirty || busy !== null} className="h-11 rounded-sm px-6">
           {busy === "save" ? "Saving…" : "Save changes"}
         </Button>
       </form>
+
+      <ChangeEmailSection />
     </div>
   );
 }
