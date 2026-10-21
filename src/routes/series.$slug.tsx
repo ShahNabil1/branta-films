@@ -86,17 +86,20 @@ function SeriesPage() {
               <span className="size-1.5 rounded-full bg-primary shadow-glow-soft" />
               Branta Original · <span className="text-muted-foreground">{series.genres.join(" / ")}</span>
             </p>
-            <h1 className="animate-fade-up text-cinema-shadow mt-5 text-display [animation-delay:60ms]">{series.title}</h1>
-            {series.tagline ? <p className="animate-fade-up text-cinema-shadow mt-5 max-w-2xl text-lg leading-relaxed text-foreground/85 [animation-delay:120ms]">{series.tagline}</p> : null}
+            <h1 className="animate-fade-up text-cinema-shadow text-hero mt-6 [animation-delay:60ms]">
+              {series.title}
+              <span className="text-primary">.</span>
+            </h1>
+            {series.tagline ? <p className="animate-fade-up text-cinema-shadow text-body-lg mt-6 max-w-2xl text-foreground/85 [animation-delay:120ms]">{series.tagline}</p> : null}
             <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs text-foreground/75 [animation-delay:160ms]">
-              {series.maturity_rating ? <span className="rounded-sm border border-foreground/30 px-1.5 py-0.5">{series.maturity_rating}</span> : null}
+              {series.maturity_rating ? <span className="rounded-full border border-foreground/30 px-2 py-0.5">{series.maturity_rating}</span> : null}
               {series.release_year ? <span>{series.release_year}</span> : null}
               <span>{series.episodes.length} episodes</span>
               {totalSeconds ? <span>{formatDuration(totalSeconds)} total</span> : null}
             </div>
             <div className="animate-fade-up mt-8 flex flex-wrap items-start gap-3 [animation-delay:220ms]">
               {first ? (
-                <Button asChild variant="hero" size="xl" className="rounded-full">
+                <Button asChild variant="hero" size="xl">
                   <Link to="/watch/$episodeId" params={{ episodeId: first.id }}>
                     <Play className="fill-current" /> {first.is_free ? `Watch episode ${first.episode_number} free` : "Watch now"}
                   </Link>
@@ -104,15 +107,15 @@ function SeriesPage() {
               ) : null}
               {series.price_bdt > 0 ? (
                 hasAccess ? (
-                  <span className="glass inline-flex h-12 items-center gap-2 rounded-full px-5 text-sm text-success">
+                  <span className="text-small inline-flex h-14 items-center gap-2 rounded-full border border-success/40 bg-success/10 px-6 font-medium text-success">
                     <CheckCircle2 className="size-4" /> Full series unlocked
                   </span>
                 ) : (
                   <div className="flex flex-col gap-1.5">
-                    <Button variant="glass" size="xl" className="rounded-full" disabled>
+                    <Button variant="glass" size="xl" disabled>
                       <Lock /> Unlock all episodes · {formatTaka(series.price_bdt)}
                     </Button>
-                    <span className="pl-4 text-xs text-muted-foreground">bKash & Nagad payments open soon.</span>
+                    <span className="text-caption pl-6 text-muted-foreground">bKash & Nagad payments open soon.</span>
                   </div>
                 )
               ) : null}
@@ -125,7 +128,7 @@ function SeriesPage() {
         <section aria-labelledby="episodes-title">
           <div className="flex items-end justify-between">
             <h2 id="episodes-title" className="text-h3 font-semibold">Episodes</h2>
-            <span className="font-mono text-xs text-muted-foreground">Season 1</span>
+            <span className="text-eyebrow text-muted-foreground">Season 1</span>
           </div>
           <ol className="mt-6 space-y-3">
             {series.episodes.map((ep) => {
@@ -136,7 +139,7 @@ function SeriesPage() {
                   <Link
                     to="/watch/$episodeId"
                     params={{ episodeId: ep.id }}
-                    className="group/ep glass flex gap-4 rounded-xl p-3 transition-[transform,box-shadow,border-color,background-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-foreground/[0.06] hover:shadow-glow sm:p-4"
+                    className="group/ep flex gap-4 rounded-md border border-border bg-surface p-3 transition-[transform,box-shadow,border-color,background-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-raised sm:p-4"
                   >
                     <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-surface sm:w-52">
                       {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 group-hover/ep:scale-110" /> : null}
@@ -146,7 +149,7 @@ function SeriesPage() {
                           {open ? <Play className="size-4 translate-x-px fill-current" /> : <Lock className="size-4" />}
                         </span>
                       </span>
-                      <span className="absolute bottom-1.5 right-1.5 rounded-full bg-scrim px-1.5 py-0.5 font-mono text-[10px] text-media-ink">{formatDuration(ep.duration_seconds)}</span>
+                      <span className="text-caption absolute bottom-1.5 right-1.5 rounded-sm bg-scrim px-1.5 py-0.5 font-mono text-media-ink">{formatDuration(ep.duration_seconds)}</span>
                     </div>
                     <div className="min-w-0 flex-1 py-0.5">
                       <div className="flex items-start justify-between gap-3">
@@ -156,7 +159,7 @@ function SeriesPage() {
                         </p>
                         <span
                           className={cn(
-                            "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider",
+                            "text-caption inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-0.5 font-medium",
                             ep.is_free ? "bg-primary/15 text-primary" : open ? "bg-success/15 text-success" : "bg-foreground/10 text-muted-foreground",
                           )}
                         >
@@ -172,7 +175,7 @@ function SeriesPage() {
           </ol>
         </section>
         <aside aria-labelledby="about-title" className="lg:sticky lg:top-24 lg:self-start">
-          <div className="glass rounded-2xl p-6">
+          <div className="rounded-md border border-border bg-surface p-6">
             <h2 id="about-title" className="text-h3 font-semibold">About</h2>
             <RichText html={series.description_html} className="mt-4 text-foreground/85" />
             <dl className="mt-6 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 border-t border-foreground/10 pt-5 text-sm">
