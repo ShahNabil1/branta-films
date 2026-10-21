@@ -228,9 +228,56 @@
 @utility hero-fade {
   background: var(--gradient-hero);
 }
+@utility cinema-mask {
+  background: var(--gradient-cinema);
+}
+@utility card-fade {
+  background: var(--gradient-card);
+}
+@utility ambient-glow {
+  background-image: var(--glow-ambient);
+}
+@utility hairline-glow {
+  background: var(--gradient-hairline);
+}
 @utility footer-glow {
   background-color: #080808;
   background-image: var(--glow-orange);
+}
+
+/* ---------- Glass ---------- */
+@utility glass {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+@utility glass-strong {
+  background-color: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), var(--shadow-card);
+  backdrop-filter: blur(28px) saturate(170%);
+}
+@utility shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+@utility shadow-glow-soft {
+  box-shadow: var(--shadow-glow-soft);
+}
+@utility text-cinema-shadow {
+  text-shadow: 0 2px 24px rgb(0 0 0 / 0.55);
+}
+@utility ranked-numeral {
+  font-weight: 700;
+  line-height: 0.8;
+  letter-spacing: -0.08em;
+  color: var(--color-background);
+  -webkit-text-stroke: 2px color-mix(in oklab, var(--color-foreground) 45%, transparent);
+}
+
+/* Horizontal rows: fade the far edge so cards slide in and out softly. */
+@utility row-mask {
+  mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
 }
 
 /* ---------- Rich text (admin-authored descriptions) ---------- */
@@ -289,6 +336,29 @@
 }
 @utility animate-fade-up {
   animation: fade-up 500ms var(--ease-out-expo) both;
+}
+@keyframes ken-burns {
+  from {
+    transform: scale(1.12) translate3d(1.5%, 1%, 0);
+  }
+  to {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+}
+@utility animate-ken-burns {
+  animation: ken-burns 14s ease-out both;
+}
+@keyframes fill-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@utility animate-fill-x {
+  transform-origin: left;
+  animation: fill-x var(--fill-duration, 7s) linear both;
 }
 
 @media (prefers-reduced-motion: reduce) {
