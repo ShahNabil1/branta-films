@@ -8,7 +8,6 @@ import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { recordSignIn } from "@/lib/account.functions";
 import { passkeyLoginOptions, passkeyLoginVerify } from "@/lib/passkey.functions";
@@ -97,11 +96,15 @@ function AuthPage() {
     setBusy("google");
     setFormError(null);
     sessionStorage.setItem(GOOGLE_FLAG, "1");
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/auth" + (redirect ? `?redirect=${encodeURIComponent(target)}` : ""),
-      extraParams: { prompt: "select_account" },
+    // Google sign-in goes straight through the project's own Supabase Auth.
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + "/auth" + (redirect ? `?redirect=${encodeURIComponent(target)}` : ""),
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
+    if (error) {
       sessionStorage.removeItem(GOOGLE_FLAG);
       setBusy(null);
       setFormError("Google sign-in didn't complete. Please try again.");

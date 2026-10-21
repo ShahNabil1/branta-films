@@ -17,7 +17,8 @@
 
 ## Backend move
 - [x] Full backup kit saved (supabase/restore)
-- [ ] Restore on owner's own Supabase — waiting for owner to remove Cloud and connect Supabase
+- [x] Restored on owner's own Supabase (schema, catalogue, posters, bucket)
+- [ ] Google sign-in — waiting for owner to enable Google provider + redirect URLs in Supabase dashboard
 
 ## Phase 2 — Admin panel
 - [ ] Admin shell (independent sidebar, no layout shift), staff-only
