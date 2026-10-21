@@ -1,0 +1,17 @@
+import React from 'react';
+import {createRoot} from 'react-dom/client';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {createRootRoute,createRoute,createRouter,RouterProvider,Outlet} from '@tanstack/react-router';
+import {Film,Users,Shield,Activity,KeyRound,LayoutDashboard} from 'lucide-react';
+import {AdminShell} from './components/admin/AdminShell';
+import {AdminSection} from './components/admin/AdminSections';
+import {ContentEditor} from './components/admin/ContentEditor';
+import './styles.css';
+const qc=new QueryClient({defaultOptions:{queries:{retry:false}}});
+qc.setQueryData(['admin-overview'],{series:[{id:'one',title:'Neon Rain',slug:'neon-rain',genres:['Thriller','Drama'],is_published:true,price_bdt:99,poster_url:null},{id:'two',title:'River Song',slug:'river-song',genres:['Family','Drama'],is_published:false,price_bdt:149,poster_url:null}],episodes:[{id:'ep1',title:'The beginning',episode_number:1,series_id:'one',is_published:true,is_free:true}],users:[{id:'viewer',full_name:'Test Viewer',email:'viewer@example.test',created_at:'2026-10-21T00:00:00Z'}],roles:[],unlocks:[],activity:[]});
+const sections=[{title:'Workspace',items:[{to:'/admin',label:'Overview',icon:LayoutDashboard,exact:true},{to:'/admin/series',label:'Series',icon:Film},{to:'/admin/episodes',label:'Episodes',icon:Film}]},{title:'People & access',items:[{to:'/admin/users',label:'Users',icon:Users},{to:'/admin/staff',label:'Staff',icon:Shield},{to:'/admin/unlocks',label:'Series access',icon:KeyRound},{to:'/admin/activity',label:'Activity',icon:Activity}]}];
+const root=createRootRoute({component:()=> <QueryClientProvider client={qc}><AdminShell sections={sections as any}><Outlet/></AdminShell></QueryClientProvider>});
+const routes=['overview','series','episodes','users','staff','activity','unlocks'].map(section=>createRoute({getParentRoute:()=>root,path:section==='overview'?'/admin':'/admin/'+section,component:()=> <AdminSection section={section as any}/> }));
+routes.push(createRoute({getParentRoute:()=>root,path:'/admin/series/new',component:()=> <ContentEditor kind="series" id="new"/>}));
+const router=createRouter({routeTree:root.addChildren(routes)});
+const target=document.getElementById('visual-root');if(target)createRoot(target).render(<RouterProvider router={router}/>);
