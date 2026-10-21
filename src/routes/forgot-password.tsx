@@ -8,6 +8,7 @@ import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { completePasswordReset } from "@/lib/account.functions";
+import { sendPasswordRecoveryCode } from "@/lib/password-recovery.functions";
 import { validateField, validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/forgot-password")({
@@ -56,18 +57,23 @@ function ForgotPasswordPage() {
     if (err || busy) return;
     setBusy(true);
     setFormError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
-    setBusy(false);
-    if (error && /rate|seconds/i.test(error.message)) {
-      setFormError("Please wait a minute before requesting another code.");
-      return;
+    setNotice(null);
+    try {
+      const result = await sendPasswordRecoveryCode({ data: { email: email.trim() } });
+      if (result.status === "not_found") {
+        setStep("email");
+        setCode("");
+        setFormError("No account exists with this email address.");
+        return;
+      }
+      setCode("");
+      setStep("code");
+      setNotice(`We emailed a 6-digit code to ${email.trim()}. It expires in 10 minutes.`);
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : "Could not send your reset code. Please try again.");
+    } finally {
+      setBusy(false);
     }
-    // Same message whether or not the account exists, so emails can't be probed.
-    setCode("");
-    setStep("code");
-    setNotice(
-      `If an account exists for ${email.trim()}, we emailed it a 6-digit code. It expires in 10 minutes.`,
-    );
   }
 
   async function verifyCode(e: React.FormEvent) {
@@ -137,6 +143,7 @@ function ForgotPasswordPage() {
             value={email}
             onValueChange={(v) => {
               setEmail(v);
+              setFormError(null);
               if (emailError) setEmailError(validateField("email", v));
             }}
             onBlur={() => setEmailError(validateField("email", email))}
