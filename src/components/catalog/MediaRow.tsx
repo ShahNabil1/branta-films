@@ -47,14 +47,14 @@ export function MediaRow({ title, eyebrow, seeAll, children, className }: Props)
     el.scrollBy({ left: dir * el.clientWidth * 0.85, behavior: "smooth" });
   };
 
-  const arrow = "absolute top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full glass-strong text-foreground opacity-0 transition-[opacity,background-color,transform] duration-300 hover:scale-105 hover:bg-primary hover:text-primary-foreground group-hover/row:opacity-100 focus-visible:opacity-100 md:grid";
+  const arrow = "absolute top-1/2 z-10 hidden size-11 -translate-y-1/2 place-items-center rounded-full border border-border bg-background/85 text-foreground opacity-0 backdrop-blur-md transition-[opacity,border-color] duration-300 hover:border-foreground group-hover/row:opacity-100 focus-visible:opacity-100 md:grid";
 
   return (
     <section aria-label={title} className={cn("group/row", className)}>
       <div className="flex items-end justify-between gap-4">
         <div>
           {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
-          <h2 className={cn("text-h3 font-semibold", eyebrow && "mt-3")}>{title}</h2>
+          <h2 className={cn("text-h3", eyebrow && "mt-3")}>{title}</h2>
         </div>
         {seeAll ? (
           <Link to="/browse" className="text-small group/all inline-flex items-center gap-1 font-medium text-muted-foreground underline decoration-border underline-offset-[6px] transition-colors hover:text-foreground hover:decoration-primary">

@@ -51,7 +51,7 @@ function HomePage() {
         <ContinueWatching />
 
         {catalog.length ? (
-          <MediaRow eyebrow="Top on Branta" title="Trending now" seeAll>
+          <MediaRow title="Trending now" seeAll>
             {catalog.slice(0, 10).map((s, i) => (
               <div key={s.id} className="flex shrink-0 snap-start items-end">
                 <span aria-hidden="true" className="ranked-numeral -mr-2 mb-12 select-none text-[7.5rem] sm:-mr-3 sm:text-[10rem]">
@@ -66,7 +66,7 @@ function HomePage() {
         )}
 
         {free.length && free.length < catalog.length ? (
-          <MediaRow eyebrow="On the house" title="Start free — episode 1 on us">
+          <MediaRow title="Start free — episode 1 on us">
             {free.map((s) => (
               <SeriesCard key={s.id} {...cardProps(s)} className={posterItem} />
             ))}
@@ -78,7 +78,7 @@ function HomePage() {
         {genres
           .filter(([, list]) => list.length > 1)
           .map(([genre, list]) => (
-            <MediaRow key={genre} eyebrow="Category" title={genre} seeAll>
+            <MediaRow key={genre} title={genre} seeAll>
               {list.map((s) => (
                 <SeriesCard key={s.id} {...cardProps(s)} className={posterItem} />
               ))}
@@ -97,15 +97,19 @@ function HomePage() {
                     key={genre}
                     to="/browse"
                     search={{ genre }}
-                    className="group/genre relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-md border border-foreground/10 bg-surface p-4 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-primary/60 hover:shadow-glow"
+                    className="group block min-w-0 rounded-[4px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                   >
-                    {img ? (
-                      <img src={img} alt="" loading="lazy" width={480} height={300} className="absolute inset-0 -z-20 size-full object-cover opacity-45 transition-[transform,opacity] duration-700 group-hover/genre:scale-110 group-hover/genre:opacity-70" />
-                    ) : null}
-                    <div className="card-fade absolute inset-0 -z-10" />
-                    <div>
-                      <p className="font-semibold text-media-ink">{genre}</p>
-                      <p className="text-caption mt-0.5 text-media-ink/70">{list.length} series</p>
+                    <div className="relative aspect-[16/10] overflow-hidden rounded-[4px] bg-muted">
+                      {img ? (
+                        <img src={img} alt="" loading="lazy" width={480} height={300} className="absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
+                      ) : null}
+                      <span className="text-caption pointer-events-none absolute bottom-3 left-3 rounded-[3px] bg-scrim px-2 py-1 font-medium text-media-ink backdrop-blur-sm">
+                        {list.length} series
+                      </span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <p className="text-body truncate font-medium text-foreground/85 transition-colors duration-300 group-hover:text-foreground">{genre}</p>
+                      <span aria-hidden className="text-primary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">→</span>
                     </div>
                   </Link>
                 );
@@ -131,7 +135,7 @@ function PromoBanner({ backdrop }: { backdrop: string | null }) {
           <h2 className="mt-5 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
           <p className="text-body mt-4 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
         </div>
-        <Button asChild variant="hero" size="xl" className="shrink-0">
+        <Button asChild size="xl" className="shrink-0">
           <Link to="/browse">
             Browse series <ArrowRight />
           </Link>

@@ -291,7 +291,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             className="hidden w-20 accent-primary sm:block"
             aria-label="Volume"
           />
-          <span className="ml-3 font-mono text-xs text-media-ink/80">
+          <span className="ml-3 text-caption tabular-nums text-media-ink/80">
             {formatClock(time)} / {formatClock(duration)}
           </span>
           <span className="ml-auto hidden truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>

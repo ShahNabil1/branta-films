@@ -19,7 +19,7 @@ export function LegalPage({
           <Eyebrow className="mb-8">Legal</Eyebrow>
           <h1 className="text-display-xl max-w-[14ch]">{title}</h1>
           <p className="text-body-lg mt-8 max-w-xl text-muted-foreground">{intro}</p>
-          <p className="text-caption mt-8 font-mono text-muted-foreground">Last updated: {updated}</p>
+          <p className="text-caption mt-8 tabular-nums text-muted-foreground">Last updated: {updated}</p>
         </SiteContainer>
       </section>
       <section className="light bg-background py-[var(--section-y)]">
