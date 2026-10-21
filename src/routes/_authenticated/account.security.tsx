@@ -138,8 +138,8 @@ function PasskeySection() {
     setBusy(true);
     try {
       const { startRegistration } = await import("@simplewebauthn/browser");
-      const { challengeId, options } = await getOptions();
-      const response = await startRegistration({ optionsJSON: options as never });
+      const { challengeId, optionsJson } = await getOptions();
+      const response = await startRegistration({ optionsJSON: JSON.parse(optionsJson) });
       const ua = navigator.userAgent;
       const deviceName = /iPhone|iPad/.test(ua) ? "iPhone / iPad" : /Android/.test(ua) ? "Android" : /Mac/.test(ua) ? "Mac" : /Windows/.test(ua) ? "Windows PC" : "Passkey";
       await verify({ data: { challengeId, response: response as never, deviceName } });

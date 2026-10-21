@@ -44,7 +44,7 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error("Could not start passkey setup.");
-    return { challengeId: row.id, options: JSON.parse(JSON.stringify(options)) as Record<string, unknown> };
+    return { challengeId: row.id, optionsJson: JSON.stringify(options) };
   });
 
 export const passkeyRegisterVerify = createServerFn({ method: "POST" })
@@ -111,7 +111,7 @@ export const passkeyLoginOptions = createServerFn({ method: "POST" }).handler(as
     .select("id")
     .single();
   if (error) throw new Error("Could not start passkey sign-in.");
-  return { challengeId: row.id, options: JSON.parse(JSON.stringify(options)) as Record<string, unknown> };
+  return { challengeId: row.id, optionsJson: JSON.stringify(options) };
 });
 
 /** Verifies a passkey assertion and returns a one-time token the browser exchanges for a session. */
@@ -174,5 +174,5 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
 
     const { logActivityAs } = await import("./request-meta.server");
     await logActivityAs(cred!.user_id, "sign_in", { method: "passkey" });
-    return { tokenHash: link!.properties.hashed_token };
+    return { tokenHash: link!.properties!.hashed_token as string };
   });
