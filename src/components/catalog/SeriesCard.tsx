@@ -37,7 +37,7 @@ export function SeriesCard({
       params={{ slug }}
       className={cn("group/card block min-w-0 rounded-lg focus-visible:outline-offset-4", className)}
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded-lg border border-foreground/10 bg-surface shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] group-hover/card:-translate-y-1 group-hover/card:scale-[1.04] group-hover/card:border-primary/60 group-hover/card:shadow-glow">
+      <div className="relative aspect-[2/3] overflow-hidden rounded-md border border-foreground/10 bg-surface shadow-[var(--shadow-card)] transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] group-hover/card:-translate-y-1 group-hover/card:scale-[1.04] group-hover/card:border-primary/60 group-hover/card:shadow-glow">
         {src ? (
           <img
             src={src}
@@ -51,8 +51,8 @@ export function SeriesCard({
           <div className="flex size-full items-end p-4 text-lg font-semibold">{title}</div>
         )}
         {hasFreeEpisode ? (
-          <span className="absolute left-2 top-2 rounded-full bg-primary px-2.5 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-primary-foreground shadow-glow-soft">
-            Free ep 1
+          <span className="text-caption absolute left-2 top-2 rounded-sm bg-primary px-2 py-1 font-medium text-primary-foreground">
+            Free episode 1
           </span>
         ) : null}
 
@@ -65,7 +65,7 @@ export function SeriesCard({
             <span className="text-sm font-semibold leading-tight text-media-ink">{hasFreeEpisode ? "Watch free" : "View series"}</span>
           </div>
           {tagline ? <p className="mt-2 line-clamp-2 text-xs leading-snug text-media-ink/80">{tagline}</p> : null}
-          <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-media-ink/70">
+          <p className="text-caption mt-2 text-media-ink/70">
             {[episodeCount ? `${episodeCount} ep` : null, ...genres.slice(0, 2)].filter(Boolean).join(" · ")}
           </p>
         </div>

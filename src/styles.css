@@ -144,7 +144,51 @@
   --shadow-glow:
     0 0 0 1px color-mix(in oklab, #ff5d00 60%, transparent),
     0 20px 50px -14px color-mix(in oklab, #ff5d00 50%, transparent);
+  --footer-bg: #080808;
+  --dark-alt: #111111;
+  --page-max: 1440px;
+  --content-max: 1280px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --section-y: clamp(4.5rem, 10vw, 9rem);
+  --dur-micro: 200ms;
+  --dur-reveal: 600ms;
+  --dur-cinematic: 1000ms;
   color-scheme: dark;
+}
+
+/*
+ * Light sections — Branta Tech's warm light palette (sign-in, legal pages, dashboard canvas).
+ * Anything inside `.light` re-themes automatically through the same semantic tokens.
+ */
+.light {
+  --background: #ffffff;
+  --background-alt: #fff8f3;
+  --foreground: #24160f;
+  --surface: #ffffff;
+  --surface-raised: #f7f7f5;
+  --card: #ffffff;
+  --card-foreground: #24160f;
+  --popover: #ffffff;
+  --popover-foreground: #24160f;
+  --secondary: #f7f7f5;
+  --secondary-foreground: #24160f;
+  --muted: #f7f7f5;
+  --muted-foreground: #6f5b50;
+  --accent: #fff1e8;
+  --accent-foreground: #c94300;
+  --border: #eadfd8;
+  --input: #dccdc5;
+  --scrim: rgb(36 22 15 / 0.55);
+  --success: oklch(0.52 0.14 150);
+  --warning: oklch(0.58 0.15 60);
+  --destructive: oklch(0.577 0.245 27.325);
+  --glass-bg: rgb(255 255 255 / 0.72);
+  --glass-bg-strong: rgb(255 255 255 / 0.9);
+  --glass-border: rgb(36 22 15 / 0.08);
+  --glass-highlight: rgb(255 255 255 / 0.6);
+  --shadow-card: 0 1px 0 rgb(36 22 15 / 0.04), 0 24px 48px -32px rgb(36 22 15 / 0.28);
+  color-scheme: light;
+  color: var(--foreground);
 }
 
 @layer base {
@@ -184,7 +228,20 @@
   }
 }
 
-/* ---------- Typography ---------- */
+/* ---------- Typography scale (Branta Tech, fluid 320 → 1600) ---------- */
+@utility text-display-xl {
+  font-size: clamp(3rem, 1.6rem + 6.4vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+  text-wrap: balance;
+}
+@utility text-hero {
+  font-size: clamp(2.75rem, 1.6rem + 6.2vw, 5.25rem);
+  line-height: 0.93;
+  letter-spacing: -0.045em;
+  font-weight: 600;
+}
 @utility text-display {
   font-size: clamp(2.5rem, 1.5rem + 4.6vw, 5.5rem);
   line-height: 0.95;
@@ -200,16 +257,38 @@
   text-wrap: balance;
 }
 @utility text-h2 {
-  font-size: clamp(1.625rem, 1.3rem + 1.4vw, 2.5rem);
+  font-size: clamp(1.875rem, 1.4rem + 2vw, 3rem);
   line-height: 1.05;
   letter-spacing: -0.03em;
   font-weight: 600;
+  text-wrap: balance;
 }
 @utility text-h3 {
-  font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.625rem);
-  line-height: 1.2;
+  font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  line-height: 1.15;
   letter-spacing: -0.02em;
   font-weight: 500;
+}
+@utility text-h4 {
+  font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+@utility text-body-lg {
+  font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+@utility text-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+@utility text-small {
+  font-size: 0.875rem;
+  line-height: 1.5;
 }
 @utility text-eyebrow {
   font-family: var(--font-mono);
@@ -218,6 +297,88 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 500;
+}
+@utility text-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- Motion (Branta Tech) ---------- */
+@utility reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--dur-reveal) var(--ease-out-expo),
+    transform var(--dur-reveal) var(--ease-out-expo);
+  transition-delay: var(--reveal-delay, 0ms);
+  &[data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility media-zoom {
+  & img,
+  & video {
+    transition: transform var(--dur-cinematic) var(--ease-out-expo);
+  }
+  &:hover img,
+  &:hover video {
+    transform: scale(1.04);
+  }
+}
+@keyframes dash-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@utility animate-rise {
+  animation: dash-rise 500ms var(--ease-out-expo) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* Hero atmosphere: warm orange light on the dark base, plus fine grain. */
+@utility hero-glow {
+  background-color: #0b0b0b;
+  background-image:
+    radial-gradient(60% 70% at 80% 45%, color-mix(in oklab, #ff5d00 30%, transparent) 0%, color-mix(in oklab, #c94300 18%, transparent) 45%, transparent 75%),
+    radial-gradient(40% 45% at 8% 100%, color-mix(in oklab, #c94300 16%, transparent) 0%, transparent 70%),
+    radial-gradient(35% 30% at 50% 0%, color-mix(in oklab, #7a2100 35%, transparent) 0%, transparent 70%);
+}
+
+/* Footer: animated underline links + giant wordmark. */
+@utility footer-link {
+  background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+  transition:
+    color 200ms,
+    background-size 200ms;
+  &:hover {
+    background-size: 100% 1px;
+  }
+}
+@utility footer-cta {
+  background-image: linear-gradient(var(--color-primary), var(--color-primary)), linear-gradient(currentColor, currentColor);
+  background-size: 0 1.5px, 100% 1.5px;
+  background-position: left bottom;
+  background-repeat: no-repeat;
+  transition:
+    color 200ms,
+    background-size 220ms;
+  &:hover {
+    background-size: 100% 1.5px, 100% 1.5px;
+  }
+  &:hover > span {
+    transform: translateX(5px);
+  }
+}
+@utility footer-wordmark {
+  font-size: clamp(5rem, 26vw, 26rem);
+  margin-bottom: -0.12em;
 }
 @utility no-scrollbar {
   scrollbar-width: none;

@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
+import { Eyebrow } from "@/components/layout/primitives";
 import { SiteShell } from "@/components/site/SiteShell";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { ContinueWatching } from "@/components/catalog/ContinueWatching";
@@ -86,8 +87,8 @@ function HomePage() {
 
         {genres.length ? (
           <section aria-labelledby="genres-title">
-            <p className="text-eyebrow text-primary">Explore</p>
-            <h2 id="genres-title" className="mt-2 text-h3 font-semibold">Browse by genre</h2>
+            <Eyebrow>Explore</Eyebrow>
+            <h2 id="genres-title" className="mt-3 text-h3 font-semibold">Browse by genre</h2>
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {genres.map(([genre, list]) => {
                 const img = mediaUrl(list[0]?.backdrop_url ?? list[0]?.poster_url);
@@ -96,7 +97,7 @@ function HomePage() {
                     key={genre}
                     to="/browse"
                     search={{ genre }}
-                    className="group/genre relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-lg glass p-4 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-primary/60 hover:shadow-glow"
+                    className="group/genre relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-md border border-foreground/10 bg-surface p-4 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-primary/60 hover:shadow-glow"
                   >
                     {img ? (
                       <img src={img} alt="" loading="lazy" width={480} height={300} className="absolute inset-0 -z-20 size-full object-cover opacity-45 transition-[transform,opacity] duration-700 group-hover/genre:scale-110 group-hover/genre:opacity-70" />
@@ -104,7 +105,7 @@ function HomePage() {
                     <div className="card-fade absolute inset-0 -z-10" />
                     <div>
                       <p className="font-semibold text-media-ink">{genre}</p>
-                      <p className="font-mono text-[10px] uppercase tracking-wider text-media-ink/70">{list.length} series</p>
+                      <p className="text-caption mt-0.5 text-media-ink/70">{list.length} series</p>
                     </div>
                   </Link>
                 );
@@ -119,20 +120,18 @@ function HomePage() {
 
 function PromoBanner({ backdrop }: { backdrop: string | null }) {
   return (
-    <section className="relative isolate overflow-hidden rounded-2xl glass-strong">
+    <section className="relative isolate overflow-hidden rounded-md border border-border bg-surface">
       {backdrop ? <img src={backdrop} alt="" loading="lazy" width={1600} height={900} className="absolute inset-0 -z-20 size-full object-cover opacity-30" /> : null}
       <div className="hero-fade absolute inset-0 -z-10" />
       <div className="ambient-glow absolute inset-0 -z-10" />
       <div className="hairline-glow absolute inset-x-0 top-0 h-px" aria-hidden="true" />
       <div className="flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-12">
         <div className="max-w-xl">
-          <p className="inline-flex items-center gap-2 text-eyebrow text-primary">
-            <Sparkles className="size-3.5" /> One payment, whole season
-          </p>
-          <h2 className="mt-3 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
+          <Eyebrow>One payment, whole season</Eyebrow>
+          <h2 className="mt-5 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
+          <p className="text-body mt-4 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
         </div>
-        <Button asChild variant="hero" size="xl" className="shrink-0 rounded-full">
+        <Button asChild variant="hero" size="xl" className="shrink-0">
           <Link to="/browse">
             Browse series <ArrowRight />
           </Link>

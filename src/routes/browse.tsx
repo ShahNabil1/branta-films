@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { Eyebrow } from "@/components/layout/primitives";
 import { SiteShell } from "@/components/site/SiteShell";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { catalogQuery } from "@/lib/queries";
@@ -43,13 +44,13 @@ function BrowsePage() {
   return (
     <SiteShell>
       <div className="ambient-glow">
-        <div className="mx-auto max-w-[1440px] px-[clamp(1.25rem,4vw,3rem)] pb-20 pt-14">
-          <p className="text-eyebrow text-primary">Library</p>
-          <h1 className="mt-4 text-h1">Browse series</h1>
-          <p className="mt-3 max-w-xl text-muted-foreground">Every Branta original in one place. Episode one is always free.</p>
+        <div className="mx-auto max-w-[1440px] px-[clamp(1.25rem,4vw,3rem)] pb-20 pt-16 md:pt-20">
+          <Eyebrow>Library</Eyebrow>
+          <h1 className="text-display mt-6">Browse series<span className="text-primary">.</span></h1>
+          <p className="text-body-lg mt-6 max-w-xl text-muted-foreground">Every Branta original in one place. Episode one is always free.</p>
 
           <div className="sticky top-16 z-30 -mx-2 mt-8 px-2 py-3">
-            <div className="glass-strong flex flex-col gap-3 rounded-2xl p-3 md:flex-row md:items-center">
+            <div className="flex flex-col gap-3 rounded-md border border-border bg-background/90 p-3 backdrop-blur-xl md:flex-row md:items-center">
               <label className="relative flex min-w-0 items-center md:w-80">
                 <Search className="pointer-events-none absolute left-3.5 size-4 text-muted-foreground" />
                 <span className="sr-only">Search series</span>
@@ -58,7 +59,7 @@ function BrowsePage() {
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search titles"
-                  className="h-10 w-full rounded-full border border-foreground/10 bg-background/60 pl-10 pr-10 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60"
+                  className="text-small h-10 w-full rounded-full border border-input bg-surface pl-10 pr-10 outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground"
                 />
                 {q ? (
                   <button type="button" aria-label="Clear search" onClick={() => setQ("")} className="absolute right-2 grid size-7 place-items-center rounded-full text-muted-foreground hover:bg-foreground/10 hover:text-foreground">
@@ -76,10 +77,10 @@ function BrowsePage() {
                       onClick={() => void navigate({ search: { genre: g }, replace: true })}
                       aria-pressed={active}
                       className={cn(
-                        "h-10 shrink-0 rounded-full border px-4 text-sm transition-[background-color,border-color,color,box-shadow] duration-300",
+                        "text-small h-10 shrink-0 rounded-full border px-4 font-medium transition-[background-color,border-color,color] duration-300",
                         active
-                          ? "border-primary bg-primary text-primary-foreground shadow-glow-soft"
-                          : "border-foreground/10 bg-foreground/5 text-foreground/75 hover:border-foreground/25 hover:text-foreground",
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-surface text-muted-foreground hover:border-foreground hover:text-foreground",
                       )}
                     >
                       {g ?? "All"}
@@ -96,7 +97,7 @@ function BrowsePage() {
             ))}
           </div>
           {!list.length ? (
-            <div className="glass mt-6 rounded-2xl p-10 text-center">
+            <div className="mt-6 rounded-md border border-dashed border-border p-10 text-center">
               <p className="text-sm text-muted-foreground">{needle ? `Nothing matches “${q.trim()}”.` : "No series in this genre yet."}</p>
             </div>
           ) : null}

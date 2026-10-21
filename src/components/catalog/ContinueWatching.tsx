@@ -52,7 +52,7 @@ export function ContinueWatching({ title = "Continue watching", emptyText }: { t
                   <Play className="size-5 translate-x-px fill-current" />
                 </span>
               </span>
-              <span className="absolute bottom-2 right-2 rounded-full bg-scrim px-2 py-0.5 font-mono text-[10px] text-media-ink">{formatClock(row.position_seconds)}</span>
+              <span className="absolute bottom-2 right-2 rounded-full bg-scrim px-2 py-0.5 text-caption font-mono text-media-ink">{formatClock(row.position_seconds)}</span>
               <div className="absolute inset-x-0 bottom-0 h-1 bg-foreground/20">
                 <div className="h-full bg-primary shadow-glow-soft" style={{ width: `${pct}%` }} />
               </div>

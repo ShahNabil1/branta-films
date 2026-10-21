@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Fingerprint, KeyRound, Trash2 } from "lucide-react";
+import { Fingerprint, KeyRound, Shield, Trash2 } from "lucide-react";
+import { Chip, PageHeader, Panel } from "@/components/dashboard/DashboardKit";
 import { toast } from "sonner";
 import { SmartField } from "@/components/forms/SmartField";
 import { FormAlert, GoogleIcon } from "@/components/auth/AuthLayout";
@@ -45,34 +46,32 @@ function SecurityPage() {
   });
 
   return (
-    <div className="max-w-2xl space-y-14">
-      <div>
-        <p className="text-eyebrow text-primary">Account</p>
-        <h1 className="mt-3 text-h2">Sign-in & security</h1>
-      </div>
+    <>
+      <PageHeader
+        icon={Shield}
+        eyebrow="Account"
+        title="Sign-in & security"
+        description="Manage how you sign in: Google, passkeys and your password."
+      />
 
-      <section>
-        <h2 className="text-h3">Connected sign-in methods</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Signing in with Google using the same email opens this same account. You can also connect
-          Google here.
-        </p>
-        <div className="mt-5 flex flex-wrap items-center gap-2">
+      <Panel
+        title="Connected sign-in methods"
+        description="Signing in with Google using the same email opens this same account."
+        delay={60}
+      >
+        <div className="flex flex-wrap items-center gap-2">
           {(overview?.providers ?? []).map((p) => (
-            <span
-              key={p}
-              className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm"
-            >
+            <Chip key={p} tone="success">
               {PROVIDER_LABEL[p] ?? p}
-            </span>
+            </Chip>
           ))}
           {overview && !overview.providers.includes("google") ? <ConnectGoogleButton /> : null}
         </div>
-      </section>
+      </Panel>
 
-      <PasswordSection hasPassword={overview?.hasPassword ?? true} onDone={() => void refetch()} />
       <PasskeySection />
-    </div>
+      <PasswordSection hasPassword={overview?.hasPassword ?? true} onDone={() => void refetch()} />
+    </>
   );
 }
 
@@ -114,12 +113,12 @@ function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone
   }
 
   return (
-    <section>
-      <h2 className="text-h3">{hasPassword ? "Change password" : "Set a password"}</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Your new password must differ from your current and previous passwords.
-      </p>
-      <form onSubmit={submit} noValidate className="mt-6 space-y-5">
+    <Panel
+      title={hasPassword ? "Change password" : "Set a password"}
+      description="Your new password must differ from your current and previous passwords."
+      delay={180}
+    >
+      <form onSubmit={submit} noValidate className="max-w-xl space-y-5">
         {hasPassword ? (
           <SmartField
             id="current-password"
@@ -157,11 +156,11 @@ function PasswordSection({ hasPassword, onDone }: { hasPassword: boolean; onDone
           disabled={busy}
         />
         {formError ? <FormAlert>{formError}</FormAlert> : null}
-        <Button type="submit" disabled={!dirty || busy} className="h-11 rounded-sm px-6">
+        <Button type="submit" disabled={!dirty || busy}>
           {busy ? "Saving…" : hasPassword ? "Change password" : "Set password"}
         </Button>
       </form>
-    </section>
+    </Panel>
   );
 }
 
@@ -228,18 +227,25 @@ function PasskeySection() {
   }
 
   return (
-    <section>
-      <h2 className="text-h3">Passkeys</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Sign in with your fingerprint, face or device PIN — no password needed.
-      </p>
-      <ul className="mt-6 divide-y divide-border rounded-md border border-border">
+    <Panel
+      title="Passkeys"
+      description="Sign in with your fingerprint, face or device PIN — no password needed."
+      delay={120}
+      action={
+        <Button type="button" size="sm" onClick={add} disabled={busy}>
+          <Fingerprint /> {busy ? "Waiting for your device…" : "Add a passkey"}
+        </Button>
+      }
+    >
+      <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
         {(keys ?? []).map((k) => (
-          <li key={k.id} className="flex items-center gap-4 px-4 py-3">
-            <Fingerprint className="size-5 text-primary" />
+          <li key={k.id} className="flex items-center gap-4 px-4 py-3.5">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
+              <Fingerprint className="size-[18px]" aria-hidden />
+            </span>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">{k.device_name}</p>
-              <p className="font-mono text-xs text-muted-foreground">
+              <p className="text-caption text-muted-foreground">
                 Added {new Date(k.created_at).toLocaleDateString("en-GB")}
                 {k.last_used_at
                   ? ` · last used ${new Date(k.last_used_at).toLocaleDateString("en-GB")}`
@@ -257,18 +263,11 @@ function PasskeySection() {
           </li>
         ))}
         {!keys?.length ? (
-          <li className="px-4 py-4 text-sm text-muted-foreground">No passkeys yet.</li>
+          <li className="text-small px-4 py-5 text-muted-foreground">
+            No passkeys yet. Add one to sign in with a tap next time.
+          </li>
         ) : null}
       </ul>
-      <Button
-        type="button"
-        variant="outline"
-        className="mt-4 rounded-sm bg-transparent"
-        onClick={add}
-        disabled={busy}
-      >
-        <Fingerprint /> {busy ? "Waiting for your device…" : "Add a passkey"}
-      </Button>
       <ConfirmDialog
         open={Boolean(removing)}
         onClose={() => setRemoving(null)}
@@ -279,7 +278,7 @@ function PasskeySection() {
         destructive
         busy={removeBusy}
       />
-    </section>
+    </Panel>
   );
 }
 
@@ -309,7 +308,8 @@ function ConnectGoogleButton() {
       variant="outline"
       onClick={() => void connect()}
       disabled={busy}
-      className="h-9 gap-2 rounded-sm bg-transparent"
+      size="sm"
+      className="gap-2"
     >
       <GoogleIcon /> {busy ? "Connecting…" : "Connect Google"}
     </Button>

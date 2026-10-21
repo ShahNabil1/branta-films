@@ -6,6 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { BrandLogo } from "@/components/brand/Logo";
 import { RichText } from "@/components/content/RichText";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
+import { Eyebrow } from "@/components/layout/primitives";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -139,7 +140,7 @@ function WatchPage() {
                 title="This episode is locked"
                 body={`Unlock all episodes of ${data.series.title} for ${formatTaka(data.series.price_bdt)}. bKash & Nagad payments open soon.`}
                 action={
-                  <Button asChild variant="outline" className="rounded-sm bg-transparent">
+                  <Button asChild variant="outline" size="sm">
                     <Link to="/series/$slug" params={{ slug: data.series.slug }}>View series</Link>
                   </Button>
                 }
@@ -154,7 +155,7 @@ function WatchPage() {
           </div>
           {data ? (
             <div className="mt-6">
-              <p className="text-eyebrow text-primary">Episode {data.episode.episode_number}</p>
+              <Eyebrow>Episode {data.episode.episode_number}</Eyebrow>
               <h1 className="mt-3 text-h2">{data.episode.title}</h1>
               <RichText html={data.episode.synopsis_html} className="mt-4 max-w-3xl text-foreground/80" />
             </div>
@@ -171,7 +172,7 @@ function WatchPage() {
                     to="/watch/$episodeId"
                     params={{ episodeId: s.id }}
                     className={cn(
-                      "flex items-center gap-3 rounded-sm px-3 py-3 text-sm transition-colors hover:bg-surface",
+                      "text-small flex items-center gap-3 rounded-md px-3 py-3 transition-colors hover:bg-surface",
                       s.id === episodeId && "bg-surface text-primary",
                     )}
                   >

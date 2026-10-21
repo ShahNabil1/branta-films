@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { AuthLayout, FormAlert } from "@/components/auth/AuthLayout";
+import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +90,7 @@ function SetPasswordPage() {
 
   return (
     <AuthLayout
+      eyebrow="Team invite"
       title="Set your password"
       subtitle="Welcome to the Branta Films team. Choose a password to finish setting up your account."
     >
@@ -100,7 +101,7 @@ function SetPasswordPage() {
           </FormAlert>
           <Link
             to="/auth"
-            className="text-sm text-foreground underline decoration-primary underline-offset-4 hover:text-primary"
+            className={`text-small ${authLinkCls}`}
           >
             Go to sign in
           </Link>
@@ -144,7 +145,7 @@ function SetPasswordPage() {
           <Button
             type="submit"
             disabled={busy || state !== "ready" || !pw || !confirm}
-            className="h-12 w-full rounded-sm text-base font-semibold"
+            size="lg" className="w-full"
           >
             {state === "checking" ? "Checking your invite…" : busy ? "Saving…" : "Set password"}
           </Button>

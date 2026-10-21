@@ -1,7 +1,6 @@
 import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { AlertTriangle, Eye, EyeOff, Languages } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { detectTypingLanguage } from "@/lib/validation";
 import { cn } from "@/lib/utils";
 
@@ -14,32 +13,40 @@ type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "onChange"> & {
   icon?: ReactNode;
   password?: boolean;
   hint?: string;
+  /** Shows the orange asterisk (default true) or "(optional)". */
+  requiredMark?: boolean;
 };
 
 /**
- * Text input with live validation feedback, Caps Lock indicator,
+ * Branta Tech form field with live validation, Caps Lock indicator,
  * typing-language indicator (EN / বাংলা) and show/hide password toggle.
  */
 export const SmartField = forwardRef<HTMLInputElement, Props>(function SmartField(
-  { id, label, value, onValueChange, error, icon, password, hint, className, onKeyDown, onKeyUp, onBlur, disabled, ...rest },
+  { id, label, value, onValueChange, error, icon, password, hint, requiredMark = true, className, onKeyDown, onKeyUp, onBlur, disabled, ...rest },
   ref,
 ) {
   const [caps, setCaps] = useState(false);
   const [show, setShow] = useState(false);
   const lang = detectTypingLanguage(value);
+  const wrongLang = lang === "bn" && (password || rest.type === "email");
   const syncCaps = (e: React.KeyboardEvent<HTMLInputElement>) => setCaps(e.getModifierState("CapsLock"));
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <Label htmlFor={id} className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <div>
+      <div className="mb-1.5 flex items-center justify-between gap-2">
+        <label htmlFor={id} className="text-small block font-medium text-foreground">
           {label}
-        </Label>
+          {requiredMark ? (
+            <span aria-hidden className="text-primary"> *</span>
+          ) : (
+            <span className="font-normal text-muted-foreground"> (optional)</span>
+          )}
+        </label>
         {lang ? (
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded-sm border px-1.5 py-0.5 font-mono text-[10px]",
-              lang === "bn" && (password || rest.type === "email") ? "border-warning/50 text-warning" : "border-border text-muted-foreground",
+              "text-caption inline-flex items-center gap-1 rounded-full border px-2 py-0.5",
+              wrongLang ? "border-warning/60 text-warning" : "border-border text-muted-foreground",
             )}
             aria-live="polite"
             title="Typing language"
@@ -77,10 +84,10 @@ export const SmartField = forwardRef<HTMLInputElement, Props>(function SmartFiel
           aria-invalid={Boolean(error)}
           aria-describedby={`${id}-feedback`}
           className={cn(
-            "h-12 rounded-sm bg-surface text-base",
+            "h-12",
             icon && "pl-10",
             password && "pr-12",
-            error && "border-destructive focus-visible:ring-destructive",
+            error && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/30",
             className,
           )}
           {...rest}
@@ -93,33 +100,43 @@ export const SmartField = forwardRef<HTMLInputElement, Props>(function SmartFiel
             aria-label={show ? "Hide password" : "Show password"}
             aria-pressed={show}
             aria-controls={id}
-            className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:text-primary"
+            className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground"
           >
             {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         ) : null}
       </div>
-      <div id={`${id}-feedback`} aria-live="polite" className="space-y-1">
+      <div id={`${id}-feedback`} aria-live="polite" className="mt-1 space-y-1">
         {error ? (
-          <p className="flex items-start gap-1.5 text-xs leading-5 text-destructive">
-            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <p className="text-caption flex items-start gap-1.5 text-destructive">
+            <AlertTriangle className="mt-px size-3.5 shrink-0" aria-hidden="true" />
             {error}
           </p>
         ) : null}
         {caps ? (
-          <p className="flex items-start gap-1.5 text-xs leading-5 text-warning">
-            <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+          <p className="text-caption flex items-start gap-1.5 text-warning">
+            <AlertTriangle className="mt-px size-3.5 shrink-0" aria-hidden="true" />
             Caps Lock is on.
           </p>
         ) : null}
-        {lang === "bn" && (password || rest.type === "email") ? (
-          <p className="flex items-start gap-1.5 text-xs leading-5 text-warning">
-            <Languages className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
+        {wrongLang ? (
+          <p className="text-caption flex items-start gap-1.5 text-warning">
+            <Languages className="mt-px size-3.5 shrink-0" aria-hidden="true" />
             Your keyboard is typing Bangla. Switch to English.
           </p>
         ) : null}
-        {!error && hint ? <p className="text-xs leading-5 text-muted-foreground">{hint}</p> : null}
+        {!error && hint ? <p className="text-caption text-muted-foreground">{hint}</p> : null}
       </div>
     </div>
   );
 });
+
+/** Label used above non-text controls (code boxes, file pickers) so every label looks the same. */
+export function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
+  return (
+    <label htmlFor={htmlFor} className="text-small mb-1.5 block font-medium text-foreground">
+      {children}
+      <span aria-hidden className="text-primary"> *</span>
+    </label>
+  );
+}

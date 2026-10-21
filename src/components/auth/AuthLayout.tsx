@@ -1,47 +1,54 @@
 import type { ReactNode } from "react";
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
-import { BrandLogo } from "@/components/brand/Logo";
-import backdrop from "@/assets/auth-backdrop.webp";
+import { SiteShell } from "@/components/site/SiteShell";
+import { Eyebrow, SiteContainer } from "@/components/layout/primitives";
 
-export function AuthLayout({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+/**
+ * Branta Tech sign-in layout: site header on top, one calm centred column on a light section,
+ * a bordered card for the form, and the site footer below.
+ */
+export function AuthLayout({
+  eyebrow = "Branta Films account",
+  title,
+  subtitle,
+  footer,
+  children,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+  footer?: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <main className="grid min-h-svh lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-      <section className="relative isolate hidden flex-col justify-between overflow-hidden border-r border-border p-12 lg:flex">
-        <img src={backdrop} alt="" width={1600} height={900} className="animate-ken-burns absolute inset-0 -z-20 size-full object-cover opacity-60" />
-        <div className="cinema-mask absolute inset-0 -z-10" />
-        <BrandLogo />
-        <div className="max-w-xl">
-          <p className="text-eyebrow text-primary">Branta Films</p>
-          <h1 className="mt-5 text-display">
-            Stories made
-            <br />
-            to be <span className="text-primary">watched.</span>
-          </h1>
-          <p className="mt-6 max-w-sm text-muted-foreground">Original series by Branta Tech. Start free with episode one.</p>
-        </div>
-        <Link to="/" className="group inline-flex w-fit items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary">
-          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" /> Back to Branta Films
-        </Link>
-      </section>
-      <section className="ambient-glow relative flex min-w-0 items-center justify-center px-4 py-10 sm:px-10">
-        <div className="glass-strong w-full max-w-md rounded-2xl p-6 sm:p-9">
-          <div className="mb-8 lg:hidden">
-            <BrandLogo />
+    <SiteShell>
+      <section className="light bg-background py-16 md:py-24">
+        <SiteContainer>
+          <div className="mx-auto w-full max-w-md animate-rise">
+            <Eyebrow>{eyebrow}</Eyebrow>
+            <h1 className="text-h1 mt-3 text-foreground">{title}</h1>
+            {subtitle ? <p className="text-body mt-3 text-muted-foreground">{subtitle}</p> : null}
+            <div className="mt-8 rounded-md border border-border bg-surface p-6 md:p-8">{children}</div>
+            {footer ? <div className="text-small mt-6 text-muted-foreground">{footer}</div> : null}
           </div>
-          <h2 className="text-3xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{subtitle}</p>
-          <div className="mt-8">{children}</div>
-          <footer className="mt-10 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <span>© 2026 Branta Tech</span>
-            <Link to="/privacy" className="hover:text-primary">Privacy</Link>
-            <Link to="/terms" className="hover:text-primary">Terms</Link>
-          </footer>
-        </div>
+        </SiteContainer>
       </section>
-    </main>
+    </SiteShell>
   );
 }
+
+export function OrDivider({ label = "or" }: { label?: string }) {
+  return (
+    <div className="text-caption my-6 flex items-center gap-3 text-muted-foreground">
+      <span className="h-px flex-1 bg-border" />
+      {label}
+      <span className="h-px flex-1 bg-border" />
+    </div>
+  );
+}
+
+/** Underlined text link used under auth cards. */
+export const authLinkCls =
+  "font-medium text-foreground underline decoration-border decoration-1 underline-offset-[6px] transition-colors hover:decoration-primary";
 
 export function GoogleIcon() {
   return (
@@ -56,15 +63,15 @@ export function GoogleIcon() {
 
 export function FormAlert({ children, tone = "error" }: { children: ReactNode; tone?: "error" | "success" }) {
   return (
-    <div
+    <p
       role={tone === "error" ? "alert" : "status"}
       className={
         tone === "error"
-          ? "rounded-sm border border-destructive/30 bg-destructive/10 p-3 text-sm leading-6 text-destructive"
-          : "rounded-sm border border-success/30 bg-success/10 p-3 text-sm leading-6 text-success"
+          ? "text-small rounded-sm border border-destructive/30 bg-destructive/5 px-3 py-2 text-destructive"
+          : "text-small rounded-sm border border-border bg-muted px-3 py-2 text-foreground"
       }
     >
       {children}
-    </div>
+    </p>
   );
 }

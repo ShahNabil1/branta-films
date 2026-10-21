@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Eyebrow } from "@/components/layout/primitives";
 
 type Props = {
   title: string;
@@ -52,12 +53,12 @@ export function MediaRow({ title, eyebrow, seeAll, children, className }: Props)
     <section aria-label={title} className={cn("group/row", className)}>
       <div className="flex items-end justify-between gap-4">
         <div>
-          {eyebrow ? <p className="text-eyebrow text-primary">{eyebrow}</p> : null}
-          <h2 className={cn("text-h3 font-semibold", eyebrow && "mt-2")}>{title}</h2>
+          {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+          <h2 className={cn("text-h3 font-semibold", eyebrow && "mt-3")}>{title}</h2>
         </div>
         {seeAll ? (
-          <Link to="/browse" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-            See all →
+          <Link to="/browse" className="text-small group/all inline-flex items-center gap-1 font-medium text-muted-foreground underline decoration-border underline-offset-[6px] transition-colors hover:text-foreground hover:decoration-primary">
+            See all <span aria-hidden className="transition-transform duration-200 group-hover/all:translate-x-0.5">→</span>
           </Link>
         ) : null}
       </div>

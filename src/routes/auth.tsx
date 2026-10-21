@@ -3,16 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { ArrowRight, Fingerprint, KeyRound, Mail, UserRound } from "lucide-react";
 import { toast } from "sonner";
-import { AuthLayout, FormAlert, GoogleIcon } from "@/components/auth/AuthLayout";
+import { AuthLayout, FormAlert, GoogleIcon, OrDivider, authLinkCls } from "@/components/auth/AuthLayout";
+import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { recordSignIn } from "@/lib/account.functions";
 import { passkeyLoginOptions, passkeyLoginVerify } from "@/lib/passkey.functions";
 import { safeRedirect, validateField } from "@/lib/validation";
-import { cn } from "@/lib/utils";
 
 const search = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -255,6 +254,7 @@ function AuthPage() {
   if (confirmEmail) {
     return (
       <AuthLayout
+        eyebrow="One last step"
         title="Confirm your email"
         subtitle={`Enter the 6-digit code we sent to ${confirmEmail}.`}
       >
@@ -269,33 +269,13 @@ function AuthPage() {
           className="space-y-5"
           aria-busy={busy === "form"}
         >
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              6-digit code
-            </p>
-            <InputOTP
-              maxLength={6}
-              value={code}
-              onChange={(v) => setCode(v.replace(/\D/g, ""))}
-              inputMode="numeric"
-              autoFocus
-              disabled={disabled}
-            >
-              <InputOTPGroup>
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <InputOTPSlot
-                    key={i}
-                    index={i}
-                    className="size-12 bg-surface font-mono text-lg"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
+          <div>
+            <CodeField value={code} onChange={setCode} disabled={disabled} autoFocus />
             <button
               type="button"
               onClick={() => void resendConfirmCode()}
               disabled={disabled}
-              className="text-xs text-muted-foreground hover:text-primary"
+              className="text-small mt-3 text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
             >
               Send a new code
             </button>
@@ -304,7 +284,7 @@ function AuthPage() {
           <Button
             type="submit"
             disabled={disabled || code.length !== 6}
-            className="group h-12 w-full rounded-sm text-base font-semibold"
+            size="lg" className="w-full"
           >
             {busy === "form" ? "Please wait…" : "Confirm & continue"}
             {busy !== "form" ? (
@@ -312,7 +292,7 @@ function AuthPage() {
             ) : null}
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="text-small mt-6 text-center text-muted-foreground">
           <button
             type="button"
             onClick={() => {
@@ -321,7 +301,7 @@ function AuthPage() {
               setFormError(null);
               setCode("");
             }}
-            className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:text-primary"
+            className={authLinkCls}
           >
             Use a different email
           </button>
@@ -332,8 +312,13 @@ function AuthPage() {
 
   return (
     <AuthLayout
-      title={isSignup ? "Create your account" : "Welcome back"}
-      subtitle={isSignup ? "Join Branta Films to start watching." : "Sign in to keep watching."}
+      eyebrow={isSignup ? "New to Branta Films" : "Welcome back"}
+      title={isSignup ? "Create account" : "Sign in"}
+      subtitle={
+        isSignup
+          ? "Join Branta Films and start every series free with episode one."
+          : "Pick up where you left off — your progress is saved on every device."
+      }
     >
       <div className="space-y-3">
         <Button
@@ -341,7 +326,7 @@ function AuthPage() {
           variant="outline"
           onClick={google}
           disabled={disabled}
-          className="h-12 w-full gap-3 rounded-sm bg-surface text-base"
+          size="lg" className="w-full gap-3"
         >
           <GoogleIcon /> {busy === "google" ? "Connecting to Google…" : "Continue with Google"}
         </Button>
@@ -351,7 +336,7 @@ function AuthPage() {
             variant="outline"
             onClick={passkey}
             disabled={disabled}
-            className="h-12 w-full gap-3 rounded-sm bg-surface text-base"
+            size="lg" className="w-full gap-3"
           >
             <Fingerprint className="size-5" />{" "}
             {busy === "passkey" ? "Waiting for passkey…" : "Sign in with a passkey"}
@@ -359,11 +344,7 @@ function AuthPage() {
         ) : null}
       </div>
 
-      <div className="my-6 flex items-center gap-4">
-        <span className="h-px flex-1 bg-border" />
-        <span className="text-eyebrow text-muted-foreground">or with email</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
+      <OrDivider label="or with email" />
 
       {notice ? (
         <div className="mb-5">
@@ -421,7 +402,7 @@ function AuthPage() {
           <div className="-mt-2 text-right">
             <Link
               to="/forgot-password"
-              className="text-xs text-muted-foreground hover:text-primary"
+              className="text-small text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
             >
               Forgot password?
             </Link>
@@ -431,7 +412,7 @@ function AuthPage() {
         <Button
           type="submit"
           disabled={disabled}
-          className="group h-12 w-full rounded-sm text-base font-semibold"
+          size="lg" className="w-full"
         >
           {busy === "form" ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
           {busy !== "form" ? (
@@ -440,12 +421,12 @@ function AuthPage() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="text-small mt-6 text-center text-muted-foreground">
         {isSignup ? "Already have an account? " : "New to Branta Films? "}
         <Link
           to="/auth"
           search={{ mode: isSignup ? "signin" : "signup", ...(redirect ? { redirect } : {}) }}
-          className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:text-primary"
+          className={authLinkCls}
         >
           {isSignup ? "Sign in" : "Create an account"}
         </Link>

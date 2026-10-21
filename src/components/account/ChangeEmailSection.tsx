@@ -4,41 +4,11 @@ import { toast } from "sonner";
 import { FormAlert } from "@/components/auth/AuthLayout";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { CodeField } from "@/components/forms/CodeField";
+import { Panel } from "@/components/dashboard/DashboardKit";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { validateField } from "@/lib/validation";
-
-function CodeInput({
-  label,
-  value,
-  onChange,
-  disabled,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  disabled: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
-      <InputOTP
-        maxLength={6}
-        value={value}
-        onChange={(v) => onChange(v.replace(/\D/g, ""))}
-        inputMode="numeric"
-        disabled={disabled}
-      >
-        <InputOTPGroup>
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <InputOTPSlot key={i} index={i} className="size-12 bg-surface font-mono text-lg" />
-          ))}
-        </InputOTPGroup>
-      </InputOTP>
-    </div>
-  );
-}
 
 /**
  * Email change with 6-digit codes. "Secure email change" is on in Supabase,
@@ -119,14 +89,19 @@ export function ChangeEmailSection() {
   }
 
   return (
-    <section className="mt-14">
-      <h2 className="text-h3">Email address</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        You sign in with <span className="text-foreground">{current}</span>.
-      </p>
+    <Panel
+      title="Email address"
+      description={
+        <>
+          You sign in with <span className="font-medium text-foreground">{current}</span>. We'll send a 6-digit code
+          to your current and your new address.
+        </>
+      }
+      delay={180}
+    >
 
       {!pending ? (
-        <form onSubmit={request} noValidate className="mt-6 space-y-5">
+        <form onSubmit={request} noValidate className="max-w-xl space-y-5">
           <SmartField
             id="new-email"
             label="New email address"
@@ -151,24 +126,23 @@ export function ChangeEmailSection() {
           <Button
             type="submit"
             disabled={busy || !newEmail.trim()}
-            className="h-11 rounded-sm px-6"
           >
             {busy ? "Sending codes…" : "Send codes"}
           </Button>
         </form>
       ) : (
-        <form onSubmit={confirm} noValidate className="mt-6 space-y-6">
+        <form onSubmit={confirm} noValidate className="max-w-xl space-y-6">
           <FormAlert tone="success">
             We emailed a 6-digit code to {current} and another to {pending}. Both expire in 10
             minutes.
           </FormAlert>
-          <CodeInput
+          <CodeField
             label={`Code sent to ${current}`}
             value={oldCode}
             onChange={setOldCode}
             disabled={busy}
           />
-          <CodeInput
+          <CodeField
             label={`Code sent to ${pending}`}
             value={newCode}
             onChange={setNewCode}
@@ -179,15 +153,14 @@ export function ChangeEmailSection() {
             <Button
               type="submit"
               disabled={busy || oldCode.length !== 6 || newCode.length !== 6}
-              className="h-11 rounded-sm px-6"
-            >
+              >
               {busy ? "Checking…" : "Confirm new email"}
             </Button>
             <button
               type="button"
               onClick={() => void request()}
               disabled={busy}
-              className="text-xs text-muted-foreground hover:text-primary"
+              className="text-small text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
             >
               Send new codes
             </button>
@@ -198,13 +171,13 @@ export function ChangeEmailSection() {
                 setFormError(null);
               }}
               disabled={busy}
-              className="text-xs text-muted-foreground hover:text-primary"
+              className="text-small text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
             >
               Cancel
             </button>
           </div>
         </form>
       )}
-    </section>
+    </Panel>
   );
 }
