@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link } from "@tanstack/react-router";
 import { Info, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
   const current = slides[index] ?? slides[0]!;
   const freeEp = current.episodes.find((e) => e.is_free);
   const next = () => setIndex((i) => (i + 1) % count);
-  const fillStyle = { ["--fill-duration" as string]: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" };
+  const fillStyle = { ["--fill-duration" as string]: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties;
 
   return (
     <section

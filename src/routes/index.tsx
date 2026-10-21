@@ -1,13 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Info, Play } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { useMemo } from "react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { ContinueWatching } from "@/components/catalog/ContinueWatching";
+import { HeroCarousel } from "@/components/catalog/HeroCarousel";
+import { MediaRow, posterItem } from "@/components/catalog/MediaRow";
 import { Button } from "@/components/ui/button";
+import type { CatalogSeries } from "@/lib/catalog.functions";
 import { catalogQuery } from "@/lib/queries";
 import { mediaUrl } from "@/lib/media";
-import { formatTaka } from "@/lib/format";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,65 +27,117 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
+function cardProps(s: CatalogSeries) {
+  return { ...s, hasFreeEpisode: s.episodes.some((e) => e.is_free), episodeCount: s.episodes.length };
+}
+
 function HomePage() {
   const { data: catalog } = useSuspenseQuery(catalogQuery);
-  const featured = catalog.find((s) => s.is_featured) ?? catalog[0];
-  const backdrop = mediaUrl(featured?.backdrop_url);
+
+  const hero = useMemo(() => [...catalog].sort((a, b) => Number(b.is_featured) - Number(a.is_featured)).slice(0, 5), [catalog]);
+  const free = catalog.filter((s) => s.episodes.some((e) => e.is_free));
+  const genres = useMemo(() => {
+    const map = new Map<string, CatalogSeries[]>();
+    for (const s of catalog) for (const g of s.genres) map.set(g, [...(map.get(g) ?? []), s]);
+    return [...map.entries()].sort((a, b) => b[1].length - a[1].length);
+  }, [catalog]);
 
   return (
     <SiteShell overlayHeader>
-      {featured ? (
-        <section className="relative isolate flex min-h-[min(88svh,820px)] items-end overflow-hidden">
-          {backdrop ? (
-            <img src={backdrop} alt="" width={1920} height={1080} className="absolute inset-0 -z-20 size-full object-cover" fetchPriority="high" />
-          ) : null}
-          <div className="hero-fade absolute inset-0 -z-10" />
-          <div className="mx-auto w-full max-w-[1440px] px-[clamp(1.25rem,4vw,3rem)] pb-16 pt-32 md:pb-24">
-            <p className="animate-fade-up text-eyebrow text-primary">Branta Original · {featured.genres.join(" / ")}</p>
-            <h1 className="animate-fade-up mt-5 max-w-[12ch] text-display">{featured.title}</h1>
-            <p className="animate-fade-up mt-5 max-w-xl text-lg leading-relaxed text-foreground/80">{featured.tagline}</p>
-            <div className="animate-fade-up mt-4 flex flex-wrap items-center gap-3 font-mono text-xs text-muted-foreground">
-              <span className="rounded-sm border border-border px-1.5 py-0.5">{featured.maturity_rating}</span>
-              <span>{featured.release_year}</span>
-              <span>{featured.episodes.length} episodes</span>
-              {featured.price_bdt > 0 ? <span>Full season {formatTaka(featured.price_bdt)}</span> : null}
-            </div>
-            <div className="animate-fade-up mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="h-12 rounded-sm px-6 text-base">
-                <Link to="/series/$slug" params={{ slug: featured.slug }}>
-                  <Play className="fill-current" /> Watch episode 1 free
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 rounded-sm border-foreground/30 bg-transparent px-6 text-base hover:bg-foreground/10">
-                <Link to="/series/$slug" params={{ slug: featured.slug }}>
-                  <Info /> More info
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-      ) : null}
+      <HeroCarousel slides={hero} />
 
-      <div className="mx-auto max-w-[1440px] space-y-16 px-[clamp(1.25rem,4vw,3rem)] py-16">
+      <div className="relative z-10 -mt-20 mx-auto max-w-[1440px] space-y-14 px-[clamp(1.25rem,4vw,3rem)] pb-20 md:-mt-28">
         <ContinueWatching />
-        <section aria-labelledby="all-series">
-          <div className="flex items-end justify-between gap-4">
-            <h2 id="all-series" className="text-h3">All series</h2>
-            <Link to="/browse" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-              Browse all →
-            </Link>
-          </div>
-          {catalog.length ? (
-            <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
-              {catalog.map((s) => (
-                <SeriesCard key={s.id} {...s} hasFreeEpisode={s.episodes.some((e) => e.is_free)} />
+
+        {catalog.length ? (
+          <MediaRow eyebrow="Top on Branta" title="Trending now" seeAll>
+            {catalog.slice(0, 10).map((s, i) => (
+              <div key={s.id} className="flex shrink-0 snap-start items-end">
+                <span aria-hidden="true" className="ranked-numeral -mr-4 select-none text-[7rem] sm:-mr-6 sm:text-[9.5rem]">
+                  {i + 1}
+                </span>
+                <SeriesCard {...cardProps(s)} className="relative w-[8.5rem] sm:w-[10.5rem]" />
+              </div>
+            ))}
+          </MediaRow>
+        ) : (
+          <p className="pt-24 text-sm text-muted-foreground">New series are coming soon.</p>
+        )}
+
+        {free.length ? (
+          <MediaRow eyebrow="On the house" title="Start free — episode 1 on us">
+            {free.map((s) => (
+              <SeriesCard key={s.id} {...cardProps(s)} className={posterItem} />
+            ))}
+          </MediaRow>
+        ) : null}
+
+        <PromoBanner backdrop={mediaUrl(catalog[1]?.backdrop_url ?? catalog[0]?.backdrop_url)} />
+
+        {genres
+          .filter(([, list]) => list.length > 1)
+          .map(([genre, list]) => (
+            <MediaRow key={genre} eyebrow="Category" title={genre} seeAll>
+              {list.map((s) => (
+                <SeriesCard key={s.id} {...cardProps(s)} className={posterItem} />
               ))}
+            </MediaRow>
+          ))}
+
+        {genres.length ? (
+          <section aria-labelledby="genres-title">
+            <p className="text-eyebrow text-primary">Explore</p>
+            <h2 id="genres-title" className="mt-2 text-h3 font-semibold">Browse by genre</h2>
+            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+              {genres.map(([genre, list]) => {
+                const img = mediaUrl(list[0]?.backdrop_url ?? list[0]?.poster_url);
+                return (
+                  <Link
+                    key={genre}
+                    to="/browse"
+                    search={{ genre }}
+                    className="group/genre relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-lg glass p-4 transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:border-primary/60 hover:shadow-glow"
+                  >
+                    {img ? (
+                      <img src={img} alt="" loading="lazy" width={480} height={300} className="absolute inset-0 -z-20 size-full object-cover opacity-45 transition-[transform,opacity] duration-700 group-hover/genre:scale-110 group-hover/genre:opacity-70" />
+                    ) : null}
+                    <div className="card-fade absolute inset-0 -z-10" />
+                    <div>
+                      <p className="font-semibold text-media-ink">{genre}</p>
+                      <p className="font-mono text-[10px] uppercase tracking-wider text-media-ink/70">{list.length} series</p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
-          ) : (
-            <p className="mt-6 text-sm text-muted-foreground">New series are coming soon.</p>
-          )}
-        </section>
+          </section>
+        ) : null}
       </div>
     </SiteShell>
+  );
+}
+
+function PromoBanner({ backdrop }: { backdrop: string | null }) {
+  return (
+    <section className="relative isolate overflow-hidden rounded-2xl glass-strong">
+      {backdrop ? <img src={backdrop} alt="" loading="lazy" width={1600} height={900} className="absolute inset-0 -z-20 size-full object-cover opacity-30" /> : null}
+      <div className="hero-fade absolute inset-0 -z-10" />
+      <div className="ambient-glow absolute inset-0 -z-10" />
+      <div className="hairline-glow absolute inset-x-0 top-0 h-px" aria-hidden="true" />
+      <div className="flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-12">
+        <div className="max-w-xl">
+          <p className="inline-flex items-center gap-2 text-eyebrow text-primary">
+            <Sparkles className="size-3.5" /> One payment, whole season
+          </p>
+          <h2 className="mt-3 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
+        </div>
+        <Button asChild variant="hero" size="xl" className="shrink-0 rounded-full">
+          <Link to="/browse">
+            Browse series <ArrowRight />
+          </Link>
+        </Button>
+      </div>
+    </section>
   );
 }
