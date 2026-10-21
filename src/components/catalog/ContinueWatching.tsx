@@ -40,28 +40,27 @@ export function ContinueWatching({ title = "Continue watching", emptyText }: { t
             key={row.episode_id}
             to="/watch/$episodeId"
             params={{ episodeId: row.episode_id }}
-            className={`${item} group/cw block overflow-hidden rounded-lg glass transition-[transform,box-shadow,border-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-1 hover:scale-[1.03] hover:border-primary/60 hover:shadow-glow`}
+            className={`${item} group block rounded-[4px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary`}
           >
-            <div className="relative aspect-video overflow-hidden">
+            <div className="relative aspect-video overflow-hidden rounded-[4px] bg-muted">
               {img ? (
-                <img src={img} alt="" loading="lazy" width={1600} height={900} className="size-full object-cover transition-transform duration-[1200ms] group-hover/cw:scale-110" />
+                <img src={img} alt="" loading="lazy" width={1600} height={900} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
               ) : null}
-              <div className="card-fade absolute inset-0 opacity-60" />
-              <span className="absolute inset-0 grid place-items-center">
-                <span className="grid size-12 scale-90 place-items-center rounded-full bg-primary text-primary-foreground opacity-0 shadow-glow-soft transition-[opacity,transform] duration-300 group-hover/cw:scale-100 group-hover/cw:opacity-100">
-                  <Play className="size-5 translate-x-px fill-current" />
-                </span>
+              <span className="text-caption pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-[3px] bg-scrim px-2 py-1 font-medium text-media-ink backdrop-blur-sm">
+                <Play className="size-3 fill-current" /> Resume at {formatClock(row.position_seconds)}
               </span>
-              <span className="absolute bottom-2 right-2 rounded-full bg-scrim px-2 py-0.5 text-caption font-mono text-media-ink">{formatClock(row.position_seconds)}</span>
-              <div className="absolute inset-x-0 bottom-0 h-1 bg-foreground/20">
-                <div className="h-full bg-primary shadow-glow-soft" style={{ width: `${pct}%` }} />
+              <div className="absolute inset-x-0 bottom-0 h-1 bg-media-ink/25">
+                <div className="h-full bg-primary" style={{ width: `${pct}%` }} />
               </div>
             </div>
-            <div className="p-3">
-              <p className="truncate text-sm font-medium">{row.series?.title}</p>
-              <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                E{row.episode?.episode_number} · {row.episode?.title}
-              </p>
+            <div className="mt-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-body truncate font-medium text-foreground/85 transition-colors duration-300 group-hover:text-foreground">{row.series?.title}</p>
+                <p className="text-caption mt-0.5 truncate text-muted-foreground">
+                  Episode {row.episode?.episode_number} · {row.episode?.title}
+                </p>
+              </div>
+              <span aria-hidden className="mt-1 text-primary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100">→</span>
             </div>
           </Link>
         );

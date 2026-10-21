@@ -78,13 +78,13 @@ function SeriesPage() {
               alt={`${series.title} poster`}
               width={600}
               height={900}
-              className="animate-fade-up hidden aspect-[2/3] w-[260px] rounded-xl border border-foreground/10 object-cover shadow-glow md:block"
+              className="animate-fade-up hidden aspect-[2/3] w-[260px] rounded-[4px] object-cover md:block"
             />
           ) : null}
           <div className="max-w-3xl">
-            <p className="animate-fade-up inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-eyebrow text-foreground/90">
-              <span className="size-1.5 rounded-full bg-primary shadow-glow-soft" />
-              Branta Original · <span className="text-muted-foreground">{series.genres.join(" / ")}</span>
+            <p className="animate-fade-up text-eyebrow flex items-center gap-2 text-foreground/75">
+              <span aria-hidden className="size-1.5 rounded-full bg-primary" />
+              Branta Original · {series.genres.join(" / ")}
             </p>
             <h1 className="animate-fade-up text-cinema-shadow text-hero mt-6 [animation-delay:60ms]">
               {series.title}
@@ -99,7 +99,7 @@ function SeriesPage() {
             </div>
             <div className="animate-fade-up mt-8 flex flex-wrap items-start gap-3 [animation-delay:220ms]">
               {first ? (
-                <Button asChild variant="hero" size="xl">
+                <Button asChild size="xl">
                   <Link to="/watch/$episodeId" params={{ episodeId: first.id }}>
                     <Play className="fill-current" /> {first.is_free ? `Watch episode ${first.episode_number} free` : "Watch now"}
                   </Link>
@@ -130,7 +130,7 @@ function SeriesPage() {
             <h2 id="episodes-title" className="text-h3 font-semibold">Episodes</h2>
             <span className="text-eyebrow text-muted-foreground">Season 1</span>
           </div>
-          <ol className="mt-6 space-y-3">
+          <ol className="mt-6">
             {series.episodes.map((ep) => {
               const open = ep.is_free || hasAccess;
               const thumb = mediaUrl(ep.thumbnail_url ?? series.backdrop_url);
@@ -139,13 +139,13 @@ function SeriesPage() {
                   <Link
                     to="/watch/$episodeId"
                     params={{ episodeId: ep.id }}
-                    className="group/ep flex gap-4 rounded-md border border-border bg-surface p-3 transition-[transform,box-shadow,border-color,background-color] duration-500 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:border-primary/50 hover:bg-surface-raised sm:p-4"
+                    className="group/ep flex gap-4 border-b border-border py-4 transition-colors duration-300 first:pt-0"
                   >
-                    <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-lg bg-surface sm:w-52">
-                      {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 group-hover/ep:scale-110" /> : null}
-                      <div className="absolute inset-0 bg-scrim/40 transition-colors group-hover/ep:bg-transparent" />
+                    <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[4px] bg-muted sm:w-52">
+                      {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 ease-out group-hover/ep:scale-[1.03]" /> : null}
+                      <div className="absolute inset-0 bg-scrim/30 transition-colors duration-300 group-hover/ep:bg-transparent" />
                       <span className="absolute inset-0 grid place-items-center">
-                        <span className={cn("grid size-10 place-items-center rounded-full transition-[transform,background-color] duration-300 group-hover/ep:scale-110", open ? "bg-primary text-primary-foreground shadow-glow-soft" : "glass-strong text-foreground")}>
+                        <span className={cn("grid size-10 place-items-center rounded-full", open ? "bg-primary text-primary-foreground" : "bg-scrim text-media-ink backdrop-blur-sm")}>
                           {open ? <Play className="size-4 translate-x-px fill-current" /> : <Lock className="size-4" />}
                         </span>
                       </span>
@@ -153,7 +153,7 @@ function SeriesPage() {
                     </div>
                     <div className="min-w-0 flex-1 py-0.5">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="font-medium transition-colors group-hover/ep:text-primary">
+                        <p className="text-body font-medium text-foreground/85 transition-colors duration-300 group-hover/ep:text-foreground">
                           <span className="mr-2 font-mono text-sm text-muted-foreground">{String(ep.episode_number).padStart(2, "0")}</span>
                           {ep.title}
                         </p>
@@ -202,7 +202,7 @@ function SeriesPage() {
 
       {more.length ? (
         <div className="mx-auto max-w-[1440px] px-[clamp(1.25rem,4vw,3rem)] pb-20">
-          <MediaRow eyebrow="Keep watching Branta" title="More like this" seeAll>
+          <MediaRow title="More like this" seeAll>
             {more.map((s) => (
               <SeriesCard key={s.id} {...s} hasFreeEpisode={s.episodes.some((e) => e.is_free)} episodeCount={s.episodes.length} className={posterItem} />
             ))}
