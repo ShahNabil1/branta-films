@@ -53,7 +53,7 @@ function HomePage() {
           <MediaRow eyebrow="Top on Branta" title="Trending now" seeAll>
             {catalog.slice(0, 10).map((s, i) => (
               <div key={s.id} className="flex shrink-0 snap-start items-end">
-                <span aria-hidden="true" className="ranked-numeral -mr-4 select-none text-[7rem] sm:-mr-6 sm:text-[9.5rem]">
+                <span aria-hidden="true" className="ranked-numeral -mr-4 mb-12 select-none text-[7rem] sm:-mr-6 sm:text-[9.5rem]">
                   {i + 1}
                 </span>
                 <SeriesCard {...cardProps(s)} className="relative w-[8.5rem] sm:w-[10.5rem]" />
