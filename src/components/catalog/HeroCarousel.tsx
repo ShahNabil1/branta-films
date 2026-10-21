@@ -70,10 +70,9 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
 
       <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-36 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
         <div key={current.id} className="max-w-2xl">
-          <p className="animate-fade-up inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-eyebrow text-foreground/90">
-            <span className="size-1.5 rounded-full bg-primary shadow-glow-soft" />
-            Branta Original
-            <span className="text-muted-foreground">· {current.genres.join(" / ")}</span>
+          <p className="animate-fade-up text-eyebrow flex items-center gap-2 text-foreground/75">
+            <span aria-hidden className="size-1.5 rounded-full bg-primary" />
+            Branta Original · {current.genres.join(" / ")}
           </p>
           <h1 className="animate-fade-up text-cinema-shadow text-hero mt-6 max-w-[14ch] [animation-delay:60ms]">
             {current.title}
@@ -84,15 +83,24 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
               {current.tagline}
             </p>
           ) : null}
-          <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 font-mono text-xs text-foreground/75 [animation-delay:160ms]">
-            {current.maturity_rating ? <span className="rounded-full border border-foreground/30 px-2 py-0.5">{current.maturity_rating}</span> : null}
-            {current.release_year ? <span>{current.release_year}</span> : null}
-            <span>{current.episodes.length} episodes</span>
-            {freeEp ? <span className="text-primary">Episode 1 free</span> : null}
-            {current.price_bdt > 0 ? <span>Full season {formatTaka(current.price_bdt)}</span> : null}
-          </div>
+          <ul aria-label="Series details" className="animate-fade-up text-small mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-foreground/75 [animation-delay:160ms]">
+            {[
+              current.maturity_rating,
+              current.release_year ? String(current.release_year) : null,
+              `${current.episodes.length} episodes`,
+              freeEp ? "Episode 1 free" : null,
+              current.price_bdt > 0 ? `Full season ${formatTaka(current.price_bdt)}` : null,
+            ]
+              .filter(Boolean)
+              .map((item, i) => (
+                <li key={item} className="flex items-center gap-3">
+                  {i > 0 ? <span aria-hidden className="h-3 w-px bg-foreground/25" /> : null}
+                  {item}
+                </li>
+              ))}
+          </ul>
           <div className="animate-fade-up mt-8 flex flex-wrap gap-3 [animation-delay:220ms]">
-            <Button asChild variant="hero" size="xl">
+            <Button asChild size="xl">
               {freeEp ? (
                 <Link to="/watch/$episodeId" params={{ episodeId: freeEp.id }}>
                   <Play className="fill-current" /> Watch now
@@ -125,15 +133,17 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                   aria-label={s.title}
                   onClick={() => setIndex(i)}
                   className={cn(
-                    "group/thumb relative w-44 overflow-hidden rounded-lg glass p-1.5 text-left transition-[transform,box-shadow,opacity] duration-500",
-                    active ? "shadow-glow" : "opacity-70 hover:-translate-y-1 hover:opacity-100",
+                    "group/thumb relative w-44 text-left transition-opacity duration-300",
+                    active ? "opacity-100" : "opacity-60 hover:opacity-100",
                   )}
                 >
-                  <div className="aspect-video overflow-hidden rounded-md bg-surface">
-                    {thumb ? <img src={thumb} alt="" loading="lazy" width={320} height={180} className="size-full object-cover transition-transform duration-700 group-hover/thumb:scale-110" /> : null}
+                  <div className="relative aspect-video overflow-hidden rounded-[4px] bg-muted">
+                    {thumb ? <img src={thumb} alt="" loading="lazy" width={320} height={180} className="size-full object-cover transition-transform duration-700 ease-out group-hover/thumb:scale-[1.03]" /> : null}
+                    <span className="text-caption pointer-events-none absolute bottom-2 left-2 rounded-[3px] bg-scrim px-2 py-1 font-medium text-media-ink backdrop-blur-sm">
+                      {s.title}
+                    </span>
                   </div>
-                  <p className="mt-1.5 truncate px-0.5 text-xs font-medium">{s.title}</p>
-                  <span className="absolute inset-x-1.5 bottom-1 h-0.5 overflow-hidden rounded-full bg-foreground/15">
+                  <span className="mt-2 block h-0.5 overflow-hidden rounded-full bg-foreground/15">
                     {active ? (
                       autoplay ? (
                         <span
