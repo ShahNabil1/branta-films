@@ -12,7 +12,7 @@ const NAV = [
 ] as const;
 
 const itemCls =
-  "text-small relative flex h-9 items-center rounded-sm px-3 font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground data-[status=active]:text-foreground";
+  "text-small relative flex h-9 items-center whitespace-nowrap rounded-sm px-2 font-medium sm:px-3 text-muted-foreground transition-colors duration-150 hover:text-foreground data-[status=active]:text-foreground";
 
 /**
  * Branta Tech header: logo, centred nav with an orange dot under the active page,
@@ -39,7 +39,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         overlay && "-mb-16 xl:-mb-[68px]",
       )}
     >
-      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-3 px-5 sm:gap-6 md:px-8">
+      <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-2 px-4 sm:gap-6 sm:px-5 md:px-8">
         <BrandLogo />
         <nav aria-label="Main" className="flex flex-1 items-center md:justify-center">
           <ul className="flex items-center gap-0.5">
@@ -56,7 +56,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             ))}
           </ul>
         </nav>
-        <div className="flex items-center justify-end gap-1 sm:gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
           <Link
             to="/browse"
             aria-label="Search series"
@@ -83,7 +83,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
               </Link>
               <Link
                 to="/auth"
-                className="text-small inline-flex h-9 items-center rounded-full bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary-hover sm:hidden"
+                className="text-small inline-flex h-9 items-center whitespace-nowrap rounded-full bg-primary px-4 font-medium text-primary-foreground transition-colors hover:bg-primary-hover sm:hidden"
               >
                 Sign in
               </Link>
