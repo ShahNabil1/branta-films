@@ -3,7 +3,7 @@ import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Save, Upload, ArrowLeft, Film } from "lucide-react";
 import { toast } from "sonner";
-import { PageHeader, Panel } from "@/components/dashboard/DashboardKit";
+import { PageHeader, Panel } from "./AdminKit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RichTextEditor } from "./RichTextEditor";
@@ -87,7 +87,7 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
   const toggle = (label: string, key: "published" | "featured" | "free") => <label className="flex items-center gap-3 text-small"><input className="size-4 accent-primary" type="checkbox" checked={values[key]} onChange={(e) => set(key, e.target.checked)} />{label}</label>;
   return <>
     <PageHeader title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} icon={Film} action={<Button asChild variant="outline"><Link to={kind === "series" ? "/admin/series" : "/admin/episodes"}><ArrowLeft />Back</Link></Button>} />
-    <form onSubmit={save} className="space-y-6">
+    <form onSubmit={save} className="admin-editor space-y-6">
       <Panel title="Details"><div className="grid gap-5 sm:grid-cols-2">{field("Title", "title")}
         {kind === "series" ? <>{field("Slug", "slug")}{field("Tagline", "tagline")}{field("Genres (comma separated)", "genres")}{field("Release year", "year")}{field("Maturity rating", "maturity")}{numeric("Price (BDT)", "price", 0)}{numeric("Sort order", "order", -10000)}</> : <>
           <label className="block space-y-2"><span className="text-small font-medium">Series</span><select aria-label="Series" required className="w-full rounded-md border border-input bg-background p-3" value={values.parent} onChange={(e) => set("parent", e.target.value)}>{data.series.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}</select></label>
@@ -101,7 +101,7 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
         {values[slot] ? <Button variant="ghost" type="button" disabled={busy} onClick={() => set(slot, null)}>Remove image</Button> : null}
       </div>)}</div></Panel>
       {kind === "episodes" ? <Panel title="Episode video">{id === "new" ? <p className="text-small text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4"><Input type="file" aria-label="Upload episode video" accept="video/mp4" disabled={busy} onChange={(e) => void video(e.target.files?.[0])} />{progress !== null ? <div className="flex items-center gap-3"><Upload className="size-4 text-primary" /><progress max={100} value={progress} className="w-full" /><span>{progress}%</span></div> : null}{videoUploaded ? <p className="text-small text-success">Video saved securely in R2.</p> : null}</div>}</Panel> : null}
-      <div className="sticky bottom-0 flex justify-end border-t border-border bg-surface/95 p-4 backdrop-blur-sm"><Button type="submit" disabled={busy || !changed || !values.title.trim()}><Save />{busy ? "Please wait…" : "Save changes"}</Button></div>
+      <div className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface p-4"><p className="text-sm text-muted-foreground">{changed ? "Unsaved changes" : "All changes saved"}</p><Button type="submit" disabled={busy || !changed || !values.title.trim()}><Save />{busy ? "Please wait…" : "Save changes"}</Button></div>
     </form>
   </>;
 }
