@@ -21,3 +21,4 @@
 - Modals use `BrandedDialog`/`ConfirmDialog` (close only via X or explicit action); never native confirm/alert. Why: owner's UX rule.
 - DevToolsShield wraps the app in `__root.tsx` and is inert on localhost, Lovable preview hosts and iframes. Why: friction only in production.
 - Viewer-facing catalogue UI is built from `MediaRow` (snap-scroll rows), `SeriesCard` (hover preview) and `HeroCarousel` (its CSS progress animation drives auto-advance, so pause = paused animation); glass/cinema effects are `@utility` classes in `src/styles.css`. Why: one place for row, hover and glass behaviour across pages.
+- Backend is the owner's own Supabase project (not Lovable Cloud); OAuth (Google) uses `supabase.auth.signInWithOAuth` directly, never the Lovable broker, and providers/redirect URLs are configured in the Supabase dashboard. Why: the Lovable broker only serves Cloud projects.
