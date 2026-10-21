@@ -34,7 +34,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-type Method = "password" | "code";
 const GOOGLE_FLAG = "bf_google_pending";
 
 function AuthPage() {
@@ -44,12 +43,12 @@ function AuthPage() {
   const { user, loading } = useAuth();
   const target = safeRedirect(redirect, "/");
 
-  const [method, setMethod] = useState<Method>("password");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
+  /** Set after sign-up: the email waiting for its 6-digit confirmation code. */
+  const [confirmEmail, setConfirmEmail] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -150,12 +149,24 @@ function AuthPage() {
         });
         if (error) throw error;
         if (!data.session) {
-          setNotice(`We sent a confirmation link to ${email.trim()}. Open it to activate your account.`);
+          setCode("");
+          setConfirmEmail(email.trim());
+          setNotice(`We emailed a 6-digit code to ${email.trim()}. It expires in 10 minutes.`);
           return;
         }
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (error) throw error;
+        if (error) {
+          if (/not confirmed/i.test(error.message)) {
+            // Account exists but was never confirmed: send a fresh code and ask for it.
+            await supabase.auth.resend({ type: "signup", email: email.trim() });
+            setCode("");
+            setConfirmEmail(email.trim());
+            setNotice(`Your email isn't confirmed yet. We emailed a 6-digit code to ${email.trim()}.`);
+            return;
+          }
+          throw error;
+        }
         void recordSignIn({ data: { method: "password" } }).catch(() => undefined);
         toast.success("Welcome back");
       }
@@ -165,7 +176,7 @@ function AuthPage() {
         /invalid login/i.test(msg)
           ? "Your email or password is incorrect."
           : /not confirmed/i.test(msg)
-            ? "Please confirm your email first — check your inbox for the link."
+            ? "Please confirm your email first."
             : /already registered/i.test(msg)
               ? "An account with this email already exists. Sign in instead."
               : msg || "Something went wrong. Please try again.",
@@ -175,46 +186,83 @@ function AuthPage() {
     }
   }
 
-  async function sendCode(e?: React.FormEvent) {
-    e?.preventDefault();
-    if (busy || !validate(["email"])) return;
+  async function resendConfirmCode() {
+    if (busy || !confirmEmail) return;
     setBusy("form");
     setFormError(null);
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: { shouldCreateUser: true, emailRedirectTo: window.location.origin + "/auth" },
-    });
+    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail });
     setBusy(null);
     if (error) {
       setFormError(/rate|seconds/i.test(error.message) ? "Please wait a minute before requesting another code." : error.message);
       return;
     }
-    setCodeSent(true);
     setCode("");
-    setNotice(`We emailed a 6-digit code to ${email.trim()}. It expires in 10 minutes.`);
+    setNotice(`We emailed a new 6-digit code to ${confirmEmail}.`);
   }
 
-  async function verifyCode(e: React.FormEvent) {
+  async function verifyConfirmCode(e: React.FormEvent) {
     e.preventDefault();
-    if (busy) return;
+    if (busy || !confirmEmail) return;
     if (code.length !== 6) {
       setFormError("Enter the 6-digit code from your email.");
       return;
     }
     setBusy("form");
     setFormError(null);
-    const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code, type: "email" });
+    const { error } = await supabase.auth.verifyOtp({ email: confirmEmail, token: code, type: "signup" });
     setBusy(null);
     if (error) {
       setFormError("That code is incorrect or has expired. Request a new one.");
       return;
     }
-    void recordSignIn({ data: { method: "email_code" } }).catch(() => undefined);
-    toast.success("Signed in");
+    void recordSignIn({ data: { method: "password" } }).catch(() => undefined);
+    toast.success("Account confirmed");
   }
 
   const disabled = busy !== null;
   const isSignup = mode === "signup";
+
+  if (confirmEmail) {
+    return (
+      <AuthLayout title="Confirm your email" subtitle={`Enter the 6-digit code we sent to ${confirmEmail}.`}>
+        {notice ? <div className="mb-5"><FormAlert tone="success">{notice}</FormAlert></div> : null}
+        <form onSubmit={verifyConfirmCode} noValidate className="space-y-5" aria-busy={busy === "form"}>
+          <div className="space-y-2">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">6-digit code</p>
+            <InputOTP maxLength={6} value={code} onChange={(v) => setCode(v.replace(/\D/g, ""))} inputMode="numeric" autoFocus disabled={disabled}>
+              <InputOTPGroup>
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <InputOTPSlot key={i} index={i} className="size-12 bg-surface font-mono text-lg" />
+                ))}
+              </InputOTPGroup>
+            </InputOTP>
+            <button type="button" onClick={() => void resendConfirmCode()} disabled={disabled} className="text-xs text-muted-foreground hover:text-primary">
+              Send a new code
+            </button>
+          </div>
+          {formError ? <FormAlert>{formError}</FormAlert> : null}
+          <Button type="submit" disabled={disabled || code.length !== 6} className="group h-12 w-full rounded-sm text-base font-semibold">
+            {busy === "form" ? "Please wait…" : "Confirm & continue"}
+            {busy !== "form" ? <ArrowRight className="transition-transform group-hover:translate-x-1" /> : null}
+          </Button>
+        </form>
+        <p className="mt-6 text-center text-sm text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => {
+              setConfirmEmail(null);
+              setNotice(null);
+              setFormError(null);
+              setCode("");
+            }}
+            className="font-medium text-foreground underline decoration-primary underline-offset-4 hover:text-primary"
+          >
+            Use a different email
+          </button>
+        </p>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout
@@ -238,33 +286,8 @@ function AuthPage() {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      {!isSignup ? (
-        <div className="mb-6 grid grid-cols-2 rounded-sm border border-border p-1" role="tablist" aria-label="Email sign-in method">
-          {(["password", "code"] as const).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="tab"
-              aria-selected={method === m}
-              onClick={() => {
-                setMethod(m);
-                setFormError(null);
-                setNotice(null);
-              }}
-              className={cn(
-                "rounded-sm py-2 text-sm transition-colors",
-                method === m ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {m === "password" ? "Password" : "Email code"}
-            </button>
-          ))}
-        </div>
-      ) : null}
-
       {notice ? <div className="mb-5"><FormAlert tone="success">{notice}</FormAlert></div> : null}
 
-      {isSignup || method === "password" ? (
         <form onSubmit={submitPassword} noValidate className="space-y-5" aria-busy={busy === "form"}>
           {isSignup ? (
             <SmartField
@@ -324,49 +347,6 @@ function AuthPage() {
             {busy !== "form" ? <ArrowRight className="transition-transform group-hover:translate-x-1" /> : null}
           </Button>
         </form>
-      ) : (
-        <form onSubmit={codeSent ? verifyCode : sendCode} noValidate className="space-y-5" aria-busy={busy === "form"}>
-          <SmartField
-            id="email"
-            label="Email"
-            type="email"
-            value={email}
-            onValueChange={(v) => {
-              change("email", v, setEmail);
-              if (codeSent) setCodeSent(false);
-            }}
-            onBlur={() => blur("email", email)}
-            error={errors["email"]}
-            icon={<Mail />}
-            autoComplete="email"
-            autoCapitalize="none"
-            spellCheck={false}
-            placeholder="name@example.com"
-            maxLength={254}
-            disabled={disabled}
-          />
-          {codeSent ? (
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">6-digit code</p>
-              <InputOTP maxLength={6} value={code} onChange={(v) => setCode(v.replace(/\D/g, ""))} inputMode="numeric" autoFocus disabled={disabled}>
-                <InputOTPGroup>
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <InputOTPSlot key={i} index={i} className="size-12 bg-surface font-mono text-lg" />
-                  ))}
-                </InputOTPGroup>
-              </InputOTP>
-              <button type="button" onClick={() => void sendCode()} disabled={disabled} className="text-xs text-muted-foreground hover:text-primary">
-                Send a new code
-              </button>
-            </div>
-          ) : null}
-          {formError ? <FormAlert>{formError}</FormAlert> : null}
-          <Button type="submit" disabled={disabled} className="group h-12 w-full rounded-sm text-base font-semibold">
-            {busy === "form" ? "Please wait…" : codeSent ? "Verify & sign in" : "Email me a code"}
-            {busy !== "form" ? <ArrowRight className="transition-transform group-hover:translate-x-1" /> : null}
-          </Button>
-        </form>
-      )}
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {isSignup ? "Already have an account? " : "New to Branta Films? "}
