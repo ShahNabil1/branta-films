@@ -8,8 +8,8 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
   return (
     <main className="grid min-h-svh lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
       <section className="relative isolate hidden flex-col justify-between overflow-hidden border-r border-border p-12 lg:flex">
-        <img src={backdrop} alt="" width={1600} height={900} className="absolute inset-0 -z-20 size-full object-cover opacity-50" />
-        <div className="hero-fade absolute inset-0 -z-10" />
+        <img src={backdrop} alt="" width={1600} height={900} className="animate-ken-burns absolute inset-0 -z-20 size-full object-cover opacity-60" />
+        <div className="cinema-mask absolute inset-0 -z-10" />
         <BrandLogo />
         <div className="max-w-xl">
           <p className="text-eyebrow text-primary">Branta Films</p>
@@ -24,8 +24,8 @@ export function AuthLayout({ title, subtitle, children }: { title: string; subti
           <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" /> Back to Branta Films
         </Link>
       </section>
-      <section className="flex min-w-0 items-center justify-center px-6 py-10 sm:px-10">
-        <div className="w-full max-w-md">
+      <section className="ambient-glow relative flex min-w-0 items-center justify-center px-4 py-10 sm:px-10">
+        <div className="glass-strong w-full max-w-md rounded-2xl p-6 sm:p-9">
           <div className="mb-8 lg:hidden">
             <BrandLogo />
           </div>
