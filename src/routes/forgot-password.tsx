@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { ArrowRight, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { AuthLayout, FormAlert } from "@/components/auth/AuthLayout";
+import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
+import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -121,7 +122,7 @@ function ForgotPasswordPage() {
   };
 
   return (
-    <AuthLayout title={titles[step][0]} subtitle={titles[step][1]}>
+    <AuthLayout eyebrow={`Reset password · Step ${step === "email" ? 1 : step === "code" ? 2 : 3} of 3`} title={titles[step][0]} subtitle={titles[step][1]}>
       {notice ? (
         <div className="mb-5">
           <FormAlert tone="success">{notice}</FormAlert>
@@ -153,7 +154,7 @@ function ForgotPasswordPage() {
           <Button
             type="submit"
             disabled={busy}
-            className="group h-12 w-full rounded-sm text-base font-semibold"
+            size="lg" className="w-full"
           >
             {busy ? "Sending…" : "Send code"}
             {!busy ? (
@@ -165,34 +166,14 @@ function ForgotPasswordPage() {
 
       {step === "code" ? (
         <form onSubmit={verifyCode} noValidate className="space-y-5">
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              6-digit code
-            </p>
-            <InputOTP
-              maxLength={6}
-              value={code}
-              onChange={(v) => setCode(v.replace(/\D/g, ""))}
-              inputMode="numeric"
-              autoFocus
-              disabled={busy}
-            >
-              <InputOTPGroup>
-                {[0, 1, 2, 3, 4, 5].map((i) => (
-                  <InputOTPSlot
-                    key={i}
-                    index={i}
-                    className="size-12 bg-surface font-mono text-lg"
-                  />
-                ))}
-              </InputOTPGroup>
-            </InputOTP>
-            <div className="flex gap-4 text-xs text-muted-foreground">
+          <div>
+            <CodeField value={code} onChange={setCode} disabled={busy} autoFocus />
+            <div className="text-small mt-3 flex gap-5 text-muted-foreground">
               <button
                 type="button"
                 onClick={() => void sendCode()}
                 disabled={busy}
-                className="hover:text-primary"
+                className="underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
               >
                 Send a new code
               </button>
@@ -204,7 +185,7 @@ function ForgotPasswordPage() {
                   setFormError(null);
                 }}
                 disabled={busy}
-                className="hover:text-primary"
+                className="underline decoration-border underline-offset-4 hover:text-foreground hover:decoration-primary"
               >
                 Use a different email
               </button>
@@ -214,7 +195,7 @@ function ForgotPasswordPage() {
           <Button
             type="submit"
             disabled={busy || code.length !== 6}
-            className="group h-12 w-full rounded-sm text-base font-semibold"
+            size="lg" className="w-full"
           >
             {busy ? "Checking…" : "Verify code"}
             {!busy ? (
@@ -253,7 +234,7 @@ function ForgotPasswordPage() {
           <Button
             type="submit"
             disabled={busy || !pw || !confirm}
-            className="h-12 w-full rounded-sm text-base font-semibold"
+            size="lg" className="w-full"
           >
             {busy ? "Saving…" : "Update password"}
           </Button>
@@ -261,10 +242,10 @@ function ForgotPasswordPage() {
       ) : null}
 
       {step !== "password" ? (
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="text-small mt-6 text-center text-muted-foreground">
           <Link
             to="/auth"
-            className="text-foreground underline decoration-primary underline-offset-4 hover:text-primary"
+            className={authLinkCls}
           >
             Back to sign in
           </Link>
