@@ -282,3 +282,36 @@ function PasskeySection() {
     </section>
   );
 }
+
+function ConnectGoogleButton() {
+  const [busy, setBusy] = useState(false);
+  async function connect() {
+    setBusy(true);
+    const { error } = await supabase.auth.linkIdentity({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/account/security`,
+        queryParams: { prompt: "select_account" },
+      },
+    });
+    if (error) {
+      setBusy(false);
+      toast.error(
+        /not enabled|unsupported provider/i.test(error.message)
+          ? "Google sign-in isn't switched on yet."
+          : error.message,
+      );
+    }
+  }
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => void connect()}
+      disabled={busy}
+      className="h-9 gap-2 rounded-sm bg-transparent"
+    >
+      <GoogleIcon /> {busy ? "Connecting…" : "Connect Google"}
+    </Button>
+  );
+}
