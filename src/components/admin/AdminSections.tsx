@@ -39,7 +39,7 @@ export function AdminSection({ section }: { section: Section }) {
   return <>
     <PageHeader title={titles[section]} description={section === "overview" ? "Your catalogue, audience and team at a glance." : undefined} icon={section === "users" || section === "staff" ? Users : Film} action={section === "series" ? <Button asChild><Link to="/admin/series/$id" params={{ id: "new" }}><Plus />New series</Link></Button> : section === "episodes" ? <Button asChild disabled={!data.series.length}><Link to="/admin/episodes/$id" params={{ id: "new" }}><Plus />New episode</Link></Button> : undefined} />
     {section === "overview" ? <>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <StatTile to="/admin/series" label="Series" value={data.series.length} icon={Film} />
         <StatTile to="/admin/episodes" label="Episodes" value={data.episodes.length} icon={Clapperboard} tone="success" />
         <StatTile to="/admin/users" label="Users" value={data.users.length} icon={Users} tone="neutral" />
