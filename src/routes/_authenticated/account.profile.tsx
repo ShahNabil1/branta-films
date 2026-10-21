@@ -95,7 +95,7 @@ function ProfilePage() {
         icon={UserRound}
         eyebrow="Account"
         title="Profile"
-        description="Your name and picture appear on your account and comments."
+        description="Your name and picture appear across your Branta Films account."
       />
 
       <Panel title="Profile picture" description="PNG, JPG or WebP, up to 2 MB." delay={60}>
