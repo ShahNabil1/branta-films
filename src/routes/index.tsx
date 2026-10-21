@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useMemo } from "react";
 import { Eyebrow } from "@/components/layout/primitives";
 import { SiteShell } from "@/components/site/SiteShell";
