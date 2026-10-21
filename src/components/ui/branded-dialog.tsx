@@ -32,18 +32,18 @@ export function BrandedDialog({
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
           className={cn(
-            "fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-md border border-border bg-popover p-6 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+            "fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-border bg-popover p-6 shadow-[var(--shadow-card)] sm:p-7 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
             className,
           )}
         >
-          <DialogPrimitive.Title className="pr-8 text-lg font-semibold">{title}</DialogPrimitive.Title>
-          {description ? <DialogPrimitive.Description className="mt-2 text-sm leading-6 text-muted-foreground">{description}</DialogPrimitive.Description> : null}
+          <DialogPrimitive.Title className="text-h4 pr-8 font-semibold">{title}</DialogPrimitive.Title>
+          {description ? <DialogPrimitive.Description className="text-small mt-2 text-muted-foreground">{description}</DialogPrimitive.Description> : null}
           {children ? <div className="mt-5">{children}</div> : null}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="size-4" />
           </button>
@@ -75,10 +75,10 @@ export function ConfirmDialog({
   return (
     <BrandedDialog open={open} onClose={onClose} title={title} description={description}>
       <div className="flex justify-end gap-2">
-        <Button variant="outline" className="rounded-sm bg-transparent" onClick={onClose} disabled={busy}>
+        <Button variant="outline" size="sm" onClick={onClose} disabled={busy}>
           Cancel
         </Button>
-        <Button variant={destructive ? "destructive" : "default"} className="rounded-sm" onClick={onConfirm} disabled={busy}>
+        <Button variant={destructive ? "destructive" : "default"} size="sm" onClick={onConfirm} disabled={busy}>
           {busy ? "Please wait…" : confirmLabel}
         </Button>
       </div>
