@@ -1,35 +1,35 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ prepare: vi.fn(), finish: vi.fn() }));
+const mocks = vi.hoisted(() => ({ start: vi.fn(), sign: vi.fn(), complete: vi.fn() }));
 vi.mock("@tanstack/react-start", () => ({ useServerFn: (fn: unknown) => fn }));
-vi.mock("@/lib/admin.functions", () => ({ prepareAdminVideo: mocks.prepare, finishAdminVideo: mocks.finish }));
+vi.mock("@/lib/admin.functions", () => ({ startAdminMultipartVideo: mocks.start, signAdminVideoParts: mocks.sign, completeAdminMultipartVideo: mocks.complete }));
 import { useVideoUpload } from "@/hooks/use-video-upload";
 class UploadXHR {
   static requests: UploadXHR[] = [];
   upload = { onprogress: (_e: { loaded: number }) => {} };
   status = 200;
-  onload = () => {};
-  onerror = () => {};
-  onabort = () => {};
-  open() {} setRequestHeader() {} send() { UploadXHR.requests.push(this); } abort() { this.onabort(); }
+  onload = () => {}; onerror = () => {}; onabort = () => {};
+  getResponseHeader(name: string) { return name === "ETag" ? '"etag-1"' : null; }
+  open() {} send() { UploadXHR.requests.push(this); } abort() { this.onabort(); }
 }
-describe("Upload failure recovery", () => {
-  beforeEach(() => { vi.clearAllMocks(); UploadXHR.requests = []; vi.stubGlobal("XMLHttpRequest", UploadXHR); mocks.prepare.mockResolvedValue({ key: "videos/new.mp4", url: "https://example.test/upload" }); mocks.finish.mockResolvedValue({ cleanupPending: false }); });
-  it("preserves a failed file and retries its transfer", async () => {
+describe("Multipart upload recovery", () => {
+  beforeEach(() => {
+    vi.clearAllMocks(); UploadXHR.requests = []; vi.stubGlobal("XMLHttpRequest", UploadXHR);
+    mocks.start.mockResolvedValue({ key: "videos/episodes/e/x.mp4", uploadId: "up-1" });
+    mocks.sign.mockImplementation(async ({ data }: { data: { parts: number[] } }) => ({ urls: data.parts.map(n => ({ partNumber: n, url: `https://r2.test/${n}` })) }));
+    mocks.complete.mockResolvedValue({ cleanupPending: false });
+  });
+  it("sends parts with their receipts and finishes", async () => {
     const { result } = renderHook(() => useVideoUpload("episode", async () => {}));
     let promise: Promise<void> | undefined;
     act(() => { promise = result.current.start(new File(["bytes"], "clip.mp4", { type: "video/mp4" })); });
     await waitFor(() => expect(UploadXHR.requests).toHaveLength(1));
-    await act(async () => { UploadXHR.requests[0]?.onerror(); await promise; });
-    expect(result.current.status?.phase).toBe("failed");
-    act(() => { promise = result.current.retry(); });
-    await waitFor(() => expect(UploadXHR.requests).toHaveLength(2));
-    await act(async () => { UploadXHR.requests[1]?.onload(); await promise; });
+    await act(async () => { UploadXHR.requests[0]?.onload(); await promise; });
     expect(result.current.status?.phase).toBe("complete");
-    expect(mocks.prepare).toHaveBeenCalledTimes(2);
+    expect(mocks.complete.mock.calls[0]?.[0].data.parts).toEqual([{ partNumber: 1, etag: '"etag-1"' }]);
   });
-  it("retries verification without re-uploading a completed transfer", async () => {
-    mocks.finish.mockRejectedValueOnce(new Error("Temporary verification failure"));
+  it("retry after a failed finish does not resend finished parts", async () => {
+    mocks.complete.mockRejectedValueOnce(new Error("Temporary failure"));
     const { result } = renderHook(() => useVideoUpload("episode", async () => {}));
     let promise: Promise<void> | undefined;
     act(() => { promise = result.current.start(new File(["bytes"], "clip.mp4", { type: "video/mp4" })); });
@@ -39,6 +39,6 @@ describe("Upload failure recovery", () => {
     await act(async () => { await result.current.retry(); });
     expect(result.current.status?.phase).toBe("complete");
     expect(UploadXHR.requests).toHaveLength(1);
-    expect(mocks.finish).toHaveBeenCalledTimes(2);
+    expect(mocks.start).toHaveBeenCalledTimes(1);
   });
 });

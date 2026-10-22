@@ -75,3 +75,49 @@ export async function r2DeleteObject(key: string): Promise<void> {
   const res = await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "DELETE" });
   if (!res.ok && res.status !== 404) throw new Error(`Video removal failed (status ${res.status}).`);
 }
+
+/** Size of an object in bytes, or null when missing. */
+export async function r2ObjectSize(key: string): Promise<number | null> {
+  const { accountId, bucket, client } = r2Config();
+  const res = await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "HEAD" });
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`Media storage rejected the request (status ${res.status}).`);
+  return Number(res.headers.get("content-length") ?? 0);
+}
+
+/* Multipart upload: large videos go up in independently retried parts. */
+export async function r2CreateMultipart(key: string, contentType: string): Promise<string> {
+  const { accountId, bucket, client } = r2Config();
+  const url = objectUrl(accountId, bucket, key); url.search = "uploads";
+  const res = await client.fetch(url.toString(), { method: "POST", headers: { "content-type": contentType } });
+  const text = await res.text();
+  const id = /<UploadId>([^<]+)<\/UploadId>/.exec(text)?.[1];
+  if (!res.ok || !id) throw new Error(`Could not start upload (status ${res.status}).`);
+  return id;
+}
+
+export async function presignR2Part(key: string, uploadId: string, partNumber: number, expiresSeconds: number): Promise<string> {
+  const { accountId, bucket, client } = r2Config();
+  const url = objectUrl(accountId, bucket, key);
+  url.searchParams.set("partNumber", String(partNumber));
+  url.searchParams.set("uploadId", uploadId);
+  url.searchParams.set("X-Amz-Expires", String(expiresSeconds));
+  const signed = await client.sign(new Request(url, { method: "PUT" }), { aws: { signQuery: true } });
+  return signed.url;
+}
+
+export async function r2CompleteMultipart(key: string, uploadId: string, parts: { partNumber: number; etag: string }[]): Promise<void> {
+  const { accountId, bucket, client } = r2Config();
+  const url = objectUrl(accountId, bucket, key); url.searchParams.set("uploadId", uploadId);
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const body = `<CompleteMultipartUpload>${parts.sort((a, b) => a.partNumber - b.partNumber).map(p => `<Part><PartNumber>${p.partNumber}</PartNumber><ETag>${esc(p.etag)}</ETag></Part>`).join("")}</CompleteMultipartUpload>`;
+  const res = await client.fetch(url.toString(), { method: "POST", body, headers: { "content-type": "application/xml" } });
+  const text = await res.text();
+  if (!res.ok || text.includes("<Error>")) throw new Error(`Could not finish upload (status ${res.status}).`);
+}
+
+export async function r2AbortMultipart(key: string, uploadId: string): Promise<void> {
+  const { accountId, bucket, client } = r2Config();
+  const url = objectUrl(accountId, bucket, key); url.searchParams.set("uploadId", uploadId);
+  await client.fetch(url.toString(), { method: "DELETE" }).catch(() => undefined);
+}

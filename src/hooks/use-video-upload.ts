@@ -1,18 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
+import { startAdminMultipartVideo, signAdminVideoParts, completeAdminMultipartVideo } from "@/lib/admin.functions";
 import { uploadActive, uploadMetrics, type UploadStatus } from "@/lib/upload-metrics";
 
 export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) => Promise<void>) {
   const [status, setStatus] = useState<UploadStatus | null>(null);
   const fileRef = useRef<File | null>(null);
   const completedKey = useRef<string | null>(null);
-  const xhrRef = useRef<XMLHttpRequest | null>(null);
   const running = useRef(false);
-  const prepare = useServerFn(prepareAdminVideo);
-  const finish = useServerFn(finishAdminVideo);
+  const startUpload = useServerFn(startAdminMultipartVideo);
+  const signParts = useServerFn(signAdminVideoParts);
+  const complete = useServerFn(completeAdminMultipartVideo);
+  /** Resumable session: finished parts survive a Retry, so only missing parts are re-sent. */
+  const session = useRef<{ key: string; uploadId: string; partSize: number; done: Map<number, string> } | null>(null);
+  const xhrs = useRef(new Set<XMLHttpRequest>());
   const active = uploadActive(status?.phase);
-  useEffect(() => () => { xhrRef.current?.abort(); }, []);
+  useEffect(() => () => { xhrs.current.forEach(x => x.abort()); }, []);
   useEffect(() => {
     if (!active) return;
     let lock: WakeLockSentinel | null = null;
@@ -28,42 +31,71 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
   async function start(file?: File) {
     if (running.current) return;
     if (file) {
-      if (file.type !== "video/mp4" || file.size > 5 * 1024 ** 3 || !file.size) throw new Error("Choose an MP4 video under 5 GB.");
-      fileRef.current = file; completedKey.current = null;
+      if (file.type !== "video/mp4" || file.size > 200 * 1024 ** 3 || !file.size) throw new Error("Choose an MP4 video under 200 GB.");
+      fileRef.current = file; completedKey.current = null; session.current = null;
     }
     const selected = fileRef.current;
     if (!selected) return;
     running.current = true;
-    let loaded = completedKey.current ? selected.size : 0;
+    let loaded = 0;
     const started = performance.now();
     const update = (phase: UploadStatus["phase"], error?: string) => {
       const elapsed = (performance.now() - started) / 1000;
       setStatus({ name: selected.name, total: selected.size, loaded, elapsed, speed: uploadMetrics(loaded, selected.size, elapsed).speed, phase, ...(error ? { error } : {}) });
     };
-    update(completedKey.current ? "verifying" : "preparing");
+    update("preparing");
+    const ticker = window.setInterval(() => update("uploading"), 1000);
     try {
-      if (!completedKey.current) {
-        const upload = await prepare({ data: { episodeId } });
-        update("uploading");
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest(); xhrRef.current = xhr;
-          xhr.open("PUT", upload.url); xhr.setRequestHeader("Content-Type", "video/mp4");
-          const ticker = window.setInterval(() => update("uploading"), 1000);
-          const end = (error?: Error) => { window.clearInterval(ticker); xhrRef.current = null; if (error) reject(error); else resolve(); };
-          xhr.upload.onprogress = event => { loaded = Math.min(event.loaded, selected.size); update("uploading"); };
-          xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? end() : end(new Error(`Upload rejected (${xhr.status}). Retry after checking your connection and upload permissions.`));
-          xhr.onerror = () => end(new Error("Connection interrupted. Keep this page open and retry when your connection returns."));
-          xhr.onabort = () => end(new Error("Upload interrupted. Retry to send the file again."));
-          xhr.send(selected);
-        });
-        completedKey.current = upload.key;
+      if (!session.current) {
+        const partSize = Math.max(16 * 1024 ** 2, Math.ceil(selected.size / 9000));
+        const created = await startUpload({ data: { episodeId } });
+        session.current = { ...created, partSize, done: new Map() };
       }
+      const s = session.current;
+      const count = Math.ceil(selected.size / s.partSize);
+      const sizeOf = (n: number) => Math.min(s.partSize, selected.size - (n - 1) * s.partSize);
+      const inFlight = new Map<number, number>();
+      const recompute = () => { let sum = 0; s.done.forEach((_, n) => { sum += sizeOf(n); }); inFlight.forEach(v => { sum += v; }); loaded = Math.min(sum, selected.size); };
+      recompute(); update("uploading");
+      const pending = Array.from({ length: count }, (_, i) => i + 1).filter(n => !s.done.has(n));
+      const sendPart = (n: number, url: string) => new Promise<string>((resolve, reject) => {
+        const xhr = new XMLHttpRequest(); xhrs.current.add(xhr);
+        xhr.open("PUT", url);
+        xhr.upload.onprogress = e => { inFlight.set(n, e.loaded); recompute(); };
+        const done = () => { xhrs.current.delete(xhr); inFlight.delete(n); };
+        xhr.onload = () => { done(); const etag = xhr.getResponseHeader("ETag");
+          if (xhr.status >= 200 && xhr.status < 300 && etag) resolve(etag);
+          else if (xhr.status >= 200 && xhr.status < 300) reject(new Error("R2 hid the upload receipt (ETag). Add ETag to ExposeHeaders in the bucket CORS policy."));
+          else reject(Object.assign(new Error(`Part rejected (${xhr.status}).`), { status: xhr.status })); };
+        xhr.onerror = () => { done(); reject(new Error("Connection interrupted.")); };
+        xhr.onabort = () => { done(); reject(Object.assign(new Error("Upload stopped."), { aborted: true })); };
+        xhr.send(selected.slice((n - 1) * s.partSize, (n - 1) * s.partSize + sizeOf(n)));
+      });
+      const uploadWithRetry = async (n: number) => {
+        for (let attempt = 0; ; attempt++) {
+          try {
+            const { urls } = await signParts({ data: { episodeId, key: s.key, uploadId: s.uploadId, parts: [n] } });
+            const etag = await sendPart(n, urls[0]!.url);
+            s.done.set(n, etag); recompute(); return;
+          } catch (err) {
+            if ((err as { aborted?: boolean }).aborted || attempt >= 6 || String((err as Error).message).includes("ETag")) throw err;
+            if (!navigator.onLine) await new Promise<void>(r => window.addEventListener("online", () => r(), { once: true }));
+            await new Promise(r => setTimeout(r, Math.min(30_000, 1000 * 2 ** attempt)));
+          }
+        }
+      };
+      let next = 0;
+      const worker = async () => { while (next < pending.length) await uploadWithRetry(pending[next++]!); };
+      await Promise.all(Array.from({ length: Math.min(4, pending.length) }, worker));
       loaded = selected.size; update("verifying");
-      const result = await finish({ data: { episodeId, key: completedKey.current, size: selected.size } });
-      update("complete"); fileRef.current = null; completedKey.current = null;
+      const result = await complete({ data: { episodeId, key: s.key, uploadId: s.uploadId, parts: [...s.done].map(([partNumber, etag]) => ({ partNumber, etag })) } });
+      update("complete"); fileRef.current = null; completedKey.current = null; session.current = null;
       try { await onSaved(result.cleanupPending); } catch { /* The file is saved even if the preview refresh fails. */ }
-    } catch (error) { update("failed", error instanceof Error ? error.message : "Upload failed. Please retry."); }
-    finally { running.current = false; }
+    } catch (error) {
+      xhrs.current.forEach(x => x.abort());
+      update("failed", `${error instanceof Error ? error.message : "Upload failed."} Retry resumes from the parts already sent.`);
+    }
+    finally { window.clearInterval(ticker); running.current = false; }
   }
   return { status, active, start, retry: () => start() };
 }
