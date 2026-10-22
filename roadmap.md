@@ -1,10 +1,12 @@
 # Branta Films roadmap
 
 ## Current request — Watch experience
-- [ ] Polish buttons, thumbnail episode carousel and suggested series
-- [ ] Advanced speed, touch seeking and fullscreen landscape where supported
-- [ ] Adaptive/manual quality for actual available renditions; identify source limitations
-- [ ] Validate rules and playback interactions on mobile/desktop
+- [x] Polish buttons, thumbnail episode carousel and suggested series
+- [x] Advanced speed, touch seeking and fullscreen landscape request where supported
+- [x] Add browser-only HLS adaptive/manual controls and identify source limitations
+- [ ] Enable real 360p/480p/720p/1080p playback — blocked: current uploads contain only one MP4; needs encoded renditions and authorized manifests/segments
+- [x] Validate rules and isolated playback interactions on mobile/desktop: speed, both touch seek directions, carousel and fullscreen pass; build OK
+- [ ] Verify signed-in R2 playback end-to-end and physical-device rotation — blocked: external Supabase has no managed session; physical browser orientation restrictions cannot be verified in desktop emulation
 
 ## Current request — Audience and staff management
 - [x] Replace Users/Staff lists with presence, viewing, free/paid and avatar summaries
