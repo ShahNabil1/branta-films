@@ -397,7 +397,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           ref={menuRef}
           role="menu"
           aria-label="Playback settings"
-          className="player-menu absolute bottom-14 right-2 z-20 flex max-h-[calc(100%-4.5rem)] w-56 max-w-[calc(100%-1rem)] flex-col overflow-y-auto overscroll-contain rounded-xl bg-scrim/95 py-1.5 text-media-ink shadow-lg backdrop-blur-md sm:bottom-16 sm:right-4 sm:w-64"
+          className="player-menu absolute bottom-14 right-2 z-20 flex max-h-[calc(100%-4.5rem)] w-56 max-w-[calc(100%-1rem)] flex-col overflow-y-auto overscroll-contain rounded-xl bg-background/95 py-1.5 ring-1 ring-media-ink/10 text-media-ink shadow-lg backdrop-blur-md sm:bottom-16 sm:right-4 sm:w-64"
         >
           {menuPage === "main" ? (
             <>
@@ -510,7 +510,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             expanded={settings}
             onClick={() => { setSettings(open => !open); setMenuPage("main"); setControls(true); window.clearTimeout(hideTimer.current); }}
           >
-            <Settings2 className={cn("transition-transform duration-300", settings && "rotate-45")} />
+            <Settings2 />
           </PlayerButton>
           <PlayerButton label={fullscreen ? "Exit full screen" : "Full screen"} onClick={toggleFs}>
             {fullscreen ? <Minimize /> : <Maximize />}
