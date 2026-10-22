@@ -34,11 +34,13 @@ export const getAdminEpisodeMedia = createServerFn({ method: "POST" }).middlewar
     const { data: episode, error: episodeError } = await context.supabase.from("episodes")
       .select("id, thumbnail_url").eq("id", data.episodeId).single();
     if (episodeError || !episode) throw new Error("Episode not found.");
+    const { flushVideoCleanup } = await import("./video-cleanup.server");
+    const cleanupPending = await flushVideoCleanup();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: media, error } = await supabaseAdmin.from("episode_media")
       .select("video_key, content_type, size_bytes").eq("episode_id", episode.id).maybeSingle();
     if (error) throw new Error("Could not read saved video.");
-    const base = { thumbnail: episode.thumbnail_url, sizeBytes: media?.size_bytes ?? null, contentType: media?.content_type ?? null };
+    const base = { thumbnail: episode.thumbnail_url, sizeBytes: media?.size_bytes ?? null, contentType: media?.content_type ?? null, cleanupPending };
     if (!media) return { ...base, status: "empty" as const, source: null };
     const { r2ObjectExists, presignR2Get } = await import("./r2.server");
     const { PLAYBACK_LINK_TTL_SECONDS } = await import("./access");
@@ -109,6 +111,9 @@ export const deleteAdminContent = createServerFn({ method: "POST" }).middleware(
   .handler(async ({ data, context }) => {
     const { error } = await context.supabase.from(data.kind).delete().eq("id", data.id);
     if (error) throw new Error(error.message);
+    const { flushVideoCleanup } = await import("./video-cleanup.server");
+    const cleanupPending = await flushVideoCleanup();
+    if (cleanupPending) throw new Error("Content deleted. Some old video files are awaiting storage cleanup; reopen an episode to retry.");
     return { ok: true };
   });
 
@@ -204,9 +209,20 @@ export const finishAdminVideo = createServerFn({ method: "POST" }).middleware([r
     const { r2ObjectExists } = await import("./r2.server");
     if (!(await r2ObjectExists(data.key))) throw new Error("Video upload has not completed.");
     const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
-    const { error } = await sb.from("episode_media").upsert({ episode_id: data.episodeId, video_key: data.key, size_bytes: data.size, content_type: "video/mp4" });
+    const { error } = await sb.from("episode_media").upsert({ episode_id: data.episodeId, video_key: data.key, size_bytes: data.size, content_type: "video/mp4", uploaded_at: new Date().toISOString() });
     if (error) throw new Error(error.message);
-    return { ok: true };
+    const { flushVideoCleanup } = await import("./video-cleanup.server");
+    return { ok: true, cleanupPending: await flushVideoCleanup() };
+  });
+
+export const deleteAdminVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id }).parse(input))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("episode_media").delete().eq("episode_id", data.episodeId);
+    if (error) throw new Error("Could not remove video.");
+    const { flushVideoCleanup } = await import("./video-cleanup.server");
+    return { ok: true, cleanupPending: await flushVideoCleanup() };
   });
 /** Saves the series display order: position i gets sort_order i * 10. */
 export const reorderAdminSeries = createServerFn({ method: "POST" }).middleware([requireAdmin])

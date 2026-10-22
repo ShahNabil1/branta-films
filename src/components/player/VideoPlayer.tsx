@@ -246,7 +246,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   return (
     <div
       ref={wrapRef}
-      className={cn("group relative aspect-video w-full overflow-hidden bg-background outline-none", fullscreen && "aspect-auto h-full", !controls && "cursor-none")}
+      className={cn("player-theme group relative aspect-video w-full overflow-hidden bg-background outline-none", fullscreen && "aspect-auto h-full", !controls && "cursor-none")}
       tabIndex={0}
       onKeyDown={onKey}
       onMouseMove={poke}
@@ -255,7 +255,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     >
       <video
         ref={videoRef}
-        className="size-full"
+        className="absolute inset-0 size-full object-contain"
         poster={poster ?? undefined}
         playsInline
         preload="metadata"
@@ -325,7 +325,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
         <Button
           type="button"
           onClick={toggle}
-          className="cinema-action absolute inset-0 m-auto size-14 p-0 sm:size-20 [&_svg]:size-7 sm:[&_svg]:size-8"
+          className="player-start cinema-action absolute inset-0 m-auto size-14 p-0 sm:size-20 [&_svg]:size-7 sm:[&_svg]:size-8"
           aria-label="Play"
         >
           <Play className="size-8 translate-x-0.5 fill-current" />

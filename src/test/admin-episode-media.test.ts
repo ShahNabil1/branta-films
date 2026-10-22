@@ -26,6 +26,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({
   supabaseAdmin: { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.media }) }) }) },
 }));
 vi.mock("@/lib/r2.server", () => ({ r2ObjectExists: mocks.exists, presignR2Get: mocks.sign }));
+vi.mock("@/lib/video-cleanup.server", () => ({ flushVideoCleanup: async () => false }));
 
 import { getAdminEpisodeMedia } from "@/lib/admin.functions";
 

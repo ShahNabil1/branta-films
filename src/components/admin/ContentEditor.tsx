@@ -102,8 +102,9 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         xhr.onerror = () => reject(new Error("Video upload could not connect. Check R2 CORS allows this site to upload."));
         xhr.send(file);
       });
-      await finishAdminVideo({ data: { episodeId: id, key: upload.key, size: file.size } });
+      const result = await finishAdminVideo({ data: { episodeId: id, key: upload.key, size: file.size } });
       await qc.invalidateQueries({ queryKey: ["admin-episode-media", id] });
+      if (result.cleanupPending) toast.warning("Video saved. Old file cleanup will retry on your next episode visit.");
       setVideoUploaded(true); toast.success("Video uploaded");
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
     finally { setBusy(false); setProgress(null); }
@@ -137,11 +138,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
-            <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} />
-            {editing ? <label className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-10 text-center transition-all duration-300 hover:border-primary/50 hover:bg-accent", busy && "pointer-events-none opacity-60")}>
-              <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary"><Upload className="size-5" /></span><span className="text-sm font-bold">Choose video file</span><span className="text-xs text-muted-foreground">Click to browse your computer</span>
-              <input type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy} onChange={(e) => void video(e.target.files?.[0])} />
-            </label> : null}
+            <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
             {progress !== null ? <div className="flex items-center gap-3 text-sm"><progress max={100} value={progress} className="admin-progress w-full" /><span className="tabular-nums">{progress}%</span></div> : null}
             {videoUploaded ? <p className="flex items-center gap-2 text-sm font-semibold text-success"><Check className="size-4" />Video saved securely.</p> : null}
           </div>}</Panel> : null}
