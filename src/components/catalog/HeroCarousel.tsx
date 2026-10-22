@@ -51,6 +51,18 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
             aria-hidden="true"
             className={cn("absolute inset-x-0 top-0 -z-20 aspect-[4/5] max-h-[72%] overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] md:inset-0 md:aspect-auto md:max-h-none md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0")}
           >
+            {s.poster_url ? (
+              <ArtworkImage
+                path={s.poster_url}
+                variant="poster"
+                sizes="100vw"
+                alt=""
+                width={1000}
+                height={1500}
+                loading={i === 0 ? "eager" : "lazy"}
+                className="size-full object-cover object-top md:hidden"
+              />
+            ) : null}
             {src ? (
               <ArtworkImage
                 path={s.backdrop_url ?? s.poster_url ?? ""}
@@ -61,7 +73,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                 height={1080}
                 fetchPriority={i === 0 ? "high" : "low"}
                 loading={i === 0 ? "eager" : "lazy"}
-                className={cn("size-full object-cover object-[70%_center] md:object-center", active && "animate-ken-burns")}
+                className={cn("size-full object-cover object-[70%_center] md:object-center", s.poster_url && "hidden md:block", active && "animate-ken-burns")}
               />
             ) : null}
           </div>
