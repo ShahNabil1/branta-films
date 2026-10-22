@@ -4,6 +4,7 @@ import { LegalPage } from "@/components/content/LegalPage";
 const description = "How Branta Films, a Branta Tech service, collects, uses and protects your information.";
 
 export const Route = createFileRoute("/privacy")({
+  staticData: { sitemap: false },
   staticData: { sitemap: true },
   head: () => ({
     meta: [

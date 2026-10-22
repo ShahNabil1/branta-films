@@ -16,6 +16,7 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -78,6 +79,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const SetPasswordRoute = SetPasswordRouteImport.update({
   id: '/set-password',
   path: '/set-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -290,6 +297,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
@@ -327,6 +335,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
@@ -366,6 +375,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/account'
     | '/admin'
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/checkout'
     | '/series/$slug'
@@ -439,6 +450,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
+    | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/admin'
@@ -478,6 +490,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PrivacyRoute: typeof PrivacyRoute
   SetPasswordRoute: typeof SetPasswordRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   SeriesSlugRoute: typeof SeriesSlugRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
@@ -532,6 +545,13 @@ declare module '@tanstack/react-router' {
       path: '/set-password'
       fullPath: '/set-password'
       preLoaderRoute: typeof SetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -829,6 +849,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   PrivacyRoute: PrivacyRoute,
   SetPasswordRoute: SetPasswordRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   SeriesSlugRoute: SeriesSlugRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,

@@ -15,6 +15,7 @@ import { catalogQuery } from "@/lib/queries";
 import { mediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: false },
   staticData: { sitemap: true },
   head: ({ loaderData }) => ({
     meta: [

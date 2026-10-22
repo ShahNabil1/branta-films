@@ -6,6 +6,7 @@ import { absoluteMediaUrl } from "@/lib/media";
 import { richTextToPlain } from "@/lib/rich-text";
 
 export const Route = createFileRoute("/series/$slug")({
+  staticData: { sitemap: false },
   staticData: { sitemap: true },
   loader: async ({ context, params }) => {
     const [series] = await Promise.all([

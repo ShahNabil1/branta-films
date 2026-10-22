@@ -5,6 +5,7 @@ import { isAllowedMediaPath } from "@/lib/media";
 // Video files are never served here — they get short-lived links after an access check.
 export const Route = createFileRoute("/api/public/media/$")({
   staticData: { sitemap: false },
+  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: async ({ params }) => {

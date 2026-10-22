@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 type BrowseSearch = { genre?: string | undefined };
 
 export const Route = createFileRoute("/browse")({
+  staticData: { sitemap: false },
   staticData: { sitemap: true },
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
