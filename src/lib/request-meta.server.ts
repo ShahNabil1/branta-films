@@ -4,7 +4,7 @@ export function requestMeta() {
   const req = getRequest();
   const h = req?.headers;
   return {
-    ip: h?.get("cf-connecting-ip") ?? h?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null,
+    ip: h?.get("cf-connecting-ip") ?? null,
     userAgent: h?.get("user-agent")?.slice(0, 400) ?? null,
     origin: h?.get("origin") ?? (req ? new URL(req.url).origin : null),
   };
@@ -13,7 +13,7 @@ export function requestMeta() {
 export async function logActivityAs(userId: string, action: string, details: Record<string, unknown> = {}, actorId?: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const meta = requestMeta();
-  await supabaseAdmin.from("activity_log").insert({
+  const { error } = await supabaseAdmin.from("activity_log").insert({
     user_id: userId,
     actor_id: actorId ?? userId,
     action,
@@ -21,4 +21,5 @@ export async function logActivityAs(userId: string, action: string, details: Rec
     ip: meta.ip,
     user_agent: meta.userAgent,
   });
+  if (error) throw new Error("The action completed, but its activity record could not be saved.");
 }
