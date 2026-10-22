@@ -15,7 +15,9 @@
 
 - BrandLogo styles all shared logos. Why: consistent Branta image and Films wordmark.
 
-- All local mobile-number fields use BdPhoneInput and the browser-safe phone-input normalizer. Why: signup, checkout and profile must convert Bangla digits consistently before validation.
+- Local phone fields use BdPhoneInput and its normalizer. Why: consistent Bangla-digit conversion.
+
+- Bundle fonts as hashed assets; preload the same imported URL. Why: one-year caching with automatic invalidation on file changes.
 
 Subdirectories have their own `AGENTS.md`; read it before changing files there.
 
