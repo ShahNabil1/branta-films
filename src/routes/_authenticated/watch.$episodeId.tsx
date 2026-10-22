@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { seriesPrice } from "@/lib/pricing";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Lock, Play } from "lucide-react";
@@ -38,7 +39,7 @@ function useWatchData(episodeId: string, userId: string | undefined) {
     queryFn: async () => {
       const { data: ep, error } = await supabase
         .from("episodes")
-        .select("id, series_id, episode_number, title, synopsis_html, duration_seconds, is_free, series:series_id(id, slug, title, poster_url, backdrop_url, price_bdt)")
+        .select("id, series_id, episode_number, title, synopsis_html, duration_seconds, is_free, series:series_id(id, slug, title, poster_url, backdrop_url, price_bdt, discount_price_bdt)")
         .eq("id", episodeId)
         .maybeSingle();
       if (error) throw error;
@@ -49,7 +50,7 @@ function useWatchData(episodeId: string, userId: string | undefined) {
       ]);
       return {
         episode: ep,
-        series: ep.series as unknown as { id: string; slug: string; title: string; poster_url: string | null; backdrop_url: string | null; price_bdt: number },
+        series: ep.series as unknown as { id: string; slug: string; title: string; poster_url: string | null; backdrop_url: string | null; price_bdt: number; discount_price_bdt: number | null },
         siblings: siblings ?? [],
         resumeAt: progress && !progress.completed ? Number(progress.position_seconds) : 0,
       };
@@ -138,7 +139,7 @@ function WatchPage() {
               <StatusPanel
                 icon={<Lock className="size-6 text-primary" />}
                 title="This episode is locked"
-                body={`Unlock all episodes of ${data.series.title} for ${formatTaka(data.series.price_bdt)}. bKash & Nagad payments open soon.`}
+                body={`Unlock all episodes of ${data.series.title} for ${formatTaka(seriesPrice(data.series.price_bdt, data.series.discount_price_bdt).final)}. bKash & Nagad payments open soon.`}
                 action={
                   <Button asChild variant="outline" size="sm">
                     <Link to="/series/$slug" params={{ slug: data.series.slug }}>View series</Link>
