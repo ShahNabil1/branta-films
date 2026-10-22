@@ -26,7 +26,7 @@ describe("Multipart upload recovery", () => {
     await waitFor(() => expect(UploadXHR.requests).toHaveLength(1));
     await act(async () => { UploadXHR.requests[0]?.onload(); await promise; });
     expect(result.current.status?.phase).toBe("complete");
-    expect(mocks.complete.mock.calls[0][0].data.parts).toEqual([{ partNumber: 1, etag: '"etag-1"' }]);
+    expect(mocks.complete.mock.calls[0]?.[0].data.parts).toEqual([{ partNumber: 1, etag: '"etag-1"' }]);
   });
   it("retry after a failed finish does not resend finished parts", async () => {
     mocks.complete.mockRejectedValueOnce(new Error("Temporary failure"));
