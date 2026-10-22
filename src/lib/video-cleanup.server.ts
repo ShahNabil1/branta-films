@@ -5,7 +5,7 @@ import { r2DeleteObject } from "./r2.server";
 export async function flushVideoCleanup(): Promise<boolean> {
   const { data: queued, error } = await supabaseAdmin.from("video_cleanup_queue")
     .select("video_key, attempts").order("created_at").limit(100);
-  if (error) throw new Error("Could not check video cleanup.");
+  if (error) return true;
   let pending = false;
   for (const item of queued ?? []) {
     try {

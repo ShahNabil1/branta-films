@@ -388,6 +388,7 @@
   color: var(--foreground);
   color-scheme: dark;
 }
+.player-theme .player-start { position: absolute; }
 .player-control {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;

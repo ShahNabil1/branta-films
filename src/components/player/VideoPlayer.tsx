@@ -325,7 +325,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
         <Button
           type="button"
           onClick={toggle}
-          className="cinema-action absolute inset-0 m-auto size-14 p-0 sm:size-20 [&_svg]:size-7 sm:[&_svg]:size-8"
+          className="player-start cinema-action absolute inset-0 m-auto size-14 p-0 sm:size-20 [&_svg]:size-7 sm:[&_svg]:size-8"
           aria-label="Play"
         >
           <Play className="size-8 translate-x-0.5 fill-current" />

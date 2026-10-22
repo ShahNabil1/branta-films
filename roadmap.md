@@ -1,9 +1,10 @@
 # Branta Films roadmap
 
 ## Current request — Player and R2 lifecycle
-- [ ] Fix admin player sizing/contrast; add explicit Replace/Delete in Edit mode
-- [ ] Queue superseded/deleted video keys atomically; delete from R2 and retain failures for retry
-- [ ] Test lifecycle and player rendering; actual signed-in destructive check blocked by external Supabase session access
+- [x] Fix admin player sizing/contrast; add explicit Replace/Delete in Edit mode
+- [x] Queue superseded/deleted video keys atomically; delete from R2 and retain failures for retry on admin episode visits/manual retry
+- [x] Lifecycle tests pass; isolated browser confirms visible video, play, settings and mobile layout
+- [ ] Actual signed-in replacement/deletion check — blocked: external Supabase has no managed test session
 
 ## Current request — Saved episode media
 - [x] Show persisted video preview and metadata when reopening an episode; refresh after replacement
