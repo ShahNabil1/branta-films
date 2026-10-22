@@ -54,6 +54,9 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(0);
+  // While dragging the timeline, the bar follows the finger/cursor instead of the video clock.
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [hoverT, setHoverT] = useState<number | null>(null);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -282,7 +285,11 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     return () => connection?.removeEventListener("change", update);
   }, [levels]);
 
-  const pct = duration ? (time / duration) * 100 : 0;
+  const livePct = duration ? (Math.min(scrub ?? time, duration) / duration) * 100 : 0;
+  const scrubAt = (el: HTMLElement, clientX: number) => {
+    const r = el.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (clientX - r.left) / (r.width || 1))) * duration;
+  };
   const bufPct = duration ? (buffered / duration) * 100 : 0;
 
   return (
@@ -434,24 +441,63 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           controls || !playing || settings ? "opacity-100" : "opacity-0",
         )}
       >
-        <div className="pointer-events-auto group/bar relative mx-2 h-4 cursor-pointer touch-none sm:mx-0">
-          <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-foreground/20">
+        <div
+          role="slider"
+          tabIndex={0}
+          aria-label="Seek"
+          aria-valuemin={0}
+          aria-valuemax={Math.round(duration || 0)}
+          aria-valuenow={Math.round(scrub ?? time)}
+          aria-valuetext={`${formatClock(scrub ?? time)} of ${formatClock(duration)}`}
+          className="pointer-events-auto group/bar relative mx-2 h-6 cursor-pointer touch-none select-none outline-none sm:mx-0"
+          onPointerDown={(e) => {
+            if (!duration) return;
+            e.preventDefault();
+            e.stopPropagation();
+            e.currentTarget.setPointerCapture(e.pointerId);
+            const t = scrubAt(e.currentTarget, e.clientX);
+            setScrub(t);
+            const v = videoRef.current;
+            if (v) v.currentTime = t;
+            poke();
+          }}
+          onPointerMove={(e) => {
+            const t = duration ? scrubAt(e.currentTarget, e.clientX) : 0;
+            if (e.pointerType === "mouse") setHoverT(t);
+            if (scrub === null || !e.currentTarget.hasPointerCapture(e.pointerId)) return;
+            setScrub(t);
+            const v = videoRef.current;
+            if (v) v.currentTime = t;
+            poke();
+          }}
+          onPointerUp={(e) => {
+            e.stopPropagation();
+            if (scrub !== null) { setTime(scrub); setScrub(null); }
+          }}
+          onPointerCancel={() => setScrub(null)}
+          onPointerLeave={() => setHoverT(null)}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); e.stopPropagation(); seek(e.key === "ArrowRight" ? 5 : -5); }
+          }}
+        >
+          <div className={cn("absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-full bg-foreground/20 transition-[height] duration-150", scrub !== null ? "h-1.5" : "h-1 group-hover/bar:h-1.5")}>
             <div className="absolute inset-y-0 left-0 rounded-full bg-foreground/30" style={{ width: `${bufPct}%` }} />
-            <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${pct}%` }} />
+            <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${livePct}%` }} />
           </div>
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            step={1}
-            value={time}
-            onChange={(e) => {
-              const v = videoRef.current;
-              if (v) v.currentTime = Number(e.target.value);
-            }}
-            className="absolute inset-0 w-full cursor-pointer opacity-0"
-            aria-label="Seek"
+          <span
+            aria-hidden
+            className={cn("absolute top-1/2 size-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow transition-transform duration-150", scrub !== null ? "scale-125" : "scale-100 sm:scale-0 sm:group-hover/bar:scale-100")}
+            style={{ left: `${livePct}%` }}
           />
+          {scrub !== null || hoverT !== null ? (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-full mb-2 -translate-x-1/2 rounded-[3px] bg-scrim px-2 py-1 text-xs font-medium tabular-nums text-media-ink backdrop-blur-sm"
+              style={{ left: `${Math.min(94, Math.max(6, (((scrub ?? hoverT ?? 0) / (duration || 1)) * 100)))}%` }}
+            >
+              {formatClock(scrub ?? hoverT ?? 0)}
+            </span>
+          ) : null}
         </div>
         <div className="pointer-events-auto mt-0.5 flex min-w-0 items-center text-media-ink sm:mt-1 sm:gap-1">
           <PlayerButton label={playing ? "Pause" : "Play"} onClick={toggle}>
@@ -500,7 +546,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             </div>
           </div>
           <span className="ml-1 min-w-0 truncate whitespace-nowrap text-[11px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
-            {formatClock(time)} / {formatClock(duration)}
+            {formatClock(scrub ?? time)} / {formatClock(duration)}
           </span>
           <span className="ml-auto hidden min-w-0 truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
           <span className="ml-auto md:ml-0" />
