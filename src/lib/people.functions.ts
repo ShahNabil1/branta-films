@@ -37,7 +37,7 @@ export const getPersonDetail=createServerFn({method:'POST'}).middleware([require
   ]);
   for(const r of [profile,account,roles,sessions,keys,unlocks,history,progress,activity,restriction,series]) if(r.error)throw new Error(r.error.message);
   if(!profile.data||!account.data.user)throw new Error('Account unavailable.');
-  const blocks=await all((a,b)=>sb.from('security_blocks').select('id,kind,value,reason').order('id').range(a,b));if(blocks.error)throw new Error(blocks.error.message);
+  const blocks=await all((a,b)=>sb.from('security_blocks').select('id,kind,value,reason').order('id').range(a,b));
   const user=account.data.user;
   const identifiers=new Set([profile.data.email.toLowerCase(),...(sessions.data??[]).flatMap(s=>[s.ip,s.device_hash])]);
   return {profile:profile.data,auth:{last_sign_in_at:user.last_sign_in_at??null,email_confirmed_at:user.email_confirmed_at??null,providers:(user.identities??[]).map(i=>i.provider),banned_until:user.banned_until??null},roles:roles.data??[],sessions:sessions.data??[],passkeys:keys.data??[],unlocks:unlocks.data??[],history:history.data??[],progress:progress.data??[],activity:activity.data??[],restriction:restriction.data,series:series.data??[],blocks:(blocks.data??[]).filter(b=>identifiers.has(b.value)),page:data.page};

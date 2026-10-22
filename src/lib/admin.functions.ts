@@ -113,6 +113,8 @@ export const saveAdminUser = createServerFn({ method: "POST" }).middleware([requ
       const { error: removeError } = await (data.role === "viewer" ? remove : remove.neq("role", data.role));
       if (removeError) throw new Error(removeError.message);
     }
+    const { logActivityAs } = await import("./request-meta.server");
+    await logActivityAs(data.id, "admin_account_updated", { role: data.role }, context.userId);
     return { ok: true };
   });
 
@@ -120,6 +122,8 @@ export const deleteAdminUser = createServerFn({ method: "POST" }).middleware([re
   .inputValidator((input: unknown) => z.object({ id }).parse(input)).handler(async ({ data, context }) => {
     assertOtherAccount(context.userId, data.id);
     const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
+    const { logActivityAs } = await import("./request-meta.server");
+    await logActivityAs(data.id, "admin_account_deletion_requested", {}, context.userId);
     const { error } = await sb.auth.admin.deleteUser(data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -149,6 +153,8 @@ export const manageAdminUnlock = createServerFn({ method: "POST" }).middleware([
       const { error } = await sb.from("series_unlocks").upsert({ user_id: data.user_id, series_id: data.series_id, source: "admin", granted_by: context.userId }, { onConflict: "user_id,series_id" });
       if (error) throw new Error(error.message);
     }
+    const { logActivityAs } = await import("./request-meta.server");
+    await logActivityAs(data.user_id, data.revoke ? "admin_series_revoked" : "admin_series_activated", { series_id: data.series_id }, context.userId);
     return { ok: true };
   });
 
