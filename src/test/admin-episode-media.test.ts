@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  exists: vi.fn(), sign: vi.fn(), episode: vi.fn(), media: vi.fn(), rpc: vi.fn(),
+  exists: vi.fn(), sign: vi.fn(), episode: vi.fn(), media: vi.fn(), rpc: vi.fn(), duration: vi.fn(), update: vi.fn(), write: vi.fn(),
 }));
 vi.mock("@/lib/security-middleware", () => ({ requireAccountAccess: {} }));
 vi.mock("@tanstack/react-start", () => ({
@@ -23,10 +23,11 @@ vi.mock("@tanstack/react-start", () => ({
   },
 }));
 vi.mock("@/integrations/supabase/client.server", () => ({
-  supabaseAdmin: { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.media }) }) }) },
+  supabaseAdmin: { from: () => ({ select: () => ({ eq: () => ({ maybeSingle: mocks.media }) }), update: (values: unknown) => { mocks.update(values); return { eq: mocks.write }; } }) },
 }));
 vi.mock("@/lib/r2.server", () => ({ r2ObjectExists: mocks.exists, presignR2Get: mocks.sign }));
 vi.mock("@/lib/video-cleanup.server", () => ({ flushVideoCleanup: async () => false }));
+vi.mock("@/lib/video-duration.server", () => ({ readVideoDuration: mocks.duration }));
 
 import { getAdminEpisodeMedia } from "@/lib/admin.functions";
 
@@ -49,6 +50,8 @@ describe("Saved episode admin media", () => {
     mocks.media.mockResolvedValue({ data: { video_key: "videos/private.mp4", content_type: "video/mp4", size_bytes: 5481584 }, error: null });
     mocks.exists.mockResolvedValue(true);
     mocks.sign.mockResolvedValue("https://example.test/temporary-signed-video");
+    mocks.duration.mockResolvedValue(16);
+    mocks.write.mockResolvedValue({ error: null });
   });
   it("returns saved thumbnail and video metadata on reopening, without the permanent key", async () => {
     const result = await readMedia(request);
@@ -77,5 +80,17 @@ describe("Saved episode admin media", () => {
     await expect(readMedia(request)).rejects.toThrow("Administrator access required.");
     expect(mocks.media).not.toHaveBeenCalled();
     expect(mocks.sign).not.toHaveBeenCalled();
+  });
+  it("automatically repairs an existing video's duration from its real file", async () => {
+    const result = await readMedia(request);
+    expect(mocks.duration).toHaveBeenCalledWith("videos/private.mp4");
+    expect(result).toMatchObject({ durationSeconds: 16 });
+    expect(mocks.update).toHaveBeenCalledWith({ duration_seconds: 16 });
+    expect(mocks.write).toHaveBeenCalledWith("id", episodeId);
+  });
+  it("does not rewrite an already accurate duration", async () => {
+    mocks.episode.mockResolvedValue({ data: { id: episodeId, thumbnail_url: null, duration_seconds: 16 }, error: null });
+    expect(await readMedia(request)).toMatchObject({ durationSeconds: 16 });
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 });
