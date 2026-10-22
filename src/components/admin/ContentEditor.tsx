@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Save, Upload, Check, ImagePlus, Trash2, Loader2 } from "lucide-react";
+import { Save, Upload, Check, ImagePlus, Trash2, Loader2, Pencil, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, Field, ToggleField } from "./AdminKit";
 import { EpisodesPanel } from "./EpisodesPanel";
@@ -12,6 +12,7 @@ import { RichTextEditor } from "./RichTextEditor";
 import { adminQuery } from "@/lib/admin-queries";
 import { saveAdminEpisode, saveAdminSeries, uploadAdminImage, prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
 import { mediaUrl } from "@/lib/media";
+import { isDirty } from "@/lib/dirty";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -20,8 +21,11 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const existing = kind === "series" ? data.series.find((s) => s.id === id) : data.episodes.find((e) => e.id === id);
   const series = data.series.find((s) => s.id === id);
   const episode = data.episodes.find((e) => e.id === id);
+  const rawHtml = series?.description_html ?? episode?.synopsis_html ?? "";
+  // The editor re-serialises stored HTML; its first output becomes the saved baseline.
+  const [baseHtml, setBaseHtml] = useState<string | null>(null);
   const initial = {
-    title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: series?.description_html ?? episode?.synopsis_html ?? "",
+    title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: baseHtml ?? rawHtml,
     genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0,
     order: series?.sort_order ?? 0, featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
     parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
@@ -32,7 +36,10 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [videoUploaded, setVideoUploaded] = useState(false);
-  const changed = JSON.stringify(values) !== JSON.stringify(initial);
+  const [editing, setEditing] = useState(id === "new");
+  const changed = isDirty(values, initial);
+  const onEditorReady = (html: string) => { setBaseHtml(html); setValues((v) => (v.html === rawHtml ? { ...v, html } : v)); };
+  const cancel = () => { setValues(initial); setEditing(false); };
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => setValues((v) => ({ ...v, [key]: value }));
   const parentSeries = data.series.find((s) => s.id === (episode?.series_id ?? seriesId));
   if ((id !== "new" && !existing) || (kind === "episodes" && (!parentSeries || (episode && episode.series_id !== seriesId)))) return <Panel title="Content not found"><Button asChild variant="outline"><Link to="/admin/series">Back to series</Link></Button></Panel>;
@@ -51,6 +58,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
       await qc.invalidateQueries({ queryKey: ["catalog"] });
       toast.success("Content saved");
+      setEditing(false);
       if (kind === "series") await navigate({ to: "/admin/series/$id", params: { id: row.id }, replace: true });
       else await navigate({ to: "/admin/series/$id/episodes/$episodeId", params: { id: values.parent, episodeId: row.id }, replace: true });
     } catch (err) { toast.error(err instanceof Error ? err.message : "Could not save content"); }
@@ -92,8 +100,10 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
 
   const slots = kind === "series" ? ["poster", "backdrop"] as const : ["thumbnail"] as const;
   return <>
-    <PageHeader back={kind === "series" ? { to: "/admin/series", label: "Series" } : { to: `/admin/series/${values.parent}` as "/admin/series", label: parentSeries?.title ?? "Series" }} title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} description={existing?.title ?? "Fill in the details and save."} />
+    <PageHeader back={kind === "series" ? { to: "/admin/series", label: "Series" } : { to: `/admin/series/${values.parent}` as "/admin/series", label: parentSeries?.title ?? "Series" }} title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} description={existing?.title ?? "Fill in the details and save."} action={id === "new" ? undefined : editing ? <Button type="button" variant="outline" onClick={cancel} disabled={busy}><X />Cancel</Button> : <Button type="button" onClick={() => setEditing(true)} className="transition-all duration-200 hover:-translate-y-0.5"><Pencil />Edit</Button>} />
+    {kind === "series" && id !== "new" ? <EpisodesPanel seriesId={id} /> : null}
     <form onSubmit={save} className="space-y-6">
+      <fieldset disabled={!editing} className="min-w-0 space-y-6 disabled:[&_input]:cursor-not-allowed disabled:[&_input]:opacity-80">
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0 space-y-6">
           <Panel title="Details" description="What viewers see on the series page."><div className="grid gap-4 sm:grid-cols-2">{field("Title", "title")}
@@ -101,8 +111,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
               {numeric("Episode number", "number", 1)}{numeric("Duration (seconds)", "duration", 0)}
             </>}
           </div></Panel>
-          {kind === "series" && id !== "new" ? <EpisodesPanel seriesId={id} /> : null}
-          <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} /></Panel>
+          <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <label className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-10 text-center transition-all duration-300 hover:border-primary/50 hover:bg-accent", busy && "pointer-events-none opacity-60")}>
               <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary"><Upload className="size-5" /></span><span className="text-sm font-bold">Choose video file</span><span className="text-xs text-muted-foreground">Click to browse your computer</span>
@@ -129,10 +138,11 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           </div>)}</div></Panel>
         </div>
       </div>
-      <div className="admin-rise sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-lg backdrop-blur-md">
+      </fieldset>
+      {editing ? <div className="admin-rise sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-lg backdrop-blur-md">
         <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className={cn("size-2 rounded-full", changed ? "bg-primary" : "bg-success")} />{changed ? "Unsaved changes" : "All changes saved"}</p>
-        <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim()} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "Updated"}</Button>
-      </div>
+        <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim()} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
+      </div> : null}
     </form>
   </>;
 }
