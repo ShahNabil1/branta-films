@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as PlayerCheckRouteImport } from './routes/player-check'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -60,6 +61,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlayerCheckRoute = PlayerCheckRouteImport.update({
+  id: '/player-check',
+  path: '/player-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -196,6 +202,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/player-check': typeof PlayerCheckRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
@@ -225,6 +232,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/player-check': typeof PlayerCheckRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/player-check': typeof PlayerCheckRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
@@ -285,6 +294,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/player-check'
     | '/privacy'
     | '/set-password'
     | '/terms'
@@ -314,6 +324,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/player-check'
     | '/privacy'
     | '/set-password'
     | '/terms'
@@ -342,6 +353,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/forgot-password'
+    | '/player-check'
     | '/privacy'
     | '/set-password'
     | '/terms'
@@ -373,6 +385,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  PlayerCheckRoute: typeof PlayerCheckRoute
   PrivacyRoute: typeof PrivacyRoute
   SetPasswordRoute: typeof SetPasswordRoute
   TermsRoute: typeof TermsRoute
@@ -415,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/player-check': {
+      id: '/player-check'
+      path: '/player-check'
+      fullPath: '/player-check'
+      preLoaderRoute: typeof PlayerCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -651,6 +671,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  PlayerCheckRoute: PlayerCheckRoute,
   PrivacyRoute: PrivacyRoute,
   SetPasswordRoute: SetPasswordRoute,
   TermsRoute: TermsRoute,
