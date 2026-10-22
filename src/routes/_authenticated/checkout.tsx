@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Film, Loader2, ShieldCheck, Ticket, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -44,6 +44,9 @@ function CheckoutPage() {
   const [phone, setPhone] = useState("");
   const [trx, setTrx] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<number | undefined>(undefined);
+  const announcedCode = useRef<string | null>(null);
   const request = cart.items.map((i) => ({ type: i.type, id: i.id }));
   const quote = useQuery({ queryKey: ["checkout-quote", request, code], enabled: request.length > 0, queryFn: () => quoteFn({ data: { items: request, code } }) });
   const numbers = useQuery({ queryKey: ["payment-numbers"], queryFn: () => numbersFn() });
@@ -54,7 +57,32 @@ function CheckoutPage() {
     if (!q?.problems.length) return;
     q.problems.forEach((p) => { cart.remove(p.type, p.id); toast.info(p.reason); });
   }, [q?.problems]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { if (code && q?.manualError) toast.error(q.manualError); }, [code, q?.manualError]);
+
+  // One verdict toast per applied coupon: red when rejected, green when it saved money.
+  useEffect(() => {
+    if (!code) { announcedCode.current = null; return; }
+    if (quote.isFetching) return;
+    if (quote.isError) { toast.error("Could not check that coupon — please try again."); return; }
+    if (!q) return;
+    if (q.manualError) {
+      toast.error("Invalid coupon", { description: q.manualError, className: "border-destructive/40" });
+      setCode(null); setCodeInput("");
+      return;
+    }
+    if (q.manualCode === code && q.discount > 0 && announcedCode.current !== code) {
+      announcedCode.current = code;
+      toast.success(`${q.manualCode} applied`, { description: `You saved ${formatTaka(q.discount)} on this order.`, className: "border-success/40" });
+    }
+  }, [code, quote.isFetching, quote.isError, q]);
+
+  useEffect(() => () => window.clearTimeout(copyTimer.current), []);
+
+  function copyMerchant() {
+    void navigator.clipboard.writeText(merchant);
+    setCopied(true);
+    window.clearTimeout(copyTimer.current);
+    copyTimer.current = window.setTimeout(() => setCopied(false), 2200);
+  }
 
   const available = METHODS.filter((m) => numbers.data?.[m.id]);
   useEffect(() => { if (available.length && !available.some((m) => m.id === method)) setMethod(available[0]!.id); }, [available, method]);
