@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PLAYBACK_SPEEDS, QUALITY_HEIGHTS, seekTarget, networkQualityCap } from "@/lib/player-rules";
 import type Hls from "hls.js";
 import { cn } from "@/lib/utils";
+import { BrandedDialog } from "@/components/ui/branded-dialog";
 
 type Props = {
   /** Fetches a fresh short-lived link; called on start and whenever the link expires. */
@@ -38,6 +39,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const tapRef = useRef({ at: 0, side: "" });
   const feedbackTimer = useRef<number | undefined>(undefined);
   const [settings, setSettings] = useState(false);
+  const [volumeOpen, setVolumeOpen] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [quality, setQuality] = useState<number | "auto">("auto");
   const [levels, setLevels] = useState<number[]>([]);
@@ -160,7 +162,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const toggle = () => {
     const v = videoRef.current;
     if (!v || error) return;
-    if (v.paused) void v.play().catch(() => undefined);
+    if (v.paused) void v.play().catch(() => { setLoading(false); setError("Playback did not start. Tap Try again."); });
     else v.pause();
   };
   const seek = (delta: number) => {
@@ -349,8 +351,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       ) : null}
 
       {seekFeedback !== null ? <div aria-live="polite" className={cn("player-seek-feedback pointer-events-none absolute top-1/2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-scrim p-5 text-media-ink", seekFeedback > 0 ? "right-[15%]" : "left-[15%]")}>{seekFeedback > 0 ? <RotateCw className="size-6" /> : <RotateCcw className="size-6" />}<span className="text-sm font-medium">10 seconds</span></div> : null}
-      {settings ? <div role="dialog" aria-label="Playback settings" className="absolute right-2 bottom-2 z-30 max-h-[calc(100%-1rem)] w-[min(300px,calc(100%-1rem))] overflow-y-auto rounded-lg border border-border bg-popover p-4 text-popover-foreground sm:bottom-20">
-        <div className="mb-3 flex items-center justify-between"><h2 className="text-base font-semibold">Playback settings</h2><PlayerButton label="Close settings" onClick={() => { setSettings(false); poke(); }}><X /></PlayerButton></div>
+      <BrandedDialog open={settings} onClose={() => { setSettings(false); poke(); }} title="Playback settings" container={fullscreen ? wrapRef.current : undefined} className="player-theme max-h-[calc(100dvh-2rem)] overflow-y-auto">
         <h3 className="mb-2 text-sm text-muted-foreground">Quality</h3>
         <div className="grid grid-cols-3 gap-2">
           <Button variant={quality === "auto" ? "default" : "secondary"} size="sm" aria-pressed={quality === "auto"} onClick={() => applyQuality("auto")} className="px-2">Auto {quality === "auto" ? <Check /> : null}</Button>
@@ -359,15 +360,18 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
         {!levels.length ? <p className="mt-2 text-xs text-muted-foreground">Original{nativeHeight ? ` · ${nativeHeight}p` : ""}. Other resolutions are not available for this video.</p> : <p className="mt-2 text-xs text-muted-foreground">Auto adjusts to your connection.</p>}
         <h3 className="mb-2 mt-4 text-sm text-muted-foreground">Playback speed</h3>
         <div className="grid grid-cols-3 gap-2">{PLAYBACK_SPEEDS.map(rate => <Button key={rate} variant={speed === rate ? "default" : "secondary"} size="sm" className="px-2" aria-pressed={speed === rate} onClick={() => { speedRef.current = rate; setSpeed(rate); if (videoRef.current) videoRef.current.playbackRate = rate; }}>{rate}x</Button>)}</div>
-      </div> : null}
+      </BrandedDialog>
+      <BrandedDialog open={volumeOpen} onClose={() => setVolumeOpen(false)} title="Volume" container={fullscreen ? wrapRef.current : undefined} className="player-theme">
+        <div className="flex items-center gap-4"><PlayerButton label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(m => !m)}>{muted ? <VolumeX/> : <Volume2/>}</PlayerButton><input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} aria-label="Volume" className="h-11 min-w-0 flex-1 touch-pan-y accent-primary" onChange={e => { const value = Number(e.target.value); setVolume(value); setMuted(value === 0); if (videoRef.current) videoRef.current.volume = value; }}/><span className="w-10 text-right text-sm tabular-nums">{Math.round((muted ? 0 : volume) * 100)}%</span></div>
+      </BrandedDialog>
       <div
         inert={!controls && playing && !settings}
         className={cn(
-          "absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-2 pb-2 pt-10 sm:px-4 sm:pb-3 sm:pt-14 transition-opacity duration-300",
+          "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-2 pb-2 pt-8 sm:px-4 sm:pb-3 sm:pt-14 transition-opacity duration-300",
           controls || !playing || settings ? "opacity-100" : "opacity-0",
         )}
       >
-        <div className="group/bar relative h-4 cursor-pointer">
+        <div className="pointer-events-auto group/bar relative h-4 cursor-pointer touch-none">
           <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-foreground/20">
             <div className="absolute inset-y-0 left-0 rounded-full bg-foreground/30" style={{ width: `${bufPct}%` }} />
             <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${pct}%` }} />
@@ -386,17 +390,17 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             aria-label="Seek"
           />
         </div>
-        <div className="mt-1 flex items-center gap-0 text-media-ink sm:gap-1">
+        <div className="pointer-events-auto mt-1 grid grid-cols-[auto_auto_auto_minmax(0,1fr)_auto_auto] items-center text-media-ink sm:flex sm:gap-1">
           <PlayerButton label={playing ? "Pause" : "Play"} onClick={toggle}>
             {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
           </PlayerButton>
-          <PlayerButton label="Back 10 seconds" onClick={() => seek(-10)}>
+          <span className="hidden sm:contents"><PlayerButton label="Back 10 seconds" onClick={() => seek(-10)}>
             <RotateCcw />
           </PlayerButton>
           <PlayerButton label="Forward 10 seconds" onClick={() => seek(10)}>
             <RotateCw />
-          </PlayerButton>
-          <PlayerButton label={muted ? "Unmute" : "Mute"} onClick={() => setMuted((m) => !m)}>
+          </PlayerButton></span>
+          <PlayerButton label="Adjust volume" onClick={() => { setVolumeOpen(true); setControls(true); }}>
             {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
           </PlayerButton>
           <input
@@ -414,7 +418,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             className="hidden w-20 accent-primary sm:block"
             aria-label="Volume"
           />
-          <span className="ml-1 whitespace-nowrap text-[11px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
+          <span className="col-span-2 min-w-0 whitespace-nowrap text-[10px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
             {formatClock(time)} / {formatClock(duration)}
           </span>
           <span className="ml-auto hidden truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
@@ -437,7 +441,7 @@ function PlayerButton({ label, onClick, children }: { label: string; onClick: ()
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="player-control size-9 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink sm:size-10 [&_svg]:size-[18px] sm:[&_svg]:size-5"
+      className="player-control size-11 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink [&_svg]:size-5"
     >
       {children}
     </Button>

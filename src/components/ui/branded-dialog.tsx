@@ -15,6 +15,7 @@ export function BrandedDialog({
   description,
   children,
   className,
+  container,
 }: {
   open: boolean;
   onClose: () => void;
@@ -22,10 +23,11 @@ export function BrandedDialog({
   description?: string;
   children?: ReactNode;
   className?: string;
+  container?: HTMLElement | null | undefined;
 }) {
   return (
     <DialogPrimitive.Root open={open}>
-      <DialogPrimitive.Portal>
+      <DialogPrimitive.Portal container={container ?? undefined}>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           onPointerDownOutside={(e) => e.preventDefault()}
@@ -39,14 +41,16 @@ export function BrandedDialog({
           <DialogPrimitive.Title className="text-h4 pr-8 font-semibold">{title}</DialogPrimitive.Title>
           {description ? <DialogPrimitive.Description className="text-small mt-2 text-muted-foreground">{description}</DialogPrimitive.Description> : null}
           {children ? <div className="mt-5">{children}</div> : null}
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label="Close"
             className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
             <X className="size-4" />
-          </button>
+          </Button>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

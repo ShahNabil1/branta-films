@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useBlocker } from "@tanstack/react-router";
 import { Save, Upload, Check, ImagePlus, Trash2, Loader2, Pencil, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, Field, ToggleField } from "./AdminKit";
@@ -13,13 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { addGenre, GENRE_OPTIONS, initialReleaseYear, MATURITY_OPTIONS } from "@/lib/series-metadata";
 import { RichTextEditor } from "./RichTextEditor";
 import { adminQuery } from "@/lib/admin-queries";
-import { saveAdminEpisode, saveAdminSeries, uploadAdminImage, prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
+import { saveAdminEpisode, saveAdminSeries, uploadAdminImage } from "@/lib/admin.functions";
 import { mediaUrl } from "@/lib/media";
 import { isDirty } from "@/lib/dirty";
 import { ARTWORK_SPECS, type ArtworkSlot } from "@/lib/artwork";
 import { ImageCropDialog } from "./ImageCropDialog";
 import { PriceTag } from "@/components/catalog/PriceTag";
 import { AdminEpisodeVideo } from "./AdminEpisodeVideo";
+import { useVideoUpload } from "@/hooks/use-video-upload";
+import { VideoUploadStatus } from "./VideoUploadStatus";
+import { BrandedDialog } from "@/components/ui/branded-dialog";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -40,9 +43,14 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     thumbnail: episode?.thumbnail_url ?? null as string | null,
   };
   const [values, setValues] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const [progress, setProgress] = useState<number | null>(null);
-  const [videoUploaded, setVideoUploaded] = useState(false);
+  const [saving, setBusy] = useState(false);
+  const upload = useVideoUpload(id, async cleanupPending => {
+    await Promise.all([qc.invalidateQueries({ queryKey: ["admin-episode-media", id] }), qc.invalidateQueries({ queryKey: adminQuery.queryKey }), qc.invalidateQueries({ queryKey: ["catalog"] })]);
+    if (cleanupPending) toast.warning("Video saved. Old file cleanup will retry on your next episode visit.");
+    else toast.success("Video uploaded");
+  });
+  const busy = saving || upload.active;
+  const blocker = useBlocker({ shouldBlockFn: () => upload.active, disabled: !upload.active, enableBeforeUnload: upload.active, withResolver: true });
   const [editing, setEditing] = useState(id === "new");
   const [cropping, setCropping] = useState<{ file: File; slot: ArtworkSlot } | null>(null);
   const [pendingGenre, setPendingGenre] = useState("");
@@ -91,25 +99,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   }
   async function video(file: File | undefined) {
     if (!file) return;
-    if (file.type !== "video/mp4" || file.size > 5 * 1024 ** 3) { toast.error("Choose an MP4 video under 5 GB."); return; }
-    setBusy(true); setProgress(0);
-    try {
-      const upload = await prepareAdminVideo({ data: { episodeId: id } });
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest(); xhr.open("PUT", upload.url); xhr.setRequestHeader("Content-Type", "video/mp4");
-        xhr.upload.onprogress = (e) => e.lengthComputable && setProgress(Math.round(e.loaded / e.total * 100));
-        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Video upload failed. Check the R2 upload permissions."));
-        xhr.onerror = () => reject(new Error("Video upload could not connect. Check R2 CORS allows this site to upload."));
-        xhr.send(file);
-      });
-      const result = await finishAdminVideo({ data: { episodeId: id, key: upload.key, size: file.size } });
-      await qc.invalidateQueries({ queryKey: ["admin-episode-media", id] });
-      await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
-      await qc.invalidateQueries({ queryKey: ["catalog"] });
-      if (result.cleanupPending) toast.warning("Video saved. Old file cleanup will retry on your next episode visit.");
-      setVideoUploaded(true); toast.success("Video uploaded");
-    } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
-    finally { setBusy(false); setProgress(null); }
+    try { await upload.start(file); } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
   }
   const field = (label: string, key: "title" | "slug") => <Field label={label}><Input className="admin-input" aria-label={label} value={values[key]} required onChange={(e) => set(key, e.target.value)} /></Field>;
   const numeric = (label: string, key: "price" | "order" | "number", min: number) => <Field label={label}><Input className="admin-input" aria-label={label} type="number" min={min} value={values[key]} onChange={(e) => set(key, Number(e.target.value))} /></Field>;
@@ -141,8 +131,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
-            {progress !== null ? <div className="flex items-center gap-3 text-sm"><progress max={100} value={progress} className="admin-progress w-full" /><span className="tabular-nums">{progress}%</span></div> : null}
-            {videoUploaded ? <p className="flex items-center gap-2 text-sm font-semibold text-success"><Check className="size-4" />Video saved securely.</p> : null}
+            <VideoUploadStatus status={upload.status} onRetry={() => void upload.retry()} />
           </div>}</Panel> : null}
         </div>
         <fieldset disabled={!editing || busy} className="min-w-0 space-y-6">
@@ -169,6 +158,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim() || Boolean(discountError)} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
       </div> : null}
     </form>
+    <BrandedDialog open={blocker.status === "blocked"} onClose={() => blocker.reset?.()} title="Video upload in progress" description="Leaving this page would interrupt the upload. Keep this page open until the video is saved."><Button type="button" onClick={() => blocker.reset?.()}>Stay on this page</Button></BrandedDialog>
     <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={async (blob) => { if (cropping) await uploadCropped(blob, cropping.slot); }} />
   </>;
 }

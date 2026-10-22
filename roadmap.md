@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Mobile player and upload status
+- [x] Fix mobile play hit targets, adjustable volume and unclipped playback settings
+- [x] Add real upload bytes, percentage, speed/ETA, stage/error/retry states, navigation/close warnings and best-effort screen wake lock
+- [x] 393px touch checks pass for central Play, volume 35%, settings/speed and upload metrics; 21 tests pass; build OK
+- [ ] Real authenticated R2 upload and physical-device suspension check — blocked: external Supabase has no managed session; browsers cannot prevent minimising/OS suspension
+
 ## Current request — Automatic video duration and visible controls
 - [x] Remove manual duration entry; derive and persist actual MP4 duration on uploads and existing saved-video inspection
 - [x] Show Replace/Delete before Edit, preserving the explicit Edit requirement
