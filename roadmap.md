@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Watch experience
+- [ ] Polish buttons, thumbnail episode carousel and suggested series
+- [ ] Advanced speed, touch seeking and fullscreen landscape where supported
+- [ ] Adaptive/manual quality for actual available renditions; identify source limitations
+- [ ] Validate rules and playback interactions on mobile/desktop
+
 ## Current request — Audience and staff management
 - [x] Replace Users/Staff lists with presence, viewing, free/paid and avatar summaries
 - [x] Add account detail pages, security/session controls, watch history and series access
