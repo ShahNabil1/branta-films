@@ -434,10 +434,54 @@
 }
 .cinema-action svg,
 .site-nav-action svg { transition: transform 260ms var(--ease-tap); }
-.header-nav { color: var(--muted-foreground); background: transparent; touch-action: manipulation; letter-spacing: 0; }
-.header-nav:hover, .header-nav[data-status="active"] { color: var(--foreground); background: transparent; }
-.header-utility { color: var(--muted-foreground); background: transparent; touch-action: manipulation; }
-.header-utility:hover { color: var(--foreground); background: var(--muted); }
+.header-nav,
+.header-utility {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  font-weight: 600;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, transform 220ms var(--ease-tap), box-shadow 220ms ease;
+}
+.header-nav::before,
+.header-utility::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 25%, var(--action-highlight) 48%, transparent 70%);
+  transform: translateX(-125%);
+  transition: transform 650ms ease;
+  pointer-events: none;
+}
+.header-nav:hover::before,
+.header-utility:hover::before { transform: translateX(125%); }
+.header-nav { color: var(--muted-foreground); background: transparent; letter-spacing: 0; }
+.header-nav:hover {
+  color: var(--nav-tone, var(--foreground));
+  background: color-mix(in oklab, var(--nav-tone, var(--foreground)) 12%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--nav-tone, var(--foreground)) 65%, transparent);
+}
+.header-nav:active { transform: translateY(0) scale(0.96); transition-duration: 70ms; }
+.header-nav[data-status="active"] {
+  color: var(--nav-tone, var(--foreground));
+  background: color-mix(in oklab, var(--nav-tone, var(--foreground)) 14%, transparent);
+  font-weight: 700;
+}
+.header-nav[data-status="active"] span[aria-hidden] { background: var(--nav-tone, var(--primary)); }
+.header-utility { color: var(--muted-foreground); background: transparent; }
+.header-utility svg { transition: transform 220ms var(--ease-tap); }
+.header-utility:hover {
+  color: var(--nav-tone, var(--foreground));
+  background: color-mix(in oklab, var(--nav-tone, var(--foreground)) 13%, transparent);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--nav-tone, var(--foreground)) 65%, transparent);
+}
+.header-utility:hover svg { transform: scale(1.14); }
+.header-utility:active { transform: scale(0.92); transition-duration: 70ms; }
+.nav-cart { --nav-tone: var(--primary); }
 .site-nav-action { color: var(--foreground); background: transparent; }
 .nav-home { --nav-tone: var(--nav-home); }
 .nav-browse { --nav-tone: var(--nav-browse); }
