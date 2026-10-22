@@ -9,17 +9,3 @@ export function requestMeta() {
     origin: h?.get("origin") ?? (req ? new URL(req.url).origin : null),
   };
 }
-
-export async function logActivityAs(userId: string, action: string, details: Record<string, unknown> = {}, actorId?: string) {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const meta = requestMeta();
-  const { error } = await supabaseAdmin.from("activity_log").insert({
-    user_id: userId,
-    actor_id: actorId ?? userId,
-    action,
-    details: details as never,
-    ip: meta.ip,
-    user_agent: meta.userAgent,
-  });
-  if (error) throw new Error("The action completed, but its activity record could not be saved.");
-}

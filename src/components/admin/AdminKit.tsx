@@ -28,7 +28,7 @@ export function Panel({ title, description, action, children, className, ...prop
 export function StatTile({ to, icon: Icon, label, value, hint }: { to: NonNullable<LinkProps["to"]>; icon: LucideIcon; label: string; value: ReactNode; hint?: string; tone?: "brand" | "success" | "neutral" }) {
   return <Link to={to} className="admin-rise group rounded-2xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5">
     <span className="grid size-8 place-items-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary"><Icon className="size-4" /></span>
-    <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:block"><p className="min-w-0 text-xs text-muted-foreground">{label}</p><p className="shrink-0 text-lg font-bold tabular-nums sm:mt-0.5">{value}</p></div>{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+    <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:block"><p className="min-w-0 text-xs text-muted-foreground">{label}</p><p className="shrink-0 text-lg font-bold tabular-nums text-foreground sm:mt-0.5">{value}</p></div>{hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
   </Link>;
 }
 

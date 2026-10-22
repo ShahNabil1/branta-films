@@ -1,9 +1,9 @@
 # Branta Films roadmap
 
 ## Current request — Remove Activity
-- [ ] Right-align overview numbers on small devices
-- [ ] Remove Activity displays/page, logging and stored records
-- [ ] Verify removal and mobile layout
+- [x] Right-align overview numbers on small devices
+- [x] Remove Activity displays/page, logging and stored records; preserve watch/security records
+- [x] Verify removal with 29 passing tests and isolated 393px layout; live admin account verification unavailable on external Supabase
 
 ## Current request — Player and R2 lifecycle
 - [x] Fix admin player sizing/contrast; add explicit Replace/Delete in Edit mode

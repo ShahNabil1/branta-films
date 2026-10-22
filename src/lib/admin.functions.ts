@@ -60,16 +60,14 @@ export const getAdminOverview = createServerFn({ method: "POST" }).middleware([r
       if ((data?.length ?? 0) < 500) return rows;
     }
   }
-  const [series, episodes, users, roles, unlocks, activity] = await Promise.all([
+  const [series, episodes, users, roles, unlocks] = await Promise.all([
     all((a, b) => sb.from("series").select("*").order("sort_order").order("created_at").order("id").range(a, b)),
     all((a, b) => sb.from("episodes").select("*").order("series_id").order("episode_number").range(a, b)),
     all((a, b) => sb.from("profiles").select("*").order("created_at").order("id").range(a, b)),
     all((a, b) => sb.from("user_roles").select("*").order("id").range(a, b)),
     all((a, b) => sb.from("series_unlocks").select("*").order("id").range(a, b)),
-    sb.from("activity_log").select("*").order("created_at", { ascending: false }).limit(100),
   ]);
-  if (activity.error) throw new Error(activity.error.message);
-  return { series, episodes, users, roles, unlocks, activity: activity.data ?? [] };
+  return { series, episodes, users, roles, unlocks };
 });
 
 export const saveAdminSeries = createServerFn({ method: "POST" }).middleware([requireAdmin])
@@ -137,8 +135,6 @@ export const saveAdminUser = createServerFn({ method: "POST" }).middleware([requ
       const { error: removeError } = await (data.role === "viewer" ? remove : remove.neq("role", data.role));
       if (removeError) throw new Error(removeError.message);
     }
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(data.id, "admin_account_updated", { role: data.role }, context.userId);
     return { ok: true };
   });
 
@@ -146,8 +142,6 @@ export const deleteAdminUser = createServerFn({ method: "POST" }).middleware([re
   .inputValidator((input: unknown) => z.object({ id }).parse(input)).handler(async ({ data, context }) => {
     assertOtherAccount(context.userId, data.id);
     const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(data.id, "admin_account_deletion_requested", {}, context.userId);
     const { error } = await sb.auth.admin.deleteUser(data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -177,8 +171,6 @@ export const manageAdminUnlock = createServerFn({ method: "POST" }).middleware([
       const { error } = await sb.from("series_unlocks").upsert({ user_id: data.user_id, series_id: data.series_id, source: "admin", granted_by: context.userId }, { onConflict: "user_id,series_id" });
       if (error) throw new Error(error.message);
     }
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(data.user_id, data.revoke ? "admin_series_revoked" : "admin_series_activated", { series_id: data.series_id }, context.userId);
     return { ok: true };
   });
 

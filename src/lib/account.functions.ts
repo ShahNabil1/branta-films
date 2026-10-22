@@ -54,8 +54,6 @@ export const changePassword = createServerFn({ method: "POST" })
       if (!ok) throw new Error("Your current password is incorrect.");
     }
     await applyNewPassword(context.userId, data.newPassword);
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(context.userId, hasPassword ? "password_changed" : "password_set");
     return { ok: true };
   });
 
@@ -73,8 +71,6 @@ export const completePasswordReset = createServerFn({ method: "POST" })
     const invalid = validateNewPassword(data.newPassword);
     if (invalid) throw new Error(invalid);
     await applyNewPassword(context.userId, data.newPassword);
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(context.userId, "password_reset");
     return { ok: true };
   });
 
@@ -95,16 +91,5 @@ export const completeInvite = createServerFn({ method: "POST" })
     if (hasPassword)
       throw new Error("Your password is already set. Sign in with your email and password.");
     await applyNewPassword(context.userId, data.newPassword);
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(context.userId, "invite_accepted");
-    return { ok: true };
-  });
-
-export const recordSignIn = createServerFn({ method: "POST" })
-  .middleware([requireAccountAccess])
-  .inputValidator((input: unknown) => z.object({ method: z.string().max(30) }).parse(input))
-  .handler(async ({ data, context }) => {
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(context.userId, "sign_in", { method: data.method });
     return { ok: true };
   });

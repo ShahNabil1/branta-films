@@ -94,8 +94,6 @@ export const passkeyRegisterVerify = createServerFn({ method: "POST" })
       device_name: data.deviceName,
     });
     if (error) throw new Error("This passkey is already registered.");
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(context.userId, "passkey_added", { device_name: data.deviceName });
     return { ok: true };
   });
 
@@ -174,7 +172,5 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
     const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email: email });
     if (error || !link?.properties?.hashed_token) return fail();
 
-    const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(cred.user_id, "sign_in", { method: "passkey" });
     return { tokenHash: link.properties.hashed_token as string };
   });

@@ -40,15 +40,15 @@ export const getPeopleDirectory=createServerFn({method:'POST'}).middleware([requ
 export const getPersonDetail=createServerFn({method:'POST'}).middleware([requirePeopleAdmin]).inputValidator((v:unknown)=>targetSchema.extend({page:z.number().int().min(0).default(0)}).parse(v)).handler(async({data})=>{
   const {supabaseAdmin:sb}=await import('@/integrations/supabase/client.server');
   async function all<T>(read:(a:number,b:number)=>PromiseLike<{data:T[]|null;error:{message:string}|null}>){const rows:T[]=[];for(let a=0;;a+=500){const r=await read(a,a+499);if(r.error)throw new Error(r.error.message);rows.push(...r.data??[]);if((r.data?.length??0)<500)return {data:rows,error:null};}}
-  const [profile,account,roles,sessions,keys,unlocks,history,progress,activity,restriction,series]=await Promise.all([
-    sb.from('profiles').select('*').eq('id',data.id).single(),sb.auth.admin.getUserById(data.id),sb.from('user_roles').select('role').eq('user_id',data.id),sb.from('viewer_sessions').select('*').eq('user_id',data.id).order('last_seen_at',{ascending:false}).range(data.page*25,data.page*25+24),all((a,b)=>sb.from('passkey_credentials').select('id,device_name,transports,created_at,last_used_at').eq('user_id',data.id).order('id').range(a,b)),all((a,b)=>sb.from('series_unlocks').select('id,series_id,source,created_at').eq('user_id',data.id).order('id').range(a,b)),sb.from('viewer_watch_history').select('*,episode:episode_id(title,episode_number,series:series_id(title))').eq('user_id',data.id).order('last_watched_at',{ascending:false}).range(data.page*25,data.page*25+24),sb.from('watch_progress').select('*,episode:episode_id(title,episode_number,series:series_id(title))').eq('user_id',data.id).order('updated_at',{ascending:false}).range(data.page*25,data.page*25+24),sb.from('activity_log').select('id,action,created_at,ip,actor_id').eq('user_id',data.id).order('created_at',{ascending:false}).range(data.page*25,data.page*25+24),sb.from('account_restrictions').select('*').eq('user_id',data.id).maybeSingle(),all((a,b)=>sb.from('series').select('id,title,poster_url,price_bdt').order('title').order('id').range(a,b)),
+  const [profile,account,roles,sessions,keys,unlocks,history,progress,restriction,series]=await Promise.all([
+    sb.from('profiles').select('*').eq('id',data.id).single(),sb.auth.admin.getUserById(data.id),sb.from('user_roles').select('role').eq('user_id',data.id),sb.from('viewer_sessions').select('*').eq('user_id',data.id).order('last_seen_at',{ascending:false}).range(data.page*25,data.page*25+24),all((a,b)=>sb.from('passkey_credentials').select('id,device_name,transports,created_at,last_used_at').eq('user_id',data.id).order('id').range(a,b)),all((a,b)=>sb.from('series_unlocks').select('id,series_id,source,created_at').eq('user_id',data.id).order('id').range(a,b)),sb.from('viewer_watch_history').select('*,episode:episode_id(title,episode_number,series:series_id(title))').eq('user_id',data.id).order('last_watched_at',{ascending:false}).range(data.page*25,data.page*25+24),sb.from('watch_progress').select('*,episode:episode_id(title,episode_number,series:series_id(title))').eq('user_id',data.id).order('updated_at',{ascending:false}).range(data.page*25,data.page*25+24),sb.from('account_restrictions').select('*').eq('user_id',data.id).maybeSingle(),all((a,b)=>sb.from('series').select('id,title,poster_url,price_bdt').order('title').order('id').range(a,b)),
   ]);
-  for(const r of [profile,account,roles,sessions,keys,unlocks,history,progress,activity,restriction,series]) if(r.error)throw new Error(r.error.message);
+  for(const r of [profile,account,roles,sessions,keys,unlocks,history,progress,restriction,series]) if(r.error)throw new Error(r.error.message);
   if(!profile.data||!account.data.user)throw new Error('Account unavailable.');
   const blocks=await all((a,b)=>sb.from('security_blocks').select('id,kind,value,reason').order('id').range(a,b));
   const user=account.data.user;
   const identifiers=new Set([profile.data.email.toLowerCase(),...(sessions.data??[]).flatMap(s=>[s.ip,s.device_hash])]);
-  return {profile:{...profile.data,avatar_url:profilePicture(profile.data,user)},auth:{last_sign_in_at:user.last_sign_in_at??null,email_confirmed_at:user.email_confirmed_at??null,providers:(user.identities??[]).map(i=>i.provider),banned_until:user.banned_until??null},roles:roles.data??[],sessions:sessions.data??[],passkeys:keys.data??[],unlocks:unlocks.data??[],history:history.data??[],progress:progress.data??[],activity:activity.data??[],restriction:restriction.data,series:series.data??[],blocks:(blocks.data??[]).filter(b=>identifiers.has(b.value)),page:data.page};
+  return {profile:{...profile.data,avatar_url:profilePicture(profile.data,user)},auth:{last_sign_in_at:user.last_sign_in_at??null,email_confirmed_at:user.email_confirmed_at??null,providers:(user.identities??[]).map(i=>i.provider),banned_until:user.banned_until??null},roles:roles.data??[],sessions:sessions.data??[],passkeys:keys.data??[],unlocks:unlocks.data??[],history:history.data??[],progress:progress.data??[],restriction:restriction.data,series:series.data??[],blocks:(blocks.data??[]).filter(b=>identifiers.has(b.value)),page:data.page};
 });
 
 export const administerPerson=createServerFn({method:'POST'}).middleware([requirePeopleAdmin])
@@ -72,7 +72,6 @@ export const administerPerson=createServerFn({method:'POST'}).middleware([requir
       const {error:pe}=await sb.auth.admin.updateUserById(data.id,{password:data.password});if(pe)throw new Error(pe.message);
     }
     if(data.action==='revoke-session'){const {data:row,error}=await sb.from('viewer_sessions').update({revoked_at:new Date().toISOString()}).eq('user_id',data.id).eq('session_id',data.session).select('session_id').single();if(error||!row)throw new Error('Session unavailable.');}
-    const {logActivityAs}=await import('./request-meta.server');await logActivityAs(data.id,`admin_${data.action}`,data.action==='ban'?{hours:data.hours,reason:data.reason}:{},context.userId);
     return {ok:true};
   });
 
@@ -91,6 +90,5 @@ export const setPersonBlocks=createServerFn({method:'POST'}).middleware([require
     }
     if(data.blocked){const {error}=await sb.from('security_blocks').upsert(data.identifiers.map(i=>({...i,blocked_by:context.userId})),{onConflict:'kind,value'});if(error)throw new Error(error.message);}
     else for(const i of data.identifiers){const {error}=await sb.from('security_blocks').delete().eq('kind',i.kind).eq('value',i.value);if(error)throw new Error(error.message);}
-    const {logActivityAs}=await import('./request-meta.server');await logActivityAs(data.id,data.blocked?'identifiers_blocked':'identifiers_unblocked',{identifiers:data.identifiers},context.userId);
     return {ok:true};
   });
