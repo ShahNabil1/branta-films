@@ -365,6 +365,21 @@
 }
 
 /* ---------- Motion (Branta Tech) ---------- */
+.player-control {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 180ms var(--ease-tap), background-color 150ms ease;
+}
+.player-control:active { transform: scale(0.86); transition-duration: 70ms; }
+.episode-card { touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent; }
+.episode-card:active img { opacity: 0.8; }
+.player-seek-feedback { animation: player-seek 700ms ease-out both; }
+@keyframes player-seek { 0% { opacity: 0; scale: 0.85; } 20%, 70% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.05; } }
+@media (prefers-reduced-motion: reduce) {
+  .player-control { transition: none; }
+  .player-control:active { transform: none; }
+  .player-seek-feedback { animation: none; }
+}
 .cinema-action,
 .site-nav-action {
   position: relative;

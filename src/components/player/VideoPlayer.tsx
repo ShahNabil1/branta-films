@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
+import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, Settings2, Check, X } from "lucide-react";
 import { formatClock } from "@/lib/format";
 import { PROGRESS_SAVE_INTERVAL_MS, isCompleted } from "@/lib/access";
+import { Button } from "@/components/ui/button";
+import { PLAYBACK_SPEEDS, QUALITY_HEIGHTS, seekTarget, networkQualityCap } from "@/lib/player-rules";
+import type Hls from "hls.js";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -27,6 +30,19 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const resumeRef = useRef(startAt);
   const hideTimer = useRef<number | undefined>(undefined);
 
+  const hlsRef = useRef<Hls | null>(null);
+  const sourceGeneration = useRef(0);
+  const autoplayRef = useRef(false);
+  const speedRef = useRef(1);
+  const qualityRef = useRef<number | "auto">("auto");
+  const tapRef = useRef({ at: 0, side: "" });
+  const feedbackTimer = useRef<number | undefined>(undefined);
+  const [settings, setSettings] = useState(false);
+  const [speed, setSpeed] = useState(1);
+  const [quality, setQuality] = useState<number | "auto">("auto");
+  const [levels, setLevels] = useState<number[]>([]);
+  const [nativeHeight, setNativeHeight] = useState(0);
+  const [seekFeedback, setSeekFeedback] = useState<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(0);
@@ -43,7 +59,9 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       const v = videoRef.current;
       if (!v) return;
       setLoading(true);
+      const generation = ++sourceGeneration.current;
       const src = await getSource().catch(() => null);
+      if (generation !== sourceGeneration.current) return;
       if (!src) {
         setLoading(false);
         setError("We couldn't start this episode. Please try again.");
@@ -51,9 +69,35 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       }
       expiresRef.current = src.expiresAt;
       resumeRef.current = position;
+      autoplayRef.current = autoplay;
+      hlsRef.current?.destroy();
+      hlsRef.current = null;
+      setLevels([]);
+      // Import only in the browser. An MP4 is never presented as multiple resolutions.
+      if (/\.m3u8(?:[?#]|$)/i.test(src.url)) {
+        const { default: HlsEngine } = await import("hls.js");
+        if (generation !== sourceGeneration.current) return;
+        if (HlsEngine.isSupported()) {
+          const hls = new HlsEngine({ capLevelToPlayerSize: true });
+          hlsRef.current = hls;
+          hls.on(HlsEngine.Events.MANIFEST_PARSED, () => {
+            setLevels([...new Set(hls.levels.map(level => level.height))].sort((a,b) => a-b));
+            const selected = qualityRef.current;
+            hls.currentLevel = selected === "auto" ? -1 : hls.levels.findIndex(level => level.height === selected);
+          });
+          hls.on(HlsEngine.Events.ERROR, (_event, detail) => {
+            if (!detail.fatal) return;
+            if (detail.type === HlsEngine.ErrorTypes.NETWORK_ERROR && Date.now() > expiresRef.current - 60_000) void load(v.currentTime, !v.paused);
+            else if (detail.type === HlsEngine.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+            else { setLoading(false); setError("This stream can't be played right now."); }
+          });
+          hls.loadSource(src.url);
+          hls.attachMedia(v);
+          return;
+        }
+      }
       v.src = src.url;
       v.load();
-      if (autoplay) void v.play().catch(() => undefined);
     },
     [getSource],
   );
@@ -62,6 +106,10 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     void load(startAt, false);
     const v = videoRef.current;
     return () => {
+      ++sourceGeneration.current;
+      hlsRef.current?.destroy();
+      window.clearTimeout(hideTimer.current);
+      window.clearTimeout(feedbackTimer.current);
       onPlayingChange?.(false);
       if (v) {
         if (v.currentTime > 0) onProgress(v.currentTime, v.duration || 0, isCompleted(v.currentTime, v.duration || 0));
@@ -101,7 +149,10 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   }, [onProgress]);
 
   useEffect(() => {
-    const onFs = () => setFullscreen(Boolean(document.fullscreenElement));
+    const onFs = () => {
+      setFullscreen(Boolean(document.fullscreenElement));
+      if (!document.fullscreenElement) screen.orientation?.unlock?.();
+    };
     document.addEventListener("fullscreenchange", onFs);
     return () => document.removeEventListener("fullscreenchange", onFs);
   }, []);
@@ -114,21 +165,55 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   };
   const seek = (delta: number) => {
     const v = videoRef.current;
-    if (v) v.currentTime = Math.max(0, Math.min((v.duration || 0) - 0.5, v.currentTime + delta));
+    if (!v) return;
+    v.currentTime = seekTarget(v.currentTime, v.duration, delta);
+    setTime(v.currentTime);
+    setSeekFeedback(delta);
+    window.clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = window.setTimeout(() => setSeekFeedback(null), 700);
   };
-  const toggleFs = () => {
-    if (document.fullscreenElement) void document.exitFullscreen();
-    else void wrapRef.current?.requestFullscreen?.();
+  const toggleFs = async () => {
+    try {
+      if (document.fullscreenElement) { await document.exitFullscreen(); return; }
+      const wrap = wrapRef.current;
+      if (wrap?.requestFullscreen) {
+        await wrap.requestFullscreen();
+        const orientation = screen.orientation as ScreenOrientation & { lock?: (value: string) => Promise<void> };
+        await orientation?.lock?.("landscape").catch(() => undefined);
+      } else {
+        const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+        video?.webkitEnterFullscreen?.();
+      }
+    } catch { /* Fullscreen/orientation is controlled by the device, never interrupt playback. */ }
+  };
+  const applyQuality = (height: number | "auto") => {
+    const hls = hlsRef.current;
+    if (height !== "auto" && !levels.includes(height)) return;
+    qualityRef.current = height;
+    setQuality(height);
+    if (hls) hls.currentLevel = height === "auto" ? -1 : hls.levels.findIndex(level => level.height === height);
+  };
+  const onSurfaceTap = (event: React.PointerEvent<HTMLVideoElement>) => {
+    if (event.pointerType === "mouse") { toggle(); poke(); return; }
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const side = event.clientX - bounds.left < bounds.width / 2 ? "left" : "right";
+    const now = performance.now();
+    if (now - tapRef.current.at < 320 && tapRef.current.side === side) {
+      seek(side === "right" ? 10 : -10);
+      tapRef.current = { at: 0, side: "" };
+    } else { tapRef.current = { at: now, side }; }
+    poke();
   };
   const poke = () => {
     setControls(true);
     window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => {
-      if (videoRef.current && !videoRef.current.paused) setControls(false);
+      if (videoRef.current && !videoRef.current.paused && !settings) setControls(false);
     }, 2800);
   };
 
   const onKey = (e: React.KeyboardEvent) => {
+    if (e.target instanceof HTMLInputElement || e.target instanceof HTMLButtonElement) return;
     const k = e.key.toLowerCase();
     if (k === " " || k === "k") {
       e.preventDefault();
@@ -139,6 +224,21 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     else if (k === "m") setMuted((m) => !m);
     poke();
   };
+
+  useEffect(() => {
+    type Connection = EventTarget & { downlink?: number; saveData?: boolean };
+    const connection = (navigator as Navigator & { connection?: Connection }).connection;
+    const update = () => {
+      const hls = hlsRef.current;
+      if (!hls) return;
+      const cap = networkQualityCap(connection?.downlink, connection?.saveData);
+      const eligible = hls.levels.map((level, index) => ({ height: level.height, index })).filter(level => level.height <= cap);
+      hls.autoLevelCapping = eligible.at(-1)?.index ?? 0;
+    };
+    update();
+    connection?.addEventListener("change", update);
+    return () => connection?.removeEventListener("change", update);
+  }, [levels]);
 
   const pct = duration ? (time / duration) * 100 : 0;
   const bufPct = duration ? (buffered / duration) * 100 : 0;
@@ -161,17 +261,21 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
         preload="metadata"
         controlsList="nodownload noremoteplayback noplaybackrate"
         disablePictureInPicture
-        onClick={toggle}
+        onPointerUp={onSurfaceTap}
+        onDoubleClick={(event) => { if (event.detail && window.matchMedia("(pointer: fine)").matches) void toggleFs(); }}
         onLoadedMetadata={(e) => {
           const v = e.currentTarget;
           setDuration(v.duration || 0);
-          if (resumeRef.current > 0 && resumeRef.current < (v.duration || 0) - 5) v.currentTime = resumeRef.current;
+          setNativeHeight(v.videoHeight);
+          v.playbackRate = speedRef.current;
+          if (resumeRef.current > 0 && resumeRef.current < (v.duration || 0)) v.currentTime = resumeRef.current;
+          if (autoplayRef.current) { autoplayRef.current = false; void v.play().catch(() => undefined); }
           setLoading(false);
           setError(null);
         }}
         onWaiting={() => { setLoading(true); onPlayingChange?.(false); }}
         onCanPlay={() => { setLoading(false); }}
-        onPlaying={() => onPlayingChange?.(true)}
+        onPlaying={() => { setLoading(false); onPlayingChange?.(true); }}
         onPlay={() => {
           setPlaying(true);
           poke();
@@ -218,36 +322,49 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       ) : null}
 
       {!playing && !loading && !error ? (
-        <button
+        <Button
           type="button"
           onClick={toggle}
-          className="absolute inset-0 m-auto flex size-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-transform hover:scale-105"
+          className="cinema-action absolute inset-0 m-auto size-14 p-0 sm:size-20 [&_svg]:size-7 sm:[&_svg]:size-8"
           aria-label="Play"
         >
           <Play className="size-8 translate-x-0.5 fill-current" />
-        </button>
+        </Button>
       ) : null}
 
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-scrim px-6 text-center">
           <p className="text-sm text-media-ink">{error}</p>
-          <button
+          <Button
             type="button"
             onClick={() => {
               setError(null);
               void load(time || resumeRef.current, true);
             }}
-            className="rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary-hover"
+            className="cinema-action"
           >
             Try again
-          </button>
+          </Button>
         </div>
       ) : null}
 
+      {seekFeedback !== null ? <div aria-live="polite" className={cn("player-seek-feedback pointer-events-none absolute top-1/2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-scrim p-5 text-media-ink", seekFeedback > 0 ? "right-[15%]" : "left-[15%]")}>{seekFeedback > 0 ? <RotateCw className="size-6" /> : <RotateCcw className="size-6" />}<span className="text-sm font-medium">10 seconds</span></div> : null}
+      {settings ? <div role="dialog" aria-label="Playback settings" className="absolute right-2 bottom-2 z-30 max-h-[calc(100%-1rem)] w-[min(300px,calc(100%-1rem))] overflow-y-auto rounded-lg border border-border bg-popover p-4 text-popover-foreground sm:bottom-20">
+        <div className="mb-3 flex items-center justify-between"><h2 className="text-base font-semibold">Playback settings</h2><PlayerButton label="Close settings" onClick={() => { setSettings(false); poke(); }}><X /></PlayerButton></div>
+        <h3 className="mb-2 text-sm text-muted-foreground">Quality</h3>
+        <div className="grid grid-cols-3 gap-2">
+          <Button variant={quality === "auto" ? "default" : "secondary"} size="sm" aria-pressed={quality === "auto"} onClick={() => applyQuality("auto")} className="px-2">Auto {quality === "auto" ? <Check /> : null}</Button>
+          {QUALITY_HEIGHTS.map(height => <Button key={height} size="sm" variant={quality === height ? "default" : "secondary"} disabled={!levels.includes(height)} aria-pressed={quality === height} onClick={() => applyQuality(height)} className="px-2">{height}p</Button>)}
+        </div>
+        {!levels.length ? <p className="mt-2 text-xs text-muted-foreground">Original{nativeHeight ? ` · ${nativeHeight}p` : ""}. Other resolutions are not available for this video.</p> : <p className="mt-2 text-xs text-muted-foreground">Auto adjusts to your connection.</p>}
+        <h3 className="mb-2 mt-4 text-sm text-muted-foreground">Playback speed</h3>
+        <div className="grid grid-cols-3 gap-2">{PLAYBACK_SPEEDS.map(rate => <Button key={rate} variant={speed === rate ? "default" : "secondary"} size="sm" className="px-2" aria-pressed={speed === rate} onClick={() => { speedRef.current = rate; setSpeed(rate); if (videoRef.current) videoRef.current.playbackRate = rate; }}>{rate}x</Button>)}</div>
+      </div> : null}
       <div
+        inert={!controls && playing && !settings}
         className={cn(
-          "absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-4 pb-3 pt-14 transition-opacity duration-300",
-          controls || !playing ? "opacity-100" : "opacity-0",
+          "absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-2 pb-2 pt-10 sm:px-4 sm:pb-3 sm:pt-14 transition-opacity duration-300",
+          controls || !playing || settings ? "opacity-100" : "opacity-0",
         )}
       >
         <div className="group/bar relative h-4 cursor-pointer">
@@ -269,7 +386,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             aria-label="Seek"
           />
         </div>
-        <div className="mt-1 flex items-center gap-1 text-media-ink">
+        <div className="mt-1 flex items-center gap-0 text-media-ink sm:gap-1">
           <PlayerButton label={playing ? "Pause" : "Play"} onClick={toggle}>
             {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
           </PlayerButton>
@@ -297,10 +414,11 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             className="hidden w-20 accent-primary sm:block"
             aria-label="Volume"
           />
-          <span className="ml-3 text-caption tabular-nums text-media-ink/80">
+          <span className="ml-1 whitespace-nowrap text-[11px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
             {formatClock(time)} / {formatClock(duration)}
           </span>
           <span className="ml-auto hidden truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
+          <PlayerButton label="Playback settings" onClick={() => { setSettings(open => !open); setControls(true); window.clearTimeout(hideTimer.current); }}><Settings2 /></PlayerButton>
           <PlayerButton label={fullscreen ? "Exit full screen" : "Full screen"} onClick={toggleFs}>
             {fullscreen ? <Minimize /> : <Maximize />}
           </PlayerButton>
@@ -312,14 +430,16 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
 
 function PlayerButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
+    <Button
+      variant="ghost"
+      size="icon"
       type="button"
       onClick={onClick}
       aria-label={label}
       title={label}
-      className="flex size-10 items-center justify-center rounded-sm transition-colors hover:text-primary [&_svg]:size-5"
+      className="player-control size-9 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink sm:size-10 [&_svg]:size-[18px] sm:[&_svg]:size-5"
     >
       {children}
-    </button>
+    </Button>
   );
 }
