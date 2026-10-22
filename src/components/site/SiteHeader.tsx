@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Compass, House, Search } from "lucide-react";
+import { ArrowUpRight, Compass, House, Search, ShoppingCart } from "lucide-react";
+import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth";
@@ -43,7 +44,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
     >
       <div className="mx-auto flex h-full w-full max-w-[1600px] items-center gap-2 px-4 sm:gap-6 sm:px-5 md:px-8">
         <BrandLogo />
-        <nav aria-label="Main" className="flex flex-1 items-center md:justify-center">
+        <nav aria-label="Main" className="hidden flex-1 items-center sm:flex md:justify-center">
           <ul className="flex items-center gap-0.5">
             {NAV.map((item) => (
               <li key={item.to}>
@@ -61,7 +62,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             ))}
           </ul>
         </nav>
-        <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+        <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:ml-0 sm:gap-2">
           <Button asChild variant="ghost" size="icon" className="site-nav-action nav-search size-11">
           <Link
             to="/browse"
@@ -71,7 +72,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             <Search className="size-[18px]" />
           </Link>
           </Button>
-          <CartButton />
+          <div className="hidden sm:block"><CartButton /></div>
           {loading ? (
             <div className="size-9" aria-hidden="true" />
           ) : user ? (
@@ -100,5 +101,22 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         </div>
       </div>
     </header>
+  );
+}
+
+/** Mobile bottom tab bar (industry-standard thumb-reach navigation). */
+export function MobileTabBar() {
+  const { items, setOpen } = useCart();
+  const tab = "relative flex min-w-0 flex-1 flex-col items-center justify-center gap-1 text-[11px] font-medium text-muted-foreground transition-colors active:scale-95 data-[status=active]:text-primary";
+  return (
+    <nav aria-label="Mobile" className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl sm:hidden">
+      <div className="flex h-16">
+        <Link to="/" activeOptions={{ exact: true }} className={tab}><House className="size-5" />Home</Link>
+        <Link to="/browse" className={tab}><Compass className="size-5" />Browse</Link>
+        <button type="button" onClick={() => setOpen(true)} className={tab} aria-label={`Cart, ${items.length} items`}>
+          <span className="relative"><ShoppingCart className="size-5" />{items.length ? <span className="absolute -right-2.5 -top-1.5 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-4 text-primary-foreground">{items.length}</span> : null}</span>Cart
+        </button>
+      </div>
+    </nav>
   );
 }
