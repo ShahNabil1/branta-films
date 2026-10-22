@@ -31,10 +31,10 @@ import { Route as AuthenticatedAdminUnlocksRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedWatchEpisodeIdRouteImport } from './routes/_authenticated/watch.$episodeId'
 import { Route as AuthenticatedAdminEpisodesIndexRouteImport } from './routes/_authenticated/admin.episodes.index'
-import { Route as AuthenticatedAdminEpisodesIdRouteImport } from './routes/_authenticated/admin.episodes.$id'
 import { Route as AuthenticatedAdminSeriesIndexRouteImport } from './routes/_authenticated/admin.series.index'
 import { Route as AuthenticatedAdminSeriesIdRouteImport } from './routes/_authenticated/admin.series.$id'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
+import { Route as AuthenticatedAdminSeriesIdEpisodesEpisodeIdRouteImport } from './routes/_authenticated/admin.series.$id_.episodes.$episodeId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -153,12 +153,6 @@ const AuthenticatedAdminEpisodesIndexRoute =
     path: '/episodes/',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminEpisodesIdRoute =
-  AuthenticatedAdminEpisodesIdRouteImport.update({
-    id: '/episodes/$id',
-    path: '/episodes/$id',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
 const AuthenticatedAdminSeriesIndexRoute =
   AuthenticatedAdminSeriesIndexRouteImport.update({
     id: '/series/',
@@ -176,6 +170,12 @@ const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   path: '/api/public/media/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute =
+  AuthenticatedAdminSeriesIdEpisodesEpisodeIdRouteImport.update({
+    id: '/series/$id_/episodes/$episodeId',
+    path: '/series/$id/episodes/$episodeId',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -198,11 +198,11 @@ export interface FileRoutesByFullPath {
   '/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
-  '/admin/episodes/$id': typeof AuthenticatedAdminEpisodesIdRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/admin/episodes/': typeof AuthenticatedAdminEpisodesIndexRoute
   '/admin/series/': typeof AuthenticatedAdminSeriesIndexRoute
+  '/admin/series/$id/episodes/$episodeId': typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -223,11 +223,11 @@ export interface FileRoutesByTo {
   '/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
-  '/admin/episodes/$id': typeof AuthenticatedAdminEpisodesIdRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/admin/episodes': typeof AuthenticatedAdminEpisodesIndexRoute
   '/admin/series': typeof AuthenticatedAdminSeriesIndexRoute
+  '/admin/series/$id/episodes/$episodeId': typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -252,11 +252,11 @@ export interface FileRoutesById {
   '/_authenticated/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
-  '/_authenticated/admin/episodes/$id': typeof AuthenticatedAdminEpisodesIdRoute
   '/_authenticated/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/_authenticated/admin/episodes/': typeof AuthenticatedAdminEpisodesIndexRoute
   '/_authenticated/admin/series/': typeof AuthenticatedAdminSeriesIndexRoute
+  '/_authenticated/admin/series/$id_/episodes/$episodeId': typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -281,11 +281,11 @@ export interface FileRouteTypes {
     | '/watch/$episodeId'
     | '/account/'
     | '/admin/'
-    | '/admin/episodes/$id'
     | '/admin/series/$id'
     | '/api/public/media/$'
     | '/admin/episodes/'
     | '/admin/series/'
+    | '/admin/series/$id/episodes/$episodeId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -306,11 +306,11 @@ export interface FileRouteTypes {
     | '/watch/$episodeId'
     | '/account'
     | '/admin'
-    | '/admin/episodes/$id'
     | '/admin/series/$id'
     | '/api/public/media/$'
     | '/admin/episodes'
     | '/admin/series'
+    | '/admin/series/$id/episodes/$episodeId'
   id:
     | '__root__'
     | '/'
@@ -334,11 +334,11 @@ export interface FileRouteTypes {
     | '/_authenticated/watch/$episodeId'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
-    | '/_authenticated/admin/episodes/$id'
     | '/_authenticated/admin/series/$id'
     | '/api/public/media/$'
     | '/_authenticated/admin/episodes/'
     | '/_authenticated/admin/series/'
+    | '/_authenticated/admin/series/$id_/episodes/$episodeId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -510,13 +510,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEpisodesIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/episodes/$id': {
-      id: '/_authenticated/admin/episodes/$id'
-      path: '/episodes/$id'
-      fullPath: '/admin/episodes/$id'
-      preLoaderRoute: typeof AuthenticatedAdminEpisodesIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
     '/_authenticated/admin/series/': {
       id: '/_authenticated/admin/series/'
       path: '/series'
@@ -537,6 +530,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/media/$'
       preLoaderRoute: typeof ApiPublicMediaSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin/series/$id_/episodes/$episodeId': {
+      id: '/_authenticated/admin/series/$id_/episodes/$episodeId'
+      path: '/series/$id/episodes/$episodeId'
+      fullPath: '/admin/series/$id/episodes/$episodeId'
+      preLoaderRoute: typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
     }
   }
 }
@@ -564,10 +564,10 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUnlocksRoute: typeof AuthenticatedAdminUnlocksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
-  AuthenticatedAdminEpisodesIdRoute: typeof AuthenticatedAdminEpisodesIdRoute
   AuthenticatedAdminSeriesIdRoute: typeof AuthenticatedAdminSeriesIdRoute
   AuthenticatedAdminEpisodesIndexRoute: typeof AuthenticatedAdminEpisodesIndexRoute
   AuthenticatedAdminSeriesIndexRoute: typeof AuthenticatedAdminSeriesIndexRoute
+  AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute: typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -576,10 +576,11 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminUnlocksRoute: AuthenticatedAdminUnlocksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-  AuthenticatedAdminEpisodesIdRoute: AuthenticatedAdminEpisodesIdRoute,
   AuthenticatedAdminSeriesIdRoute: AuthenticatedAdminSeriesIdRoute,
   AuthenticatedAdminEpisodesIndexRoute: AuthenticatedAdminEpisodesIndexRoute,
   AuthenticatedAdminSeriesIndexRoute: AuthenticatedAdminSeriesIndexRoute,
+  AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute:
+    AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
