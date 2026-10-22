@@ -161,8 +161,8 @@ export function WatchView({ episodeId, inDashboard = false }: { episodeId: strin
         </div>
 
         {data ? <EpisodeCarousel episodes={data.siblings} currentId={episodeId} backdrop={data.series.backdrop_url} to={to} /> : null}
-        {suggestions.length ? <MediaRow title="More to discover" seeAll>
-          {suggestions.map(series => <SeriesCard key={series.id} {...series} episodeCount={series.episodes.length} hasFreeEpisode={series.episodes.some(ep => ep.is_free)} className={posterItem} />)}
+        {suggestions.length ? <MediaRow title="More to discover" seeAll={!inDashboard}>
+          {suggestions.map(series => <SeriesCard key={series.id} {...series} to={inDashboard ? "/account/series/$slug" : "/series/$slug"} episodeCount={series.episodes.length} hasFreeEpisode={series.episodes.some(ep => ep.is_free)} className={posterItem} />)}
         </MediaRow> : null}
       </div>
       {data && buying ? <PurchaseDialog open onClose={() => setBuying(false)} focusEpisodeId={episodeId} episodes={buyable}

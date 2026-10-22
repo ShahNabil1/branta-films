@@ -35,6 +35,7 @@ import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminUnlocksRouteImport } from './routes/_authenticated/admin.unlocks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
 import { Route as AuthenticatedWatchEpisodeIdRouteImport } from './routes/_authenticated/watch.$episodeId'
+import { Route as AuthenticatedAccountSeriesSlugRouteImport } from './routes/_authenticated/account.series.$slug'
 import { Route as AuthenticatedAccountWatchEpisodeIdRouteImport } from './routes/_authenticated/account.watch.$episodeId'
 import { Route as AuthenticatedAdminEpisodesIndexRouteImport } from './routes/_authenticated/admin.episodes.index'
 import { Route as AuthenticatedAdminSeriesIndexRouteImport } from './routes/_authenticated/admin.series.index'
@@ -185,6 +186,12 @@ const AuthenticatedWatchEpisodeIdRoute =
     path: '/watch/$episodeId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAccountSeriesSlugRoute =
+  AuthenticatedAccountSeriesSlugRouteImport.update({
+    id: '/series/$slug',
+    path: '/series/$slug',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
 const AuthenticatedAccountWatchEpisodeIdRoute =
   AuthenticatedAccountWatchEpisodeIdRouteImport.update({
     id: '/watch/$episodeId',
@@ -265,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/account/series/$slug': typeof AuthenticatedAccountSeriesSlugRoute
   '/account/watch/$episodeId': typeof AuthenticatedAccountWatchEpisodeIdRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/admin/staff/$id': typeof AuthenticatedAdminStaffIdRoute
@@ -299,6 +307,7 @@ export interface FileRoutesByTo {
   '/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/account/series/$slug': typeof AuthenticatedAccountSeriesSlugRoute
   '/account/watch/$episodeId': typeof AuthenticatedAccountWatchEpisodeIdRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/admin/staff/$id': typeof AuthenticatedAdminStaffIdRoute
@@ -337,6 +346,7 @@ export interface FileRoutesById {
   '/_authenticated/watch/$episodeId': typeof AuthenticatedWatchEpisodeIdRoute
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/account/series/$slug': typeof AuthenticatedAccountSeriesSlugRoute
   '/_authenticated/account/watch/$episodeId': typeof AuthenticatedAccountWatchEpisodeIdRoute
   '/_authenticated/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
   '/_authenticated/admin/staff_/$id': typeof AuthenticatedAdminStaffIdRoute
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/watch/$episodeId'
     | '/account/'
     | '/admin/'
+    | '/account/series/$slug'
     | '/account/watch/$episodeId'
     | '/admin/series/$id'
     | '/admin/staff/$id'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/watch/$episodeId'
     | '/account'
     | '/admin'
+    | '/account/series/$slug'
     | '/account/watch/$episodeId'
     | '/admin/series/$id'
     | '/admin/staff/$id'
@@ -446,6 +458,7 @@ export interface FileRouteTypes {
     | '/_authenticated/watch/$episodeId'
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
+    | '/_authenticated/account/series/$slug'
     | '/_authenticated/account/watch/$episodeId'
     | '/_authenticated/admin/series/$id'
     | '/_authenticated/admin/staff_/$id'
@@ -654,6 +667,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWatchEpisodeIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/account/series/$slug': {
+      id: '/_authenticated/account/series/$slug'
+      path: '/series/$slug'
+      fullPath: '/account/series/$slug'
+      preLoaderRoute: typeof AuthenticatedAccountSeriesSlugRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
     '/_authenticated/account/watch/$episodeId': {
       id: '/_authenticated/account/watch/$episodeId'
       path: '/watch/$episodeId'
@@ -727,6 +747,7 @@ interface AuthenticatedAccountRouteChildren {
   AuthenticatedAccountProfileRoute: typeof AuthenticatedAccountProfileRoute
   AuthenticatedAccountSecurityRoute: typeof AuthenticatedAccountSecurityRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
+  AuthenticatedAccountSeriesSlugRoute: typeof AuthenticatedAccountSeriesSlugRoute
   AuthenticatedAccountWatchEpisodeIdRoute: typeof AuthenticatedAccountWatchEpisodeIdRoute
 }
 
@@ -737,6 +758,7 @@ const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
   AuthenticatedAccountProfileRoute: AuthenticatedAccountProfileRoute,
   AuthenticatedAccountSecurityRoute: AuthenticatedAccountSecurityRoute,
   AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
+  AuthenticatedAccountSeriesSlugRoute: AuthenticatedAccountSeriesSlugRoute,
   AuthenticatedAccountWatchEpisodeIdRoute:
     AuthenticatedAccountWatchEpisodeIdRoute,
 }
