@@ -7,6 +7,7 @@ import { AuthLayout, FormAlert, GoogleIcon, OrDivider, authLinkCls } from "@/com
 import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
+import { Turnstile, type TurnstileHandle } from "@/components/auth/Turnstile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { recordSignIn } from "@/lib/account.functions";
@@ -60,6 +61,9 @@ function AuthPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "form" | "google" | "passkey">(null);
   const recorded = useRef(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
+  const needCaptcha = () => { if (captcha) return captcha; setFormError("Please complete the security check."); return null; };
 
   useEffect(() => {
     if (loading || !user) return;
@@ -157,6 +161,8 @@ function AuthPage() {
     const fields: ("email" | "fullName" | "password")[] =
       mode === "signup" ? ["fullName", "email", "password"] : ["email", "password"];
     if (!validate(fields)) return;
+    const captchaToken = needCaptcha();
+    if (!captchaToken) return;
     setBusy("form");
     setFormError(null);
     try {
@@ -166,6 +172,7 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin + "/auth",
+            captchaToken,
             data: { full_name: fullName.trim() },
           },
         });
@@ -177,15 +184,14 @@ function AuthPage() {
           return;
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken } });
         if (error) {
           if (/not confirmed/i.test(error.message)) {
-            // Account exists but was never confirmed: send a fresh code and ask for it.
-            await supabase.auth.resend({ type: "signup", email: email.trim() });
+            // Account exists but was never confirmed: ask for a fresh code (needs a new security check).
             setCode("");
             setConfirmEmail(email.trim());
             setNotice(
-              `Your email isn't confirmed yet. We emailed a 6-digit code to ${email.trim()}.`,
+              `Your email isn't confirmed yet. Complete the security check and press "Send a new code".`,
             );
             return;
           }
@@ -207,14 +213,18 @@ function AuthPage() {
       );
     } finally {
       setBusy(null);
+      captchaRef.current?.reset();
     }
   }
 
   async function resendConfirmCode() {
     if (busy || !confirmEmail) return;
+    const captchaToken = needCaptcha();
+    if (!captchaToken) return;
     setBusy("form");
     setFormError(null);
-    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail });
+    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail, options: { captchaToken } });
+    captchaRef.current?.reset();
     setBusy(null);
     if (error) {
       setFormError(
@@ -283,6 +293,7 @@ function AuthPage() {
               Send a new code
             </button>
           </div>
+          <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="signup_resend" />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
@@ -411,10 +422,11 @@ function AuthPage() {
             </Link>
           </div>
         ) : null}
+        <Turnstile key={mode} ref={captchaRef} onToken={setCaptcha} action={isSignup ? "signup" : "signin"} />
         {formError ? <FormAlert>{formError}</FormAlert> : null}
         <Button
           type="submit"
-          disabled={disabled}
+          disabled={disabled || !captcha}
           size="lg" className="w-full"
         >
           {busy === "form" ? "Please wait…" : isSignup ? "Create account" : "Sign in"}
