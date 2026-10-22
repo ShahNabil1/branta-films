@@ -63,6 +63,7 @@ function AuthPage() {
   const recorded = useRef(false);
   const [captcha, setCaptcha] = useState<string | null>(null);
   const captchaRef = useRef<TurnstileHandle>(null);
+  useEffect(() => { setCaptcha(null); }, [mode, confirmEmail]);
   const needCaptcha = () => { if (captcha) return captcha; setFormError("Please complete the security check."); return null; };
 
   useEffect(() => {
