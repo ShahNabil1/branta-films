@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Clapperboard, Pencil, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Panel, Chip, editActionClass, deleteActionClass }
-import { SortableList } from "./SortableList"; from "./AdminKit";
+import { Panel, Chip, editActionClass, deleteActionClass } from "./AdminKit";
+import { SortableList } from "./SortableList";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { adminQuery } from "@/lib/admin-queries";
