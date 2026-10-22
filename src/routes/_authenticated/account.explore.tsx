@@ -104,7 +104,7 @@ function ExplorePage() {
                 <div className="relative">
                   <SeriesCard {...s} hasFreeEpisode={s.episodes.some((e) => e.is_free)} episodeCount={s.episodes.length} />
                   {isOwned ? (
-                    <span className="text-caption pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-success px-2 py-1 font-semibold text-success-foreground">
+                    <span className="text-caption pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-success px-2 py-1 font-semibold text-background">
                       <CheckCircle2 className="size-3.5" />Unlocked
                     </span>
                   ) : null}
