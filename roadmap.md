@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Colourful controls and avatar
+- [ ] Give selected navigation and catalogue actions colourful idle/hover states and playful tap motion
+- [ ] Share uploaded/Google avatar selection across header and profile with replacement priority
+- [ ] Test avatar rules and verify public navigation interactions; authenticated Google/upload checks require external session
+
 ## Current request — Watch experience
 - [x] Polish buttons, thumbnail episode carousel and suggested series
 - [x] Advanced speed, touch seeking and fullscreen landscape request where supported

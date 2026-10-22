@@ -10,14 +10,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { displayName, useAuth, useSignOut } from "@/lib/auth";
-import { mediaUrl } from "@/lib/media";
+import { profilePicture } from "@/lib/profile-picture";
 
 export function UserAvatar({ size = "size-9" }: { size?: string }) {
   const { profile, user } = useAuth();
   const name = displayName(profile, user);
+  const picture = profilePicture(profile, user);
   return (
     <Avatar className={size}>
-      {profile?.avatar_url ? <AvatarImage src={mediaUrl(profile.avatar_url) ?? undefined} alt="" /> : null}
+      {picture ? <AvatarImage src={picture} alt={`${name}'s profile picture`} referrerPolicy="no-referrer" className="object-cover" /> : null}
       <AvatarFallback className="bg-accent text-sm font-medium text-accent-foreground">
         {name.slice(0, 1).toUpperCase()}
       </AvatarFallback>
@@ -30,7 +31,7 @@ export function UserMenu() {
   const signOut = useSignOut();
   return (
     <DropdownMenu modal={false}>
-      <DropdownMenuTrigger className="rounded-full ring-2 ring-transparent transition-shadow hover:ring-primary/60" aria-label="Account menu">
+      <DropdownMenuTrigger className="account-avatar-action rounded-full ring-2 ring-primary/40 ring-offset-2 ring-offset-background" aria-label="Account menu">
         <UserAvatar />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={10} className="w-60 rounded-xl border-foreground/10 bg-popover/80 p-1.5 shadow-[var(--shadow-card)] backdrop-blur-xl">

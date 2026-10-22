@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Eyebrow } from "@/components/layout/primitives";
 
@@ -57,9 +58,9 @@ export function MediaRow({ title, eyebrow, seeAll, children, className }: Props)
           <h2 className={cn("text-h3", eyebrow && "mt-3")}>{title}</h2>
         </div>
         {seeAll ? (
-          <Link to="/browse" className="text-small group/all inline-flex items-center gap-1 font-medium text-muted-foreground underline decoration-border underline-offset-[6px] transition-colors hover:text-foreground hover:decoration-primary">
-            See all <span aria-hidden className="transition-transform duration-200 group-hover/all:translate-x-0.5">→</span>
-          </Link>
+          <Button asChild variant="outline" className="discover-action h-10 shrink-0 gap-2 px-4">
+            <Link to="/browse">See all <ArrowRight aria-hidden className="size-4" /></Link>
+          </Button>
         ) : null}
       </div>
       <div className="relative">
