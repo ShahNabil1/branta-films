@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { normalizePhoneInput } from "@/lib/phone-input";
 
 /** Bangladeshi mobile input: real flag + fixed +88, digits only, max 11. */
 export function BdPhoneInput({ value, onChange, invalid, id, disabled, className }: { value: string; onChange: (v: string) => void; invalid?: boolean; id?: string; disabled?: boolean; className?: string }) {
@@ -9,7 +10,7 @@ export function BdPhoneInput({ value, onChange, invalid, id, disabled, className
         <span className="font-mono text-sm font-semibold">+88</span>
       </span>
       <input id={id} disabled={disabled} inputMode="numeric" autoComplete="tel-national" placeholder="01XXXXXXXXX" maxLength={11} value={value}
-        onChange={(e) => onChange(e.target.value.replace(/\D/g, "").slice(0, 11))} aria-invalid={invalid}
+        onChange={(e) => onChange(normalizePhoneInput(e.target.value))} aria-invalid={invalid}
         className="h-full min-w-0 flex-1 bg-transparent px-3 font-mono tracking-wider outline-none" />
     </div>
   );
