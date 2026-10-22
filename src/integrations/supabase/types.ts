@@ -218,6 +218,7 @@ export type Database = {
           backdrop_url: string | null
           created_at: string
           description_html: string
+          discount_price_bdt: number | null
           genres: string[]
           id: string
           is_featured: boolean
@@ -236,6 +237,7 @@ export type Database = {
           backdrop_url?: string | null
           created_at?: string
           description_html?: string
+          discount_price_bdt?: number | null
           genres?: string[]
           id?: string
           is_featured?: boolean
@@ -254,6 +256,7 @@ export type Database = {
           backdrop_url?: string | null
           created_at?: string
           description_html?: string
+          discount_price_bdt?: number | null
           genres?: string[]
           id?: string
           is_featured?: boolean

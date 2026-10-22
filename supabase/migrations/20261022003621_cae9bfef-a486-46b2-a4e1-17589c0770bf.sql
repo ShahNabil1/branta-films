@@ -1,0 +1,2 @@
+ALTER TABLE public.series ADD COLUMN IF NOT EXISTS discount_price_bdt integer;
+ALTER TABLE public.series ADD CONSTRAINT series_discount_price_valid CHECK (discount_price_bdt IS NULL OR (discount_price_bdt >= 0 AND discount_price_bdt < price_bdt));
