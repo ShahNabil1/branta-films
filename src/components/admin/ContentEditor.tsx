@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Save, Upload, Check, ImagePlus, Trash2, Loader2, Pencil, X } from "lucide-react";
+import { Save, Upload, Check, ImagePlus, Trash2, Loader2, Pencil, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, Field, ToggleField } from "./AdminKit";
 import { EpisodesPanel } from "./EpisodesPanel";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { addGenre, GENRE_OPTIONS, initialReleaseYear, MATURITY_OPTIONS } from "@/lib/series-metadata";
 import { RichTextEditor } from "./RichTextEditor";
 import { adminQuery } from "@/lib/admin-queries";
 import { saveAdminEpisode, saveAdminSeries, uploadAdminImage, prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
@@ -29,7 +32,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [baseHtml, setBaseHtml] = useState<string | null>(null);
   const initial = {
     title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: baseHtml ?? rawHtml,
-    genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0, discount: series?.discount_price_bdt?.toString() ?? "",
+    genres: series?.genres ?? [], year: initialReleaseYear(series?.release_year, id === "new"), maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0, discount: series?.discount_price_bdt?.toString() ?? "",
     order: series?.sort_order ?? (Math.max(0, ...data.series.map((s) => s.sort_order)) + 10), featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
     parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
@@ -41,10 +44,13 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [videoUploaded, setVideoUploaded] = useState(false);
   const [editing, setEditing] = useState(id === "new");
   const [cropping, setCropping] = useState<{ file: File; slot: ArtworkSlot } | null>(null);
+  const [pendingGenre, setPendingGenre] = useState("");
+  const genreOptions = [...new Set([...GENRE_OPTIONS, ...data.series.flatMap(s => s.genres)])].sort();
+  const maturityOptions = [...new Set([...MATURITY_OPTIONS, ...data.series.map(s => s.maturity_rating)])].filter(Boolean);
   const changed = isDirty(values, initial);
   const discountError = kind === "series" && values.discount.trim() !== "" && !(Number(values.discount) >= 0 && Number(values.discount) < values.price) ? "Must be lower than the regular price." : null;
   const onEditorReady = (html: string) => { setBaseHtml(html); setValues((v) => (v.html === rawHtml ? { ...v, html } : v)); };
-  const cancel = () => { setValues(initial); setEditing(false); };
+  const cancel = () => { setValues(initial); setPendingGenre(""); setEditing(false); };
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => setValues((v) => ({ ...v, [key]: value }));
   const parentSeries = data.series.find((s) => s.id === (episode?.series_id ?? seriesId));
   if ((id !== "new" && !existing) || (kind === "episodes" && (!parentSeries || (episode && episode.series_id !== seriesId)))) return <Panel title="Content not found"><Button asChild variant="outline"><Link to="/admin/series">Back to series</Link></Button></Panel>;
@@ -53,7 +59,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     try {
       const row = kind === "series" ? await saveAdminSeries({ data: {
         ...(id === "new" ? {} : { id }), title: values.title, slug: values.slug, tagline: values.tagline, description_html: values.html,
-        genres: values.genres.split(",").map((g) => g.trim()).filter(Boolean), release_year: values.year ? Number(values.year) : null,
+        genres: values.genres, release_year: values.year ? Number(values.year) : null,
         maturity_rating: values.maturity, price_bdt: values.price, discount_price_bdt: values.discount.trim() === "" ? null : Number(values.discount), sort_order: values.order, is_featured: values.featured, is_published: values.published,
         poster_url: values.poster, backdrop_url: values.backdrop,
       } }) : await saveAdminEpisode({ data: {
@@ -100,7 +106,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
     finally { setBusy(false); setProgress(null); }
   }
-  const field = (label: string, key: "title" | "slug" | "tagline" | "genres" | "year" | "maturity") => <Field label={label}><Input className="admin-input" aria-label={label} value={values[key]} required={key === "title" || key === "slug"} onChange={(e) => set(key, e.target.value)} /></Field>;
+  const field = (label: string, key: "title" | "slug") => <Field label={label}><Input className="admin-input" aria-label={label} value={values[key]} required onChange={(e) => set(key, e.target.value)} /></Field>;
   const numeric = (label: string, key: "price" | "order" | "number" | "duration", min: number) => <Field label={label}><Input className="admin-input" aria-label={label} type="number" min={min} value={values[key]} onChange={(e) => set(key, Number(e.target.value))} /></Field>;
   const toggle = (label: string, key: "published" | "featured" | "free") => <ToggleField label={label} checked={values[key]} onChange={(v) => set(key, v)} />;
 
@@ -113,7 +119,15 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0 space-y-6">
           <Panel title="Details" description="What viewers see on the series page."><div className="grid gap-4 sm:grid-cols-2">{field("Title", "title")}
-            {kind === "series" ? <>{field("Slug", "slug")}{field("Tagline", "tagline")}{field("Genres (comma separated)", "genres")}{field("Release year", "year")}{field("Maturity rating", "maturity")}</> : <>
+            {kind === "series" ? <>{field("Slug", "slug")}
+              <Field label="Tagline" className="sm:col-span-2"><Textarea className="admin-input min-h-28 resize-y" aria-label="Tagline" rows={4} maxLength={500} value={values.tagline} onChange={e=>set("tagline",e.target.value)}/></Field>
+              <div className="space-y-2 sm:col-span-2"><span className="block text-xs font-semibold text-muted-foreground">Genres</span><div className="flex min-w-0 gap-2">
+                <Select value={pendingGenre} onValueChange={setPendingGenre} disabled={!editing || busy}><SelectTrigger aria-label="Choose genre" className="admin-input min-w-0 flex-1"><SelectValue placeholder="Choose genre"/></SelectTrigger><SelectContent className="admin-theme">{genreOptions.filter(g=>!values.genres.some(selected=>selected.toLowerCase()===g.toLowerCase())).map(g=><SelectItem key={g} value={g}>{g}</SelectItem>)}</SelectContent></Select>
+                <Button type="button" size="icon" aria-label="Add genre" title="Add genre" disabled={!editing || busy || !pendingGenre} onClick={()=>{set("genres",addGenre(values.genres,pendingGenre));setPendingGenre("");}}><Plus/></Button>
+              </div><div className="flex flex-wrap gap-2">{values.genres.map(g=><span key={g} className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary/10 py-1 pl-3 pr-1 text-sm font-medium text-accent-foreground ring-1 ring-primary/20"><span className="break-words">{g}</span><Button type="button" variant="ghost" size="icon" className="size-7 shrink-0" aria-label={`Remove ${g}`} disabled={!editing || busy} onClick={()=>set("genres",values.genres.filter(selected=>selected!==g))}><X className="size-3.5"/></Button></span>)}</div></div>
+              <Field label="Release year"><Input className="admin-input" aria-label="Release year" type="number" min={1900} max={2200} step={1} value={values.year} onChange={e=>set("year",e.target.value)}/></Field>
+              <Field label="Maturity rating"><Select value={values.maturity} onValueChange={v=>set("maturity",v)} disabled={!editing || busy}><SelectTrigger aria-label="Maturity rating" className="admin-input"><SelectValue/></SelectTrigger><SelectContent className="admin-theme">{maturityOptions.map(r=><SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select></Field>
+            </> : <>
               {numeric("Episode number", "number", 1)}{numeric("Duration (seconds)", "duration", 0)}
             </>}
           </div></Panel>

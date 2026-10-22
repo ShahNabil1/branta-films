@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Series metadata controls
+- [x] Larger multiline tagline, genre dropdown with individual + additions/removal, maturity dropdown
+- [x] Editable current-year default for new series; preserve existing years
+- [x] Six metadata rule tests pass; preview build OK
+- [ ] Verify signed-in editor save end-to-end — blocked: external Supabase supplies no managed test session
+
 ## Current request — Supabase-controlled Turnstile
 - [x] Allow tokenless auth when Supabase captcha is off; show Turnstile when Supabase requests it
 - [x] Apply to signup, password login and code resend/recovery; remove artificial invite-password gate
