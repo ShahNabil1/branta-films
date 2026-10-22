@@ -23,6 +23,7 @@ const search = z.object({
 });
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: false },
   validateSearch: (s) => search.parse(s),
   head: () => ({
     meta: [

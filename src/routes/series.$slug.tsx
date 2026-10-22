@@ -5,6 +5,7 @@ import { catalogQuery, seriesQuery } from "@/lib/queries";
 import { richTextToPlain } from "@/lib/rich-text";
 
 export const Route = createFileRoute("/series/$slug")({
+  staticData: { sitemap: true },
   loader: async ({ context, params }) => {
     const [series] = await Promise.all([
       context.queryClient.ensureQueryData(seriesQuery(params.slug)),

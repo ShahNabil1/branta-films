@@ -14,6 +14,7 @@ import { catalogQuery } from "@/lib/queries";
 import { mediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Branta Films — Original series by Branta Tech" },
