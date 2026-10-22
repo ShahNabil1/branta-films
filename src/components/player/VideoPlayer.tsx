@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, Settings2, Check, X } from "lucide-react";
+import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, Settings2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatClock } from "@/lib/format";
 import { PROGRESS_SAVE_INTERVAL_MS, isCompleted } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { PLAYBACK_SPEEDS, QUALITY_HEIGHTS, seekTarget, networkQualityCap } from "@/lib/player-rules";
 import type Hls from "hls.js";
 import { cn } from "@/lib/utils";
-import { BrandedDialog } from "@/components/ui/branded-dialog";
 
 type Props = {
   /** Fetches a fresh short-lived link; called on start and whenever the link expires. */
@@ -39,7 +38,14 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const tapRef = useRef({ at: 0, side: "" });
   const feedbackTimer = useRef<number | undefined>(undefined);
   const [settings, setSettings] = useState(false);
+  const [menuPage, setMenuPage] = useState<"main" | "quality" | "speed">("main");
   const [volumeOpen, setVolumeOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const settingsButtonRef = useRef<HTMLButtonElement | null>(null);
+  const volumeRef = useRef<HTMLDivElement | null>(null);
+  const volumePointer = useRef("mouse");
+  const settingsOpenRef = useRef(false);
+  settingsOpenRef.current = settings;
   const [speed, setSpeed] = useState(1);
   const [quality, setQuality] = useState<number | "auto">("auto");
   const [levels, setLevels] = useState<number[]>([]);
@@ -195,7 +201,19 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     setQuality(height);
     if (hls) hls.currentLevel = height === "auto" ? -1 : hls.levels.findIndex(level => level.height === height);
   };
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (muted || volume === 0) {
+      const level = volume === 0 ? 0.5 : volume;
+      setVolume(level);
+      if (v) v.volume = level;
+      setMuted(false);
+    } else setMuted(true);
+    poke();
+  };
   const onSurfaceTap = (event: React.PointerEvent<HTMLVideoElement>) => {
+    // Like YouTube/Netflix: a tap outside an open menu only closes it.
+    if (settingsOpenRef.current || volumeOpen) { setSettings(false); setVolumeOpen(false); poke(); return; }
     if (event.pointerType === "mouse") { toggle(); poke(); return; }
     const bounds = event.currentTarget.getBoundingClientRect();
     const side = event.clientX - bounds.left < bounds.width / 2 ? "left" : "right";
@@ -210,9 +228,31 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     setControls(true);
     window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => {
-      if (videoRef.current && !videoRef.current.paused && !settings) setControls(false);
+      if (videoRef.current && !videoRef.current.paused && !settingsOpenRef.current) { setControls(false); setVolumeOpen(false); }
     }, 2800);
   };
+
+  // Close the in-player menu on outside press or Escape.
+  useEffect(() => {
+    if (!settings) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target) || settingsButtonRef.current?.contains(target) || target === videoRef.current) return;
+      setSettings(false);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") { setSettings(false); settingsButtonRef.current?.focus(); } };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onEsc);
+    return () => { document.removeEventListener("pointerdown", onDown); document.removeEventListener("keydown", onEsc); };
+  }, [settings]);
+
+  // Collapse the touch volume slider on outside press.
+  useEffect(() => {
+    if (!volumeOpen) return;
+    const onDown = (e: PointerEvent) => { if (!volumeRef.current?.contains(e.target as Node) && e.target !== videoRef.current) setVolumeOpen(false); };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [volumeOpen]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLButtonElement) return;
@@ -223,7 +263,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     } else if (k === "arrowright" || k === "l") seek(10);
     else if (k === "arrowleft" || k === "j") seek(-10);
     else if (k === "f") toggleFs();
-    else if (k === "m") setMuted((m) => !m);
+    else if (k === "m") toggleMute();
     poke();
   };
 
@@ -351,27 +391,50 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       ) : null}
 
       {seekFeedback !== null ? <div aria-live="polite" className={cn("player-seek-feedback pointer-events-none absolute top-1/2 flex -translate-y-1/2 flex-col items-center gap-1 rounded-full bg-scrim p-5 text-media-ink", seekFeedback > 0 ? "right-[15%]" : "left-[15%]")}>{seekFeedback > 0 ? <RotateCw className="size-6" /> : <RotateCcw className="size-6" />}<span className="text-sm font-medium">10 seconds</span></div> : null}
-      <BrandedDialog open={settings} onClose={() => { setSettings(false); poke(); }} title="Playback settings" container={fullscreen ? wrapRef.current : undefined} className="player-theme max-h-[calc(100dvh-2rem)] overflow-y-auto">
-        <h3 className="mb-2 text-sm text-muted-foreground">Quality</h3>
-        <div className="grid grid-cols-3 gap-2">
-          <Button variant={quality === "auto" ? "default" : "secondary"} size="sm" aria-pressed={quality === "auto"} onClick={() => applyQuality("auto")} className="px-2">Auto {quality === "auto" ? <Check /> : null}</Button>
-          {QUALITY_HEIGHTS.map(height => <Button key={height} size="sm" variant={quality === height ? "default" : "secondary"} disabled={!levels.includes(height)} aria-pressed={quality === height} onClick={() => applyQuality(height)} className="px-2">{height}p</Button>)}
+
+      {settings ? (
+        <div
+          ref={menuRef}
+          role="menu"
+          aria-label="Playback settings"
+          className="player-menu absolute bottom-14 right-2 z-20 flex max-h-[calc(100%-4.5rem)] w-56 max-w-[calc(100%-1rem)] flex-col overflow-y-auto overscroll-contain rounded-xl bg-background/95 py-1.5 ring-1 ring-media-ink/10 text-media-ink shadow-lg backdrop-blur-md sm:bottom-16 sm:right-4 sm:w-64"
+        >
+          {menuPage === "main" ? (
+            <>
+              <MenuRow onClick={() => setMenuPage("quality")} label="Quality" value={quality === "auto" ? `Auto${nativeHeight && !levels.length ? ` (${nativeHeight}p)` : ""}` : `${quality}p`} />
+              <MenuRow onClick={() => setMenuPage("speed")} label="Playback speed" value={speed === 1 ? "Normal" : `${speed}x`} />
+            </>
+          ) : (
+            <>
+              <button type="button" onClick={() => setMenuPage("main")} className="player-control flex min-h-10 items-center gap-2 border-b border-media-ink/15 px-3 text-left text-sm font-medium hover:bg-media-ink/10">
+                <ChevronLeft className="size-4" />{menuPage === "quality" ? "Quality" : "Playback speed"}
+              </button>
+              {menuPage === "quality" ? (
+                <>
+                  <MenuOption selected={quality === "auto"} onClick={() => { applyQuality("auto"); setMenuPage("main"); }}>Auto</MenuOption>
+                  {[...QUALITY_HEIGHTS].reverse().map(height => (
+                    <MenuOption key={height} selected={quality === height} disabled={!levels.includes(height)} onClick={() => { applyQuality(height); setMenuPage("main"); }}>{height}p</MenuOption>
+                  ))}
+                  <p className="px-3 pb-1 pt-1.5 text-[11px] leading-snug text-media-ink/60">{levels.length ? "Auto adjusts to your connection." : `Original${nativeHeight ? ` ${nativeHeight}p` : ""} only for this video.`}</p>
+                </>
+              ) : (
+                PLAYBACK_SPEEDS.map(rate => (
+                  <MenuOption key={rate} selected={speed === rate} onClick={() => { speedRef.current = rate; setSpeed(rate); if (videoRef.current) videoRef.current.playbackRate = rate; setMenuPage("main"); }}>{rate === 1 ? "Normal" : `${rate}x`}</MenuOption>
+                ))
+              )}
+            </>
+          )}
         </div>
-        {!levels.length ? <p className="mt-2 text-xs text-muted-foreground">Original{nativeHeight ? ` · ${nativeHeight}p` : ""}. Other resolutions are not available for this video.</p> : <p className="mt-2 text-xs text-muted-foreground">Auto adjusts to your connection.</p>}
-        <h3 className="mb-2 mt-4 text-sm text-muted-foreground">Playback speed</h3>
-        <div className="grid grid-cols-3 gap-2">{PLAYBACK_SPEEDS.map(rate => <Button key={rate} variant={speed === rate ? "default" : "secondary"} size="sm" className="px-2" aria-pressed={speed === rate} onClick={() => { speedRef.current = rate; setSpeed(rate); if (videoRef.current) videoRef.current.playbackRate = rate; }}>{rate}x</Button>)}</div>
-      </BrandedDialog>
-      <BrandedDialog open={volumeOpen} onClose={() => setVolumeOpen(false)} title="Volume" container={fullscreen ? wrapRef.current : undefined} className="player-theme">
-        <div className="flex items-center gap-4"><PlayerButton label={muted ? "Unmute" : "Mute"} onClick={() => setMuted(m => !m)}>{muted ? <VolumeX/> : <Volume2/>}</PlayerButton><input type="range" min={0} max={1} step={0.05} value={muted ? 0 : volume} aria-label="Volume" className="h-11 min-w-0 flex-1 touch-pan-y accent-primary" onChange={e => { const value = Number(e.target.value); setVolume(value); setMuted(value === 0); if (videoRef.current) videoRef.current.volume = value; }}/><span className="w-10 text-right text-sm tabular-nums">{Math.round((muted ? 0 : volume) * 100)}%</span></div>
-      </BrandedDialog>
+      ) : null}
+
       <div
         inert={!controls && playing && !settings}
         className={cn(
-          "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-2 pb-2 pt-8 sm:px-4 sm:pb-3 sm:pt-14 transition-opacity duration-300",
+          "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background/70 to-transparent px-1 pb-1 pt-8 sm:px-4 sm:pb-3 sm:pt-14 transition-opacity duration-300",
           controls || !playing || settings ? "opacity-100" : "opacity-0",
         )}
       >
-        <div className="pointer-events-auto group/bar relative h-4 cursor-pointer touch-none">
+        <div className="pointer-events-auto group/bar relative mx-2 h-4 cursor-pointer touch-none sm:mx-0">
           <div className="absolute inset-x-0 top-1/2 h-1 -translate-y-1/2 rounded-full bg-foreground/20">
             <div className="absolute inset-y-0 left-0 rounded-full bg-foreground/30" style={{ width: `${bufPct}%` }} />
             <div className="absolute inset-y-0 left-0 rounded-full bg-primary" style={{ width: `${pct}%` }} />
@@ -390,7 +453,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             aria-label="Seek"
           />
         </div>
-        <div className="pointer-events-auto mt-1 grid grid-cols-[auto_auto_auto_minmax(0,1fr)_auto_auto] items-center text-media-ink sm:flex sm:gap-1">
+        <div className="pointer-events-auto mt-0.5 flex min-w-0 items-center text-media-ink sm:mt-1 sm:gap-1">
           <PlayerButton label={playing ? "Pause" : "Play"} onClick={toggle}>
             {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
           </PlayerButton>
@@ -400,29 +463,55 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           <PlayerButton label="Forward 10 seconds" onClick={() => seek(10)}>
             <RotateCw />
           </PlayerButton></span>
-          <PlayerButton label="Adjust volume" onClick={() => { setVolumeOpen(true); setControls(true); }}>
-            {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
-          </PlayerButton>
-          <input
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={muted ? 0 : volume}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              setVolume(val);
-              setMuted(val === 0);
-              if (videoRef.current) videoRef.current.volume = val;
-            }}
-            className="hidden w-20 accent-primary sm:block"
-            aria-label="Volume"
-          />
-          <span className="col-span-2 min-w-0 whitespace-nowrap text-[10px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
+          <div
+            ref={volumeRef}
+            className="group/vol flex shrink-0 items-center"
+            onPointerDown={(e) => { volumePointer.current = e.pointerType; }}
+            onMouseLeave={() => setVolumeOpen(false)}
+          >
+            <PlayerButton
+              label={muted || volume === 0 ? "Unmute" : "Mute"}
+              onClick={() => {
+                // Touch: first tap reveals the slider, the next tap mutes — mouse mutes straight away.
+                if (volumePointer.current !== "mouse" && !volumeOpen) { setVolumeOpen(true); poke(); return; }
+                toggleMute();
+              }}
+            >
+              {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
+            </PlayerButton>
+            <div className={cn("flex h-11 items-center overflow-hidden transition-[width,opacity] duration-200 ease-out", volumeOpen ? "w-20 opacity-100 sm:w-24" : "w-0 opacity-0 group-hover/vol:w-24 group-hover/vol:opacity-100 group-focus-within/vol:w-24 group-focus-within/vol:opacity-100")}>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={muted ? 0 : volume}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  setVolume(val);
+                  setMuted(val === 0);
+                  if (videoRef.current) videoRef.current.volume = val;
+                  poke();
+                }}
+                className="mx-1.5 h-11 w-full min-w-0 cursor-pointer touch-none accent-primary"
+                aria-label="Volume"
+                aria-valuetext={`${Math.round((muted ? 0 : volume) * 100)}%`}
+              />
+            </div>
+          </div>
+          <span className="ml-1 min-w-0 truncate whitespace-nowrap text-[11px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
             {formatClock(time)} / {formatClock(duration)}
           </span>
-          <span className="ml-auto hidden truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
-          <PlayerButton label="Playback settings" onClick={() => { setSettings(open => !open); setControls(true); window.clearTimeout(hideTimer.current); }}><Settings2 /></PlayerButton>
+          <span className="ml-auto hidden min-w-0 truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
+          <span className="ml-auto md:ml-0" />
+          <PlayerButton
+            ref={settingsButtonRef}
+            label="Playback settings"
+            expanded={settings}
+            onClick={() => { setSettings(open => !open); setMenuPage("main"); setControls(true); window.clearTimeout(hideTimer.current); }}
+          >
+            <Settings2 />
+          </PlayerButton>
           <PlayerButton label={fullscreen ? "Exit full screen" : "Full screen"} onClick={toggleFs}>
             {fullscreen ? <Minimize /> : <Maximize />}
           </PlayerButton>
@@ -432,18 +521,39 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   );
 }
 
-function PlayerButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+function PlayerButton({ label, onClick, children, expanded, ref }: { label: string; onClick: () => void; children: React.ReactNode; expanded?: boolean | undefined; ref?: React.Ref<HTMLButtonElement> | undefined }) {
   return (
     <Button
+      ref={ref}
       variant="ghost"
       size="icon"
       type="button"
       onClick={onClick}
       aria-label={label}
+      aria-expanded={expanded}
       title={label}
-      className="player-control size-11 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink [&_svg]:size-5"
+      className="player-control size-10 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink sm:size-11 [&_svg]:size-5"
     >
       {children}
     </Button>
+  );
+}
+
+function MenuRow({ label, value, onClick }: { label: string; value: string; onClick: () => void }) {
+  return (
+    <button type="button" role="menuitem" onClick={onClick} className="player-control flex min-h-10 w-full items-center gap-3 px-3 text-left text-sm hover:bg-media-ink/10">
+      <span className="flex-1">{label}</span>
+      <span className="text-media-ink/70">{value}</span>
+      <ChevronRight className="size-4 text-media-ink/70" />
+    </button>
+  );
+}
+
+function MenuOption({ selected, disabled, onClick, children }: { selected: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" role="menuitemradio" aria-checked={selected} disabled={disabled} onClick={onClick} className="player-control flex min-h-9 w-full items-center gap-3 px-3 text-left text-sm hover:bg-media-ink/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent">
+      <span className="flex size-4 items-center justify-center">{selected ? <Check className="size-4 text-primary" /> : null}</span>
+      <span className={cn("flex-1", selected && "font-medium")}>{children}</span>
+    </button>
   );
 }
