@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { ArrowRight, Fingerprint, KeyRound, Mail, UserRound } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +11,6 @@ import { Turnstile } from "@/components/auth/Turnstile";
 import { useCaptcha } from "@/components/auth/useCaptcha";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
-import { recordSignIn } from "@/lib/account.functions";
 import { passkeyLoginOptions, passkeyLoginVerify } from "@/lib/passkey.functions";
 import { safeRedirect, validateField } from "@/lib/validation";
 import { loginDestination } from "@/lib/admin-rules";
@@ -41,7 +40,6 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const GOOGLE_FLAG = "bf_google_pending";
 
 function AuthPage() {
   const { mode: modeParam, redirect } = Route.useSearch();
@@ -61,18 +59,12 @@ function AuthPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "form" | "google" | "passkey">(null);
-  const recorded = useRef(false);
   const { captcha, setCaptcha, required: captchaRequired, captchaRef, checkError: checkCaptchaError } = useCaptcha();
   useEffect(() => { setCaptcha(null); }, [mode, confirmEmail]);
 
   useEffect(() => {
     if (loading || !user) return;
     if (session && isFreshInviteSession(amrFromAccessToken(session.access_token), Date.now() / 1000)) return;
-    if (!recorded.current && sessionStorage.getItem(GOOGLE_FLAG)) {
-      recorded.current = true;
-      sessionStorage.removeItem(GOOGLE_FLAG);
-      void recordSignIn({ data: { method: "google" } }).catch(() => undefined);
-    }
     void navigate({ to: loginDestination(roles, target), replace: true });
   }, [user, loading, roles, session, navigate, target]);
 
@@ -111,7 +103,6 @@ function AuthPage() {
   async function google() {
     setBusy("google");
     setFormError(null);
-    sessionStorage.setItem(GOOGLE_FLAG, "1");
     // Google sign-in goes straight through the project's own Supabase Auth.
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -124,7 +115,6 @@ function AuthPage() {
       },
     });
     if (error) {
-      sessionStorage.removeItem(GOOGLE_FLAG);
       setBusy(null);
       setFormError("Google sign-in didn't complete. Please try again.");
     }
@@ -196,7 +186,6 @@ function AuthPage() {
           }
           throw error;
         }
-        void recordSignIn({ data: { method: "password" } }).catch(() => undefined);
         toast.success("Welcome back");
       }
     } catch (err) {
@@ -260,7 +249,6 @@ function AuthPage() {
       setFormError("That code is incorrect or has expired. Request a new one.");
       return;
     }
-    void recordSignIn({ data: { method: "password" } }).catch(() => undefined);
     toast.success("Account confirmed");
   }
 

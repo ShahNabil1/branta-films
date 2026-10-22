@@ -165,21 +165,6 @@ SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
---
--- Name: activity_log; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.activity_log (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    user_id uuid NOT NULL,
-    actor_id uuid,
-    action text NOT NULL,
-    details jsonb DEFAULT '{}'::jsonb NOT NULL,
-    ip text,
-    user_agent text,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
 
 --
 -- Name: episode_media; Type: TABLE; Schema: public; Owner: -
@@ -337,13 +322,6 @@ CREATE TABLE public.webauthn_challenges (
 );
 
 
---
--- Name: activity_log activity_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.activity_log
-    ADD CONSTRAINT activity_log_pkey PRIMARY KEY (id);
-
 
 --
 -- Name: episode_media episode_media_pkey; Type: CONSTRAINT; Schema: public; Owner: -
@@ -465,12 +443,6 @@ ALTER TABLE ONLY public.webauthn_challenges
     ADD CONSTRAINT webauthn_challenges_pkey PRIMARY KEY (id);
 
 
---
--- Name: activity_user_idx; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX activity_user_idx ON public.activity_log USING btree (user_id, created_at DESC);
-
 
 --
 -- Name: episodes_series_idx; Type: INDEX; Schema: public; Owner: -
@@ -591,12 +563,6 @@ CREATE POLICY "Admins delete episodes" ON public.episodes FOR DELETE TO authenti
 CREATE POLICY "Admins delete series" ON public.series FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'::public.app_role));
 
 
---
--- Name: activity_log Own activity or staff; Type: POLICY; Schema: public; Owner: -
---
-
-CREATE POLICY "Own activity or staff" ON public.activity_log FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_staff(auth.uid())));
-
 
 --
 -- Name: passkey_credentials Own passkeys delete; Type: POLICY; Schema: public; Owner: -
@@ -712,11 +678,6 @@ CREATE POLICY "Update own profile" ON public.profiles FOR UPDATE TO authenticate
 CREATE POLICY "Users read own roles; staff read all" ON public.user_roles FOR SELECT TO authenticated USING (((user_id = auth.uid()) OR public.is_staff(auth.uid())));
 
 
---
--- Name: activity_log; Type: ROW SECURITY; Schema: public; Owner: -
---
-
-ALTER TABLE public.activity_log ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: episode_media; Type: ROW SECURITY; Schema: public; Owner: -

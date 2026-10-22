@@ -19,9 +19,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Data for Name: activity_log; Type: TABLE DATA; Schema: public; Owner: -
---
 
 
 

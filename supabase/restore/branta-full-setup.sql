@@ -210,23 +210,6 @@ create table public.webauthn_challenges (
 grant all on public.webauthn_challenges to service_role;
 alter table public.webauthn_challenges enable row level security;
 
--- ===== Activity log =====
-create table public.activity_log (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null,
-  actor_id uuid,
-  action text not null,
-  details jsonb not null default '{}'::jsonb,
-  ip text,
-  user_agent text,
-  created_at timestamptz not null default now()
-);
-create index activity_user_idx on public.activity_log(user_id, created_at desc);
-grant select on public.activity_log to authenticated;
-grant all on public.activity_log to service_role;
-alter table public.activity_log enable row level security;
-create policy "Own activity or staff" on public.activity_log for select to authenticated using (user_id = auth.uid() or public.is_staff(auth.uid()));
-
 -- ===== Password history (server-only) =====
 create table public.password_history (
   id uuid primary key default gen_random_uuid(),
