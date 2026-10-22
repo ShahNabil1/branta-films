@@ -25,7 +25,6 @@ import { Route as AuthenticatedAccountLibraryRouteImport } from './routes/_authe
 import { Route as AuthenticatedAccountProfileRouteImport } from './routes/_authenticated/account.profile'
 import { Route as AuthenticatedAccountSecurityRouteImport } from './routes/_authenticated/account.security'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
-import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin.activity'
 import { Route as AuthenticatedAdminStaffRouteImport } from './routes/_authenticated/admin.staff'
 import { Route as AuthenticatedAdminUnlocksRouteImport } from './routes/_authenticated/admin.unlocks'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
@@ -122,12 +121,6 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
-const AuthenticatedAdminActivityRoute =
-  AuthenticatedAdminActivityRouteImport.update({
-    id: '/activity',
-    path: '/activity',
-    getParentRoute: () => AuthenticatedAdminRoute,
-  } as any)
 const AuthenticatedAdminStaffRoute = AuthenticatedAdminStaffRouteImport.update({
   id: '/staff',
   path: '/staff',
@@ -212,7 +205,6 @@ export interface FileRoutesByFullPath {
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/account/security': typeof AuthenticatedAccountSecurityRoute
-  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/unlocks': typeof AuthenticatedAdminUnlocksRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -240,7 +232,6 @@ export interface FileRoutesByTo {
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/account/security': typeof AuthenticatedAccountSecurityRoute
-  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/admin/unlocks': typeof AuthenticatedAdminUnlocksRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -272,7 +263,6 @@ export interface FileRoutesById {
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
   '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
   '/_authenticated/account/security': typeof AuthenticatedAccountSecurityRoute
-  '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
   '/_authenticated/admin/unlocks': typeof AuthenticatedAdminUnlocksRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -304,7 +294,6 @@ export interface FileRouteTypes {
     | '/account/library'
     | '/account/profile'
     | '/account/security'
-    | '/admin/activity'
     | '/admin/staff'
     | '/admin/unlocks'
     | '/admin/users'
@@ -332,7 +321,6 @@ export interface FileRouteTypes {
     | '/account/library'
     | '/account/profile'
     | '/account/security'
-    | '/admin/activity'
     | '/admin/staff'
     | '/admin/unlocks'
     | '/admin/users'
@@ -363,7 +351,6 @@ export interface FileRouteTypes {
     | '/_authenticated/account/library'
     | '/_authenticated/account/profile'
     | '/_authenticated/account/security'
-    | '/_authenticated/admin/activity'
     | '/_authenticated/admin/staff'
     | '/_authenticated/admin/unlocks'
     | '/_authenticated/admin/users'
@@ -507,13 +494,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/activity': {
-      id: '/_authenticated/admin/activity'
-      path: '/activity'
-      fullPath: '/admin/activity'
-      preLoaderRoute: typeof AuthenticatedAdminActivityRouteImport
-      parentRoute: typeof AuthenticatedAdminRoute
-    }
     '/_authenticated/admin/staff': {
       id: '/_authenticated/admin/staff'
       path: '/staff'
@@ -619,7 +599,6 @@ const AuthenticatedAccountRouteWithChildren =
   AuthenticatedAccountRoute._addFileChildren(AuthenticatedAccountRouteChildren)
 
 interface AuthenticatedAdminRouteChildren {
-  AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
   AuthenticatedAdminStaffRoute: typeof AuthenticatedAdminStaffRoute
   AuthenticatedAdminUnlocksRoute: typeof AuthenticatedAdminUnlocksRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
@@ -634,7 +613,6 @@ interface AuthenticatedAdminRouteChildren {
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
-  AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
   AuthenticatedAdminStaffRoute: AuthenticatedAdminStaffRoute,
   AuthenticatedAdminUnlocksRoute: AuthenticatedAdminUnlocksRoute,
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
