@@ -13,7 +13,7 @@ type AuthState = {
   loading: boolean;
   roles: AppRole[];
   isStaff: boolean;
-  profile: { full_name: string; email: string; avatar_url: string | null } | null;
+  profile: { full_name: string; email: string; avatar_url: string | null; phone?: string | null } | null;
 };
 
 const AuthContext = createContext<AuthState>({
