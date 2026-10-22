@@ -63,7 +63,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           </ul>
         </nav>
         <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:ml-0 sm:gap-2">
-          <Button asChild variant="ghost" size="icon" className="site-nav-action nav-search hidden size-11 sm:inline-flex">
+          <Button asChild variant="ghost" size="icon" className="site-nav-action nav-search size-11">
           <Link
             to="/browse"
             aria-label="Search series"
@@ -113,7 +113,6 @@ export function MobileTabBar() {
       <div className="flex h-16">
         <Link to="/" activeOptions={{ exact: true }} className={tab}><House className="size-5" />Home</Link>
         <Link to="/browse" className={tab}><Compass className="size-5" />Browse</Link>
-        <Link to="/browse" hash="search" activeProps={{}} className={tab} data-status="" aria-label="Search series"><Search className="size-5" />Search</Link>
         <button type="button" onClick={() => setOpen(true)} className={tab} aria-label={`Cart, ${items.length} items`}>
           <span className="relative"><ShoppingCart className="size-5" />{items.length ? <span className="absolute -right-2.5 -top-1.5 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-4 text-primary-foreground">{items.length}</span> : null}</span>Cart
         </button>
