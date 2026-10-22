@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 
 export function BrandLogo({ className }: { className?: string }) {
   return (
-    <Link to="/" aria-label="Branta Films home" className={cn("flex shrink-0 items-center gap-3 rounded-sm", className)}>
-      <img src={logo} alt="Branta Tech" width={1288} height={308} className="h-6 w-auto sm:h-7" draggable={false} />
-      <span className="text-small hidden border-l border-border pl-3 font-medium text-muted-foreground sm:inline">Films</span>
+    <Link to="/" aria-label="Branta Films home" className={cn("flex shrink-0 items-center gap-1.5 rounded-sm sm:gap-2", className)}>
+      <img src={logo} alt="Branta" width={1288} height={308} className="h-5 w-auto sm:h-6" draggable={false} />
+      <span className="brand-films text-media-ink">Films</span>
     </Link>
   );
 }

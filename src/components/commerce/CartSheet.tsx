@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { mediaUrl } from "@/lib/media";
 import { formatTaka } from "@/lib/format";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 /** Cart drawer. Like every modal here it closes only via [X] or an action. */
 export function CartSheet() {
@@ -44,8 +45,8 @@ export function CartSheet() {
 
 export function CartButton() {
   const { items, setOpen } = useCart();
-  return <Button variant="ghost" size="icon" aria-label={`Cart, ${items.length} items`} title="Cart" onClick={() => setOpen(true)} className="site-nav-action relative size-11">
+  return <TooltipProvider delayDuration={250}><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Cart, ${items.length} items`} onClick={() => setOpen(true)} className="header-utility relative size-11">
     <ShoppingCart className="size-[18px]" />
     {items.length ? <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-4 text-primary-foreground">{items.length}</span> : null}
-  </Button>;
+  </Button></TooltipTrigger><TooltipContent side="bottom" className="border border-border bg-popover text-popover-foreground">Cart</TooltipContent></Tooltip></TooltipProvider>;
 }

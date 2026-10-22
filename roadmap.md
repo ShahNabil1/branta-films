@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Header and Films wordmark
+- [x] Research and simplify public header navigation and utilities
+- [x] Visually align Films size/weight with Branta globally through BrandLogo; exact source logo font could not be identified
+- [x] Verify header at 320, 393, 640, 1107 and 1280px; Browse, cart open/close and Sign in pass without runtime errors
+
 ## Current request — Cloudflare image transformations and caching
 - [x] Link the new workspace Cloudflare connection
 - [x] Use bounded Cloudflare artwork transformations with original-image fallback

@@ -11,12 +11,14 @@
 
 # Architecture rules
 
+- BrandLogo owns the combined Branta image and Films wordmark styling for all shared logo placements. Why: public, account and admin logos must remain visually consistent.
+
 - All local mobile-number fields use BdPhoneInput and the browser-safe phone-input normalizer. Why: signup, checkout and profile must convert Bangla digits consistently before validation.
 
 Subdirectories have their own `AGENTS.md`; read it before changing files there.
 
 - Shared account-access middleware and restrictive RLS enforce bans/revoked sessions; browser fingerprints are best-effort. Why: UI-only checks cannot secure playback.
-- Prebundle all Tiptap editor packages at startup and reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: late editor discovery invalidates in-flight module URLs, while mixing dependency generations crashes React hooks.
+- Prebundle Tiptap and header Tooltip packages at startup; keep `optimizeDeps.ignoreOutdatedRequests: false`. Why: late discovery mixes React optimizer generations and crashes hooks.
 - Private R2 video keys stay service-role only; tested `decidePlayback` is the single playback rule. Viewer links use `getPlaybackSource`/`decidePlayback`; admin previews use role-verified `getAdminEpisodeMedia`, short-lived links and no watch-history writes. Why: private previews are not viewing activity.
 - All files (images and videos) live only in the private R2 bucket; Supabase Storage is not used. Images sit under `images/` (series/, episodes/, avatars/) and are proxied by `/api/public/media/*` (prefix + extension allow-list); videos sit under `videos/` and are never proxied. Why: owner wants every file in R2, and videos must stay behind access checks.
 - Roles are in `user_roles` (`admin`, `manager`); `is_staff()` / `has_role()` gate RLS. Viewers have no role row. Why: avoids privilege escalation via profile edits.
