@@ -49,7 +49,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
           <div
             key={s.id}
             aria-hidden="true"
-            className={cn("absolute inset-x-0 top-0 -z-20 aspect-[4/5] max-h-[72%] overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] md:inset-0 md:aspect-auto md:max-h-none md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0")}
+            className={cn("absolute inset-x-0 top-0 -z-20 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] md:inset-0 md:aspect-auto md:max-h-none md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0", s.poster_url ? "aspect-[4/5] max-h-[72%]" : "top-16 aspect-video")}
           >
             {s.poster_url ? (
               <ArtworkImage
