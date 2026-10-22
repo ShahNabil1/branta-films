@@ -18,7 +18,6 @@ import { mediaUrl } from "@/lib/media";
 import { isDirty } from "@/lib/dirty";
 import { ARTWORK_SPECS, type ArtworkSlot } from "@/lib/artwork";
 import { ImageCropDialog } from "./ImageCropDialog";
-import { PriceTag } from "@/components/catalog/PriceTag";
 import { AdminEpisodeVideo } from "./AdminEpisodeVideo";
 import { useVideoUpload } from "@/hooks/use-video-upload";
 import { VideoUploadStatus } from "./VideoUploadStatus";

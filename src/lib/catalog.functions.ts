@@ -19,11 +19,31 @@ function publicClient() {
 }
 
 const SERIES_FIELDS =
-  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, discount_price_bdt, is_featured, sort_order";
+  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, is_featured, sort_order";
 
 export type CatalogSeries = Database["public"]["Tables"]["series"]["Row"] & {
+  /** Sale price from the best automatic coupon, or null when not discounted. */
+  discount_price_bdt: number | null;
   episodes: { id: string; is_free: boolean }[];
 };
+
+/** Adds the automatic-offer sale price for a series and each of its episodes. */
+async function withOffers<T extends { id: string; price_bdt: number; episodes?: { id: string; price_bdt?: number | null }[] }>(rows: T[]) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { loadAutoOffers } = await import("./commerce.server");
+  const { salePrice } = await import("./cart-pricing");
+  const offers = await loadAutoOffers(supabaseAdmin, null).catch(() => []);
+  const sale = (type: "series" | "episode", id: string, seriesId: string | null, price: number) => {
+    if (price <= 0) return null;
+    const p = salePrice({ type, id, seriesId, title: "", price }, offers);
+    return p < price ? p : null;
+  };
+  return rows.map((s) => ({
+    ...s,
+    discount_price_bdt: sale("series", s.id, null, s.price_bdt),
+    episodes: (s.episodes ?? []).map((e) => ({ ...e, sale_price_bdt: e.price_bdt ? sale("episode", e.id, s.id, e.price_bdt) : null })),
+  }));
+}
 
 export const listCatalog = createServerFn({ method: "GET" }).handler(async () => {
   const sb = publicClient();
@@ -33,7 +53,7 @@ export const listCatalog = createServerFn({ method: "GET" }).handler(async () =>
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return (data ?? []) as unknown as CatalogSeries[];
+  return (await withOffers((data ?? []) as unknown as CatalogSeries[])) as unknown as CatalogSeries[];
 });
 
 export const getSeriesBySlug = createServerFn({ method: "GET" })
@@ -43,12 +63,12 @@ export const getSeriesBySlug = createServerFn({ method: "GET" })
     const { data: series, error } = await sb
       .from("series")
       .select(
-        `${SERIES_FIELDS}, episodes(id, episode_number, title, synopsis_html, duration_seconds, thumbnail_url, is_free)`,
+        `${SERIES_FIELDS}, episodes(id, episode_number, title, synopsis_html, duration_seconds, thumbnail_url, is_free, price_bdt)`,
       )
       .eq("slug", data.slug)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!series) return null;
-    const episodes = [...(series.episodes ?? [])].sort((a, b) => a.episode_number - b.episode_number);
-    return { ...series, episodes };
+    const [priced] = await withOffers([{ ...series, episodes: [...(series.episodes ?? [])].sort((a, b) => a.episode_number - b.episode_number) }]);
+    return priced!;
   });
