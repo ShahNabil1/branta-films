@@ -1,8 +1,9 @@
 # Branta Films roadmap
 
 ## Current request — Network dependency tree and LCP
-- [ ] Preload the first visible homepage artwork with matching responsive candidates; shorten the Bangla font discovery chain
-- [ ] Add connection hints only for needed external origins; verify requests and regression tests
+- [x] Shared first-slide selection and responsive image preload; conditional Bangla font preload on Home/Browse, preserving hashed fonts
+- [x] Auth/private-only Supabase preconnect; no redundant production same-origin or speculative captcha hints; 23 tests pass, browser confirms matching server image hint and auth-only connection hint, no runtime errors, build OK
+- [ ] Recheck published Lighthouse timing after owner publishes; Cloudflare-injected email-decode script remains dashboard-controlled
 
 ## Current request — DevTools CPU and account-only scope
 - [x] Remove expensive package; scope blocking to /account and descendants, clearing timer/listeners on exit
