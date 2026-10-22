@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -15,6 +16,7 @@ import geistFont from "../assets/fonts/geist-latin-variable.woff2?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
+import { isAccountShieldPath } from "@/lib/devtools-scope";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart";
 import { CartSheet } from "@/components/commerce/CartSheet";
@@ -113,13 +115,14 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ViewerPresence />
         <CartProvider>
-          <DevToolsShield>
+          <DevToolsShield enabled={isAccountShieldPath(pathname)}>
             <Outlet />
           </DevToolsShield>
           <CartSheet />

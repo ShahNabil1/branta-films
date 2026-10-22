@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — DevTools CPU and account-only scope
+- [x] Remove expensive package; scope blocking to /account and descendants, clearing timer/listeners on exit
+- [x] 21 tests pass (scope, lifecycle, access, routes); Home/Browse/auth browser checks pass with no detector requests/errors; build OK
+- [ ] Verify signed-in production account playback and new Lighthouse timing after publish — external Supabase has no managed test session; published site still needs owner deployment
+
 ## Current request — Cache lifetime warning
 - [x] Diagnose live fonts: no Cache-Control; existing hashed assets return one-year immutable headers; Cloudflare API lists no accessible brantatech.com zone, so dashboard rules could not be inspected
 - [x] Move all five fonts into Vite's hashed asset flow and use the same imported URL for Geist preload; Nitro's existing assets policy supplies one-year caching and changed files get new addresses
