@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 
 const NAV = [
-  { to: "/", label: "Home", icon: House },
-  { to: "/browse", label: "Browse", icon: Compass },
+  { to: "/", label: "Home", icon: House, tone: "nav-home" },
+  { to: "/browse", label: "Browse", icon: Compass, tone: "nav-browse" },
 ] as const;
 
 const itemCls =
@@ -46,7 +46,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <ul className="flex items-center gap-0.5">
             {NAV.map((item) => (
               <li key={item.to}>
-                <Button asChild variant="ghost" className="site-nav-action group h-11 gap-2 px-2 text-muted-foreground sm:px-4">
+                <Button asChild variant="ghost" className={cn("site-nav-action group h-11 gap-2 px-2 sm:px-4", item.tone)}>
                 <Link to={item.to} activeOptions={{ exact: item.to === "/" }}>
                   <item.icon aria-hidden className="hidden sm:block" />
                   {item.label}
@@ -61,7 +61,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           </ul>
         </nav>
         <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
-          <Button asChild variant="ghost" size="icon" className="site-nav-action size-11 text-muted-foreground hover:text-foreground">
+          <Button asChild variant="ghost" size="icon" className="site-nav-action nav-search size-11">
           <Link
             to="/browse"
             aria-label="Search series"

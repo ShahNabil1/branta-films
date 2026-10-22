@@ -135,7 +135,7 @@ function PromoBanner({ backdrop }: { backdrop: string | null }) {
           <h2 className="mt-5 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
           <p className="text-body mt-4 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
         </div>
-        <Button asChild size="xl" className="shrink-0">
+        <Button asChild size="xl" className="discover-action discover-action-solid shrink-0">
           <Link to="/browse">
             Browse series <ArrowRight />
           </Link>

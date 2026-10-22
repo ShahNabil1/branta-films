@@ -110,7 +110,7 @@ function ProfilePage() {
             disabled={busy !== null}
             onClick={() => fileRef.current?.click()}
           >
-            <Camera /> {busy === "avatar" ? "Uploading…" : "Change picture"}
+            <Camera /> {busy === "avatar" ? "Uploading…" : "Replace picture"}
           </Button>
           <input
             ref={fileRef}

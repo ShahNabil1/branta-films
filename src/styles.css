@@ -156,6 +156,12 @@
   --ease-tap: cubic-bezier(0.2, 0.9, 0.25, 1.3);
   --action-highlight: oklch(1 0 0 / 0.2);
   --action-depth: 0 3px 0 color-mix(in oklab, var(--primary) 65%, var(--background));
+  --nav-home: oklch(0.79 0.16 50);
+  --nav-browse: oklch(0.8 0.13 175);
+  --nav-search: oklch(0.87 0.15 85);
+  --action-ink: oklch(0.19 0.015 55);
+  --discover-tint: oklch(0.87 0.15 85);
+  --gradient-discover: linear-gradient(115deg, var(--primary), var(--discover-tint));
   color-scheme: dark;
 }
 
@@ -407,29 +413,74 @@
 }
 .cinema-action svg,
 .site-nav-action svg { transition: transform 260ms var(--ease-tap); }
-.site-nav-action[data-status="active"] {
-  background: var(--accent);
-  color: var(--foreground);
+.site-nav-action {
+  --nav-tone: var(--nav-home);
+  border: 1px solid color-mix(in oklab, var(--nav-tone) 35%, transparent);
+  background: color-mix(in oklab, var(--nav-tone) 11%, var(--background));
+  color: var(--nav-tone);
 }
+.nav-home { --nav-tone: var(--nav-home); }
+.nav-browse { --nav-tone: var(--nav-browse); }
+.nav-search { --nav-tone: var(--nav-search); }
+.site-nav-action[data-status="active"] {
+  background: color-mix(in oklab, var(--nav-tone) 22%, var(--background));
+  border-color: var(--nav-tone);
+  color: var(--nav-tone);
+}
+.site-nav-action[data-status="active"] span[aria-hidden] { background: var(--nav-tone); }
+.discover-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  background: color-mix(in oklab, var(--primary) 13%, var(--background));
+  border: 1px solid color-mix(in oklab, var(--primary) 55%, var(--border));
+  color: var(--nav-home);
+  transition: transform 220ms var(--ease-tap), background-color 180ms, color 180ms, border-color 180ms;
+}
+.discover-action::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--gradient-discover);
+  opacity: 0;
+  transition: opacity 180ms;
+  pointer-events: none;
+}
+.discover-action-solid { color: var(--action-ink); border-color: var(--primary); }
+.discover-action-solid::before { opacity: 1; }
+.discover-action svg { transition: transform 260ms var(--ease-tap); }
+.account-avatar-action { transition: transform 220ms var(--ease-tap), box-shadow 180ms; touch-action: manipulation; }
 @media (hover: hover) {
   .cinema-action:hover { transform: translateY(-2px); }
   .cinema-action:hover::before { transform: translateX(125%); }
   .cinema-action:hover svg { transform: translateX(2px) rotate(-8deg); }
   .cinema-action-secondary:hover { background: var(--muted); border-color: var(--foreground); }
   .site-nav-action:hover svg { transform: translateY(-1px) rotate(-10deg); }
+  .site-nav-action:hover { background: var(--nav-tone); color: var(--action-ink); border-color: var(--nav-tone); transform: translateY(-1px); }
+  .discover-action:hover { color: var(--action-ink); border-color: var(--discover-tint); transform: translateY(-2px); }
+  .discover-action:hover::before { opacity: 1; }
+  .discover-action:hover svg { transform: translateX(4px) rotate(-12deg); }
+  .account-avatar-action:hover { transform: scale(1.06); box-shadow: 0 0 0 3px var(--primary); }
 }
+.discover-action:active, .account-avatar-action:active { transform: scale(0.94); transition-duration: 70ms; }
 .cinema-action:active,
 .site-nav-action:active {
   transform: scale(0.94);
   transition-duration: 80ms;
 }
 .cinema-action:active { box-shadow: none; }
-.site-nav-action:active { background: var(--accent); }
+.site-nav-action:active { background: var(--nav-tone); color: var(--action-ink); }
 @media (prefers-reduced-motion: reduce) {
   .cinema-action, .site-nav-action, .cinema-action svg, .site-nav-action svg { transition: none; }
   .cinema-action::before { display: none; }
   .cinema-action:hover, .cinema-action:active, .site-nav-action:active,
   .cinema-action:hover svg, .site-nav-action:hover svg { transform: none; }
+  .discover-action, .discover-action::before, .discover-action svg, .account-avatar-action { transition: none; }
+  .discover-action:hover, .discover-action:active, .discover-action:hover svg,
+  .site-nav-action:hover, .account-avatar-action:hover, .account-avatar-action:active { transform: none; }
 }
 @utility reveal {
   opacity: 0;
