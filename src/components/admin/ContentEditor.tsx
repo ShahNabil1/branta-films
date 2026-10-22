@@ -140,7 +140,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
-            <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} onEdit={() => setEditing(true)} busy={busy} onUpload={video} />
+            <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
             {progress !== null ? <div className="flex items-center gap-3 text-sm"><progress max={100} value={progress} className="admin-progress w-full" /><span className="tabular-nums">{progress}%</span></div> : null}
             {videoUploaded ? <p className="flex items-center gap-2 text-sm font-semibold text-success"><Check className="size-4" />Video saved securely.</p> : null}
           </div>}</Panel> : null}

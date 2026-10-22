@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { formatClock } from "@/lib/format";
 import { adminQuery } from "@/lib/admin-queries";
 
-export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, onEdit, busy, onUpload }: { episodeId: string; title: string; thumbnail: string | null; editing: boolean; onEdit: () => void; busy: boolean; onUpload: (file: File | undefined) => Promise<void> }) {
+export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, onUpload }: { episodeId: string; title: string; thumbnail: string | null; editing: boolean; busy: boolean; onUpload: (file: File | undefined) => Promise<void> }) {
   const input = useRef<HTMLInputElement>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -57,8 +57,8 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, onEdit
     {durationSeconds != null ? <p className="text-sm tabular-nums text-muted-foreground">Duration · {formatClock(durationSeconds)}</p> : null}
     <div className="flex flex-wrap gap-2">
       <input ref={input} type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy || deleting} onChange={(e) => { void onUpload(e.target.files?.[0]); e.target.value = ""; }} />
-      <Button type="button" disabled={busy || deleting} onClick={() => { if (!editing) onEdit(); input.current?.click(); }}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>
-      {hasVideo ? <Button type="button" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={busy || deleting} onClick={() => { if (!editing) onEdit(); setConfirmDelete(true); }}><Trash2 />Delete video</Button> : null}
+      <Button type="button" title={!editing ? "Select Edit to change the video" : undefined} disabled={!editing || busy || deleting} onClick={() => input.current?.click()}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>
+      {hasVideo ? <Button type="button" variant="outline" title={!editing ? "Select Edit to change the video" : undefined} className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={!editing || busy || deleting} onClick={() => setConfirmDelete(true)}><Trash2 />Delete video</Button> : null}
     </div>
     <ConfirmDialog open={confirmDelete} onClose={() => { if (!deleting) setConfirmDelete(false); }} title="Delete episode video?" description="The video will be permanently removed from this episode and private R2 storage. Episode details and thumbnail will stay." confirmLabel="Delete video" destructive busy={deleting} onConfirm={() => void remove()} />
   </div>;
