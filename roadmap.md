@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Remove Activity
+- [ ] Right-align overview numbers on small devices
+- [ ] Remove Activity displays/page, logging and stored records
+- [ ] Verify removal and mobile layout
+
 ## Current request — Player and R2 lifecycle
 - [x] Fix admin player sizing/contrast; add explicit Replace/Delete in Edit mode
 - [x] Queue superseded/deleted video keys atomically; delete from R2 and retain failures for retry on admin episode visits/manual retry
