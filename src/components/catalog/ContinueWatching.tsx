@@ -9,7 +9,7 @@ import { MediaRow } from "./MediaRow";
 
 const item = "w-[17rem] shrink-0 snap-start sm:w-[20rem]";
 
-export function ContinueWatching({ title = "Continue watching", emptyText }: { title?: string; emptyText?: string }) {
+export function ContinueWatching({ title = "Continue watching", emptyText, inDashboard = false }: { title?: string; emptyText?: string; inDashboard?: boolean }) {
   const { user } = useAuth();
   const { data, isPending } = useQuery(continueWatchingQuery(user?.id));
   if (!user) return null;
@@ -38,7 +38,7 @@ export function ContinueWatching({ title = "Continue watching", emptyText }: { t
         return (
           <Link
             key={row.episode_id}
-            to="/watch/$episodeId"
+            to={inDashboard ? "/account/watch/$episodeId" : "/watch/$episodeId"}
             params={{ episodeId: row.episode_id }}
             className={`${item} group block rounded-[4px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary`}
           >
