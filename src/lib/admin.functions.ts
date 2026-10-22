@@ -52,7 +52,7 @@ export const getAdminOverview = createServerFn({ method: "POST" }).middleware([r
 });
 
 export const saveAdminSeries = createServerFn({ method: "POST" }).middleware([requireAdmin])
-  .inputValidator((input: unknown) => seriesSchema.parse(input)).handler(async ({ data, context }) => {
+  .inputValidator((input: unknown) => seriesWithRules.parse(input)).handler(async ({ data, context }) => {
     const { id: rowId, ...values } = data;
     values.description_html = sanitizeRichText(values.description_html);
     const query = rowId ? context.supabase.from("series").update(values).eq("id", rowId) : context.supabase.from("series").insert(values);

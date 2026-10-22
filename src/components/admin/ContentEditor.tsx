@@ -15,6 +15,7 @@ import { mediaUrl } from "@/lib/media";
 import { isDirty } from "@/lib/dirty";
 import { ARTWORK_SPECS, type ArtworkSlot } from "@/lib/artwork";
 import { ImageCropDialog } from "./ImageCropDialog";
+import { PriceTag } from "@/components/catalog/PriceTag";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -28,7 +29,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [baseHtml, setBaseHtml] = useState<string | null>(null);
   const initial = {
     title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: baseHtml ?? rawHtml,
-    genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0,
+    genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0, discount: series?.discount_price_bdt?.toString() ?? "",
     order: series?.sort_order ?? (Math.max(0, ...data.series.map((s) => s.sort_order)) + 10), featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
     parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
@@ -41,6 +42,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [editing, setEditing] = useState(id === "new");
   const [cropping, setCropping] = useState<{ file: File; slot: ArtworkSlot } | null>(null);
   const changed = isDirty(values, initial);
+  const discountError = kind === "series" && values.discount.trim() !== "" && !(Number(values.discount) >= 0 && Number(values.discount) < values.price) ? "Must be lower than the regular price." : null;
   const onEditorReady = (html: string) => { setBaseHtml(html); setValues((v) => (v.html === rawHtml ? { ...v, html } : v)); };
   const cancel = () => { setValues(initial); setEditing(false); };
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => setValues((v) => ({ ...v, [key]: value }));
@@ -52,7 +54,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       const row = kind === "series" ? await saveAdminSeries({ data: {
         ...(id === "new" ? {} : { id }), title: values.title, slug: values.slug, tagline: values.tagline, description_html: values.html,
         genres: values.genres.split(",").map((g) => g.trim()).filter(Boolean), release_year: values.year ? Number(values.year) : null,
-        maturity_rating: values.maturity, price_bdt: values.price, sort_order: values.order, is_featured: values.featured, is_published: values.published,
+        maturity_rating: values.maturity, price_bdt: values.price, discount_price_bdt: values.discount.trim() === "" ? null : Number(values.discount), sort_order: values.order, is_featured: values.featured, is_published: values.published,
         poster_url: values.poster, backdrop_url: values.backdrop,
       } }) : await saveAdminEpisode({ data: {
         ...(id === "new" ? {} : { id }), series_id: values.parent, title: values.title, episode_number: values.number,
@@ -126,7 +128,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           </div>}</Panel> : null}
         </div>
         <div className="space-y-6">
-          <Panel title="Visibility"><div className="space-y-2.5">{toggle("Published", "published")}{kind === "series" ? toggle("Featured", "featured") : toggle("Free episode", "free")}</div>{kind === "series" ? <div className="mt-4 grid gap-4">{numeric("Price (BDT)", "price", 0)}</div> : null}</Panel>
+          <Panel title="Visibility"><div className="space-y-2.5">{toggle("Published", "published")}{kind === "series" ? toggle("Featured", "featured") : toggle("Free episode", "free")}</div>{kind === "series" ? <div className="mt-4 grid gap-4">{numeric("Regular price (BDT)", "price", 0)}<Field label="Discounted price (BDT)"><Input className="admin-input" aria-label="Discounted price (BDT)" type="number" min={0} placeholder="No discount" value={values.discount} onChange={(e) => set("discount", e.target.value)} /></Field>{discountError ? <p className="-mt-2 text-xs font-semibold text-destructive">{discountError}</p> : values.discount.trim() !== "" && values.price > 0 ? <div className="-mt-1 flex items-center justify-between rounded-xl bg-primary/5 px-3 py-2 text-xs"><span className="text-muted-foreground">Viewers see</span><PriceTag price={values.price} discount={Number(values.discount)} /></div> : <p className="-mt-2 text-xs text-muted-foreground">Leave empty for no discount.</p>}</div> : null}</Panel>
           <Panel title="Artwork" description="JPG, PNG or WebP. You can crop and zoom before upload."><div className="space-y-5">{slots.map((slot) => <div key={slot} className="space-y-2">
             <div className="flex items-baseline justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{ARTWORK_SPECS[slot].label}</p><p className="text-[11px] tabular-nums text-muted-foreground">Best {ARTWORK_SPECS[slot].width} × {ARTWORK_SPECS[slot].height} · {ARTWORK_SPECS[slot].ratio}</p></div>
             <div className={cn("group relative overflow-hidden rounded-xl border border-border bg-muted", slot === "poster" ? "aspect-[2/3]" : "aspect-video")}>
@@ -145,7 +147,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       </fieldset>
       {editing ? <div className="admin-rise sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-lg backdrop-blur-md">
         <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className={cn("size-2 rounded-full", changed ? "bg-primary" : "bg-success")} />{changed ? "Unsaved changes" : "All changes saved"}</p>
-        <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim()} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
+        <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim() || Boolean(discountError)} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
       </div> : null}
     </form>
     <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={(blob) => uploadCropped(blob, cropping!.slot)} />

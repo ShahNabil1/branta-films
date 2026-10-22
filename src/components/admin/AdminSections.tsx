@@ -13,6 +13,7 @@ import { useAuth } from "@/lib/auth";
 import { mediaUrl } from "@/lib/media";
 import { isDirty } from "@/lib/dirty";
 import { SortableList } from "./SortableList";
+import { PriceTag } from "@/components/catalog/PriceTag";
 
 type Section = "overview" | "series" | "episodes" | "users" | "staff" | "activity" | "unlocks";
 export function AdminSection({ section }: { section: Section }) {
@@ -55,7 +56,7 @@ export function AdminSection({ section }: { section: Section }) {
       {section === "series" ? <>{search ? <p className="mb-3 text-xs text-muted-foreground">Clear the search to drag series into a new order.</p> : <p className="mb-3 text-xs text-muted-foreground">Drag ⠿ to set the order viewers see.</p>}<SortableList items={data.series.filter((s) => matches(s.title))} disabled={busy || Boolean(search)} onReorder={async (ids) => { try { await reorderAdminSeries({ data: { ids } }); await queryClient.invalidateQueries({ queryKey: adminQuery.queryKey }); await queryClient.invalidateQueries({ queryKey: ["catalog"] }); toast.success("Series order saved"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not save order"); throw e; } }} render={(s, _i, handle) => <div className="group flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/60 p-2.5 transition-all duration-300 hover:border-primary/30 hover:bg-card hover:shadow-md sm:flex-nowrap">
         {handle}
         {s.poster_url ? <img src={mediaUrl(s.poster_url) ?? undefined} className="h-16 w-11 shrink-0 rounded-lg object-cover ring-1 ring-border" alt="" /> : <span className="grid h-16 w-11 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground"><Film className="size-4" /></span>}
-        <div className="min-w-0 flex-1"><p className="truncate font-semibold">{s.title}</p><p className="mt-1 text-xs text-muted-foreground">{s.genres.join(" · ") || "Uncategorised"} · {data.episodes.filter((e) => e.series_id === s.id).length} episodes · ৳{s.price_bdt}</p></div>
+        <div className="min-w-0 flex-1"><p className="truncate font-semibold">{s.title}</p><p className="mt-1 text-xs text-muted-foreground">{s.genres.join(" · ") || "Uncategorised"} · {data.episodes.filter((e) => e.series_id === s.id).length} episodes · {s.price_bdt > 0 ? <PriceTag price={s.price_bdt} discount={s.discount_price_bdt} className="text-xs" /> : "Free"}</p></div>
         <Chip tone={s.is_published ? "success" : "neutral"}>{s.is_published ? "Published" : "Draft"}</Chip>
         <div className="flex gap-2"><Link className={editActionClass} to="/admin/series/$id" params={{ id: s.id }} aria-label={`Edit ${s.title}`}><Pencil />Edit</Link><button type="button" className={deleteActionClass} aria-label={`Delete ${s.title}`} onClick={() => setConfirmation({ title: `Delete ${s.title}?`, action: () => deleteAdminContent({ data: { id: s.id, kind: "series" } }) })}><Trash2 />Delete</button></div>
       </div>} /></> : null}
