@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Lighthouse screenshots
+- [x] Fix orange Sign in contrast through the shared primary foreground token
+- [ ] Enable production browser source maps without embedding original source contents
+- [ ] Verify contrast and header interactions on desktop/mobile; distinguish optional not-applicable audits from failures
+
 ## Current request — Header and Films wordmark
 - [x] Research and simplify public header navigation and utilities
 - [x] Visually align Films size/weight with Branta globally through BrandLogo; exact source logo font could not be identified
