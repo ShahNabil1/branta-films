@@ -8,9 +8,10 @@ const COLUMNS = [
   { title: "Legal", links: [{ to: "/privacy", label: "Privacy Policy" }, { to: "/terms", label: "Terms of Service" }] },
 ] as const;
 
-/** Full shared footer, with only the legal row and wordmark on /auth. */
+/** Full shared footer, with only the legal row and wordmark on /auth and /forgot-password. */
+const COMPACT_PATHS = new Set(["/auth", "/forgot-password"]);
 export function SiteFooter() {
-  const compact = useLocation({ select: location => location.pathname.replace(/\/$/, "") === "/auth" });
+  const compact = useLocation({ select: location => COMPACT_PATHS.has(location.pathname.replace(/\/$/, "")) });
   return (
     <footer className="footer-glow relative overflow-hidden border-t border-border text-foreground">
       <SiteContainer wide className={compact ? undefined : "pt-20 md:pt-28"}>
