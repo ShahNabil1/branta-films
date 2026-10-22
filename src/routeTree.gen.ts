@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BrowseRouteImport } from './routes/browse'
-import { Route as DndCheckRouteImport } from './routes/dnd-check'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as SetPasswordRouteImport } from './routes/set-password'
@@ -54,11 +53,6 @@ const AuthRoute = AuthRouteImport.update({
 const BrowseRoute = BrowseRouteImport.update({
   id: '/browse',
   path: '/browse',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DndCheckRoute = DndCheckRouteImport.update({
-  id: '/dnd-check',
-  path: '/dnd-check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -187,7 +181,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
-  '/dnd-check': typeof DndCheckRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
@@ -215,7 +208,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
-  '/dnd-check': typeof DndCheckRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
@@ -243,7 +235,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
-  '/dnd-check': typeof DndCheckRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
@@ -273,7 +264,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/browse'
-    | '/dnd-check'
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
@@ -301,7 +291,6 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/browse'
-    | '/dnd-check'
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
@@ -328,7 +317,6 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/browse'
-    | '/dnd-check'
     | '/forgot-password'
     | '/privacy'
     | '/set-password'
@@ -358,7 +346,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
-  DndCheckRoute: typeof DndCheckRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   PrivacyRoute: typeof PrivacyRoute
   SetPasswordRoute: typeof SetPasswordRoute
@@ -395,13 +382,6 @@ declare module '@tanstack/react-router' {
       path: '/browse'
       fullPath: '/browse'
       preLoaderRoute: typeof BrowseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dnd-check': {
-      id: '/dnd-check'
-      path: '/dnd-check'
-      fullPath: '/dnd-check'
-      preLoaderRoute: typeof DndCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -626,7 +606,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
-  DndCheckRoute: DndCheckRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   PrivacyRoute: PrivacyRoute,
   SetPasswordRoute: SetPasswordRoute,
