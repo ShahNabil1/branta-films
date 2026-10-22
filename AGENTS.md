@@ -32,7 +32,7 @@ Subdirectories have their own `AGENTS.md`; read it before changing files there.
 - Admin-authored HTML is sanitised with `sanitizeRichText` (xss allow-list) both when rendering on server and client. Why: identical rendering, no script injection.
 - Modals use `BrandedDialog`/`ConfirmDialog` (close only via X or explicit action); never native confirm/alert. Why: owner's UX rule.
 - DevToolsShield: tested /account scope, cancellable timer; off on localhost/preview/iframes. Why: no public/admin detector cost.
-- Catalogue uses MediaRow/SeriesCard/HeroCarousel; watch uses EpisodeCarousel for shared styling and touch navigation.
+- Catalogue/watch share MediaRow, SeriesCard, HeroCarousel, EpisodeCarousel and EpisodeCount. formatDuration formats runtimes; formatClock keeps playback precision. Why: consistent presentation.
 - Video changes queue old keys privately; admin operations drain the queue, retaining failed R2 deletes for retry. Why: no orphaned videos.
 - Avatars use `profilePicture`, saved images first; protected people reads resolve Auth pictures for private-safe consistency.
 - Content SEO uses content-seo defaults plus nullable admin overrides; public episode details never return playback media. Why: shareable SSR metadata without weakening viewing access. Durations use Mediabunny private MP4 reads, never form input.

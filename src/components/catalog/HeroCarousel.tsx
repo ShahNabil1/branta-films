@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { CatalogSeries } from "@/lib/catalog.functions";
 import { mediaUrl } from "@/lib/media";
 import { ArtworkImage } from "./ArtworkImage";
+import { EpisodeCount } from "./EpisodeCount";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -106,7 +107,6 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
             {[
               current.maturity_rating,
               current.release_year ? String(current.release_year) : null,
-              `${current.episodes.length} episodes`,
               freeEp ? "Episode 1 free" : null,
               current.price_bdt > 0 ? (() => { const p = seriesPrice(current.price_bdt, current.discount_price_bdt); return `Full season ${formatTaka(p.final)}${p.percentOff ? ` · ${p.percentOff}% off` : ""}`; })() : null,
             ]
@@ -117,6 +117,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                   {item}
                 </li>
               ))}
+            <li><EpisodeCount count={current.episodes.length} className="text-foreground/90" /></li>
           </ul>
           <div className="animate-fade-up mt-8 flex flex-wrap gap-3 [animation-delay:220ms]">
             <Button asChild size="xl" className="cinema-action">

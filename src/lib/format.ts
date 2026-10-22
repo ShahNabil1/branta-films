@@ -3,7 +3,15 @@ export function formatTaka(amount: number) {
 }
 
 export function formatDuration(seconds: number) {
-  return formatClock(seconds);
+  const { hours, minutes, seconds: remainder } = durationParts(seconds);
+  if (hours > 0) return `${hours} hr${minutes > 0 ? ` ${minutes} min` : ""}`;
+  if (minutes > 0) return `${minutes} min`;
+  return `${remainder} sec`;
+}
+
+export function durationParts(seconds: number) {
+  const value = Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0;
+  return { hours: Math.floor(value / 3600), minutes: Math.floor(value / 60) % 60, seconds: value % 60 };
 }
 
 export function formatClock(seconds: number) {

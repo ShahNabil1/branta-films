@@ -3,6 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Clock, Lock, Play, ShoppingCart } from "lucide-react";
 import { PriceTag } from "@/components/catalog/PriceTag";
+import { EpisodeCount } from "@/components/catalog/EpisodeCount";
 import { PurchaseDialog } from "@/components/commerce/PurchaseDialog";
 import { RichText } from "@/components/content/RichText";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
@@ -89,8 +90,8 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
             <div className="animate-fade-up mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-small text-foreground/75 [animation-delay:160ms]">
               {series.maturity_rating ? <span className="rounded-full border border-foreground/30 px-2 py-0.5">{series.maturity_rating}</span> : null}
               {series.release_year ? <span>{series.release_year}</span> : null}
-              <span>{series.episodes.length} episodes</span>
-              {totalSeconds ? <span>{formatDuration(totalSeconds)} total</span> : null}
+              <EpisodeCount count={series.episodes.length} className="text-foreground/90" />
+              {totalSeconds ? <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-medium text-foreground/90"><Clock aria-hidden="true" className="size-3.5 text-primary" />{formatDuration(totalSeconds)}</span> : null}
             </div>
             <div className="animate-fade-up mt-8 flex flex-wrap items-start gap-3 [animation-delay:220ms]">
               {first ? (
