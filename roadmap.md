@@ -1,9 +1,10 @@
 # Branta Films roadmap
 
 ## Current request — Colourful controls and avatar
-- [ ] Give selected navigation and catalogue actions colourful idle/hover states and playful tap motion
-- [ ] Share uploaded/Google avatar selection across header and profile with replacement priority
-- [ ] Test avatar rules and verify public navigation interactions; authenticated Google/upload checks require external session
+- [x] Give selected navigation and catalogue actions colourful idle/hover states and playful tap motion
+- [x] Share uploaded/Google avatar selection across header and profile with replacement priority
+- [x] Four avatar-rule tests pass; colourful hover and Browse navigation verified in browser, no runtime errors, build OK
+- [ ] Verify real Google sign-in and avatar replacement end-to-end — blocked: external Supabase supplies no managed test session
 
 ## Current request — Watch experience
 - [x] Polish buttons, thumbnail episode carousel and suggested series
