@@ -203,6 +203,7 @@ function ForgotPasswordPage() {
               </button>
             </div>
           </div>
+          <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="recover_resend" />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
