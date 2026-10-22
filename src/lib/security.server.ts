@@ -13,7 +13,7 @@ export async function ensureAccountAccess(userId: string, claims: Record<string,
   const { data: account, error: accountError } = await sb.auth.admin.getUserById(userId);
   if (accountError || !account.user) throw new Error('Your session is no longer available. Please sign in again.');
   const sessionId = typeof claims['session_id'] === 'string' ? claims['session_id'] : null;
-  const [restriction, session, blocks] = await Promise.all([
+  const [restriction, session] = await Promise.all([
     sb.from('account_restrictions').select('banned_until').eq('user_id', userId).maybeSingle(),
     sessionId ? sb.from('viewer_sessions').select('revoked_at,device_hash').eq('session_id', sessionId).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]);
