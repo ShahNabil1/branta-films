@@ -37,7 +37,7 @@ describe("automatic content metadata and optional overrides", () => {
   });
   it("self-references canonical and OG URL", () => {
     const head = seoHead(contentSeo({ title: "Series" }), "/series/neon-rain");
-    expect(head.links[0].href).toBe("https://films.brantatech.com/series/neon-rain");
+    expect(head.links[0]?.href).toBe("https://films.brantatech.com/series/neon-rain");
     expect(head.meta.find(m => "property" in m && m.property === "og:url")?.content).toBe("https://films.brantatech.com/series/neon-rain");
   });
   it("escapes HTML script delimiters in structured data", () => {
