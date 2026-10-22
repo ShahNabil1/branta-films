@@ -373,6 +373,21 @@
 }
 
 /* ---------- Motion (Branta Tech) ---------- */
+.player-theme {
+  --background: #0b0b0b;
+  --foreground: #f7f7f5;
+  --popover: #161616;
+  --popover-foreground: #f7f7f5;
+  --secondary: #252525;
+  --secondary-foreground: #f7f7f5;
+  --muted: #252525;
+  --muted-foreground: #b7b0aa;
+  --border: #45403c;
+  --scrim: rgb(8 8 8 / 0.8);
+  --media-ink: #f7f7f5;
+  color: var(--foreground);
+  color-scheme: dark;
+}
 .player-control {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;

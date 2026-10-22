@@ -246,7 +246,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   return (
     <div
       ref={wrapRef}
-      className={cn("group relative aspect-video w-full overflow-hidden bg-background outline-none", fullscreen && "aspect-auto h-full", !controls && "cursor-none")}
+      className={cn("player-theme group relative aspect-video w-full overflow-hidden bg-background outline-none", fullscreen && "aspect-auto h-full", !controls && "cursor-none")}
       tabIndex={0}
       onKeyDown={onKey}
       onMouseMove={poke}
@@ -255,7 +255,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     >
       <video
         ref={videoRef}
-        className="size-full"
+        className="absolute inset-0 size-full object-contain"
         poster={poster ?? undefined}
         playsInline
         preload="metadata"

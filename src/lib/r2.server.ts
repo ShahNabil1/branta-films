@@ -72,5 +72,6 @@ export async function r2PutObject(key: string, body: ArrayBuffer, contentType: s
 
 export async function r2DeleteObject(key: string): Promise<void> {
   const { accountId, bucket, client } = r2Config();
-  await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "DELETE" });
+  const res = await client.fetch(objectUrl(accountId, bucket, key).toString(), { method: "DELETE" });
+  if (!res.ok && res.status !== 404) throw new Error(`Video removal failed (status ${res.status}).`);
 }

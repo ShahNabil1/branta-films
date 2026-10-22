@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Player and R2 lifecycle
+- [ ] Fix admin player sizing/contrast; add explicit Replace/Delete in Edit mode
+- [ ] Queue superseded/deleted video keys atomically; delete from R2 and retain failures for retry
+- [ ] Test lifecycle and player rendering; actual signed-in destructive check blocked by external Supabase session access
+
 ## Current request — Saved episode media
 - [x] Show persisted video preview and metadata when reopening an episode; refresh after replacement
 - [x] Distinguish missing thumbnail from missing video and preserve saved artwork; actual episode has video but null thumbnail
