@@ -4,8 +4,8 @@ import logo from "@/assets/brand/branta-logo-light.png";
 /**
  * DevToolsShield:
  *  - Blocks right-click, F12, Ctrl+Shift+I/J/C, Cmd+Opt+I/J/C, Ctrl+U, Ctrl+S.
- *  - Detects an open DevTools panel via `disable-devtool`, with a
- *    debugger-timing fallback loop.
+ *  - Uses a lightweight debugger-timing loop only on account routes.
+ *    No console-object probes or third-party permanent listeners.
  *  - Shows a full-screen blackout warning while DevTools is open.
  *  - Fully disabled on localhost, Lovable preview domains and inside iframes.
  *
@@ -21,7 +21,6 @@ export type DevToolsShieldConfig = {
   debuggerThresholdMs: number;
   triggerSamples: number;
   clearSamples: number;
-  usePackage: boolean;
   useDebuggerFallback: boolean;
   pauseWhenHidden: boolean;
   disabledHostSuffixes: string[];
@@ -33,7 +32,6 @@ export const DEFAULT_DEVTOOLS_SHIELD_CONFIG: DevToolsShieldConfig = {
   debuggerThresholdMs: 150,
   triggerSamples: 2,
   clearSamples: 2,
-  usePackage: true,
   useDebuggerFallback: true,
   pauseWhenHidden: true,
   disabledHostSuffixes: [".lovableproject.com", ".lovable.app", ".lovable.dev", "localhost", "127.0.0.1"],
@@ -91,7 +89,7 @@ function Blackout() {
   );
 }
 
-export function DevToolsShield({ children, config: userConfig }: { children: ReactNode; config?: Partial<DevToolsShieldConfig> }) {
+export function DevToolsShield({ children, enabled, config: userConfig }: { children: ReactNode; enabled: boolean; config?: Partial<DevToolsShieldConfig> }) {
   const config = { ...DEFAULT_DEVTOOLS_SHIELD_CONFIG, ...userConfig };
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(false);
@@ -107,7 +105,7 @@ export function DevToolsShield({ children, config: userConfig }: { children: Rea
 
   // Shortcut + context-menu blocking (production only).
   useEffect(() => {
-    if (!active) return;
+    if (!active || !enabled) return;
     const onContextMenu = (e: MouseEvent) => e.preventDefault();
     const onKeyDown = (e: KeyboardEvent) => {
       const key = e.key;
@@ -130,11 +128,12 @@ export function DevToolsShield({ children, config: userConfig }: { children: Rea
       document.removeEventListener("contextmenu", onContextMenu);
       window.removeEventListener("keydown", onKeyDown, { capture: true } as EventListenerOptions);
     };
-  }, [active]);
+  }, [active, enabled]);
 
   // DevTools detection (production only).
   useEffect(() => {
-    if (!active) return;
+    setOpen(false);
+    if (!active || !enabled) return;
     let cancelled = false;
     let positive = 0;
     let negative = 0;
@@ -153,33 +152,13 @@ export function DevToolsShield({ children, config: userConfig }: { children: Rea
       }
     };
 
-    if (config.usePackage) {
-      import("disable-devtool")
-        .then((mod) => {
-          if (cancelled) return;
-          const dd = ((mod as { default?: unknown }).default ?? mod) as (opts: Record<string, unknown>) => void;
-          try {
-            dd({
-              md5: "",
-              url: "",
-              tkName: "ddtk",
-              ondevtoolopen: () => commit(true),
-              ondevtoolclose: () => commit(false),
-              interval: config.checkIntervalMs,
-              disableMenu: true,
-              clearIntervalWhenDevOpenTrigger: false,
-              disableIframeParents: false,
-            });
-          } catch {
-            /* fallback loop below still runs */
-          }
-        })
-        .catch(() => undefined);
-    }
-
     if (config.useDebuggerFallback) {
       intervalId = window.setInterval(() => {
-        if (config.pauseWhenHidden && document.visibilityState === "hidden") return;
+        if (config.pauseWhenHidden && document.visibilityState === "hidden") {
+          positive = 0;
+          negative = 0;
+          return;
+        }
         const start = performance.now();
         // eslint-disable-next-line no-debugger
         debugger;
@@ -189,17 +168,19 @@ export function DevToolsShield({ children, config: userConfig }: { children: Rea
 
     return () => {
       cancelled = true;
-      if (intervalId) window.clearInterval(intervalId);
+      if (intervalId !== undefined) window.clearInterval(intervalId);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [active]);
+  }, [active, enabled]);
+
+  const blocked = active && enabled && open;
 
   return (
     <>
-      <div aria-hidden={open || undefined} style={open ? { visibility: "hidden" } : undefined}>
+      <div aria-hidden={blocked || undefined} style={blocked ? { visibility: "hidden" } : undefined}>
         {children}
       </div>
-      {open ? <Blackout /> : null}
+      {blocked ? <Blackout /> : null}
     </>
   );
 }
