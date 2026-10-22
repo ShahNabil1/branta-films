@@ -23,7 +23,7 @@ const seriesSchema = z.object({
 const seriesWithRules = seriesSchema;
 const episodeSchema = z.object({
   id: id.optional(), series_id: id, title: z.string().trim().min(1).max(200), episode_number: z.number().int().min(1),
-  synopsis_html: z.string().max(100000), is_free: z.boolean(), price_bdt: z.number().int().min(1).max(100000).nullable(), is_published: z.boolean(),
+  synopsis_html: z.string().max(100000), is_free: z.boolean(), price_bdt: z.number().int().min(1).max(100000).nullable().optional(), is_published: z.boolean(),
   thumbnail_url: z.string().startsWith("images/episodes/").nullable(),
 });
 
