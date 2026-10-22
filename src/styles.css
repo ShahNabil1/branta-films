@@ -726,3 +726,8 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* RTE writing area mirrors the public site's dark canvas so chosen colours look exactly as published. */
+.rte-site-canvas { background: #0b0b0b; color: #f2f2f2; color-scheme: dark; }
+.rte-site-canvas-note { padding: 8px 16px 0; font-size: 11px; color: #8a8a8a; }
+.rte-site-canvas .rich-text { color: #f2f2f2; caret-color: #ff5d00; }

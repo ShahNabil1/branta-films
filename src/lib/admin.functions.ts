@@ -92,8 +92,9 @@ export const saveAdminSeries = createServerFn({ method: "POST" }).middleware([re
 export const saveAdminEpisode = createServerFn({ method: "POST" }).middleware([requireAdmin])
   .inputValidator((input: unknown) => episodeSchema.parse(input)).handler(async ({ data, context }) => {
     const { id: rowId, ...values } = data;
-    values.synopsis_html = sanitizeRichText(values.synopsis_html);
-    const query = rowId ? context.supabase.from("episodes").update(values).eq("id", rowId) : context.supabase.from("episodes").insert(values);
+    const { price_bdt, ...rest } = values;
+    const clean = { ...rest, synopsis_html: sanitizeRichText(values.synopsis_html), ...(price_bdt !== undefined ? { price_bdt } : {}) };
+    const query = rowId ? context.supabase.from("episodes").update(clean).eq("id", rowId) : context.supabase.from("episodes").insert(clean);
     const { data: row, error } = await query.select("id").single();
     if (error) throw new Error(error.message);
     return row;
