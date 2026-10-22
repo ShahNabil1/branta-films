@@ -49,7 +49,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
           <div
             key={s.id}
             aria-hidden="true"
-            className={cn("absolute inset-x-0 top-0 -z-20 overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] md:inset-0 md:aspect-auto md:max-h-none md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0", s.poster_url ? "aspect-[4/5] max-h-[72%]" : "top-16 aspect-video")}
+            className={cn("absolute inset-x-0 top-0 -z-20 w-full overflow-hidden [mask-image:linear-gradient(to_bottom,black_60%,transparent)] md:inset-0 md:h-auto md:aspect-auto md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0", s.poster_url ? "h-[64%]" : "top-16 aspect-video")}
           >
             {s.poster_url ? (
               <ArtworkImage
@@ -81,7 +81,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
       })}
       <div className="cinema-mask absolute inset-0 -z-10 hidden md:block" />
       {/* Portrait screens: image framed in the upper area, text on a deep vertical scrim below. */}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,transparent_0%,transparent_30%,color-mix(in_oklab,var(--background)_70%,transparent)_52%,var(--background)_72%)] md:hidden" />
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--background)_55%,transparent)_0%,transparent_14%,transparent_30%,color-mix(in_oklab,var(--background)_80%,transparent)_50%,var(--background)_64%)] md:hidden" />
       {autoplay ? (
         // Invisible timer shared by every screen size; the visible bars run the same animation in sync.
         <span key={index} aria-hidden="true" className="animate-fill-x pointer-events-none absolute size-px opacity-0" style={fillStyle} onAnimationEnd={next} />
