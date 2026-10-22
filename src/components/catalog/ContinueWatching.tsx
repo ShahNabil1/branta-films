@@ -6,6 +6,7 @@ import { mediaUrl } from "@/lib/media";
 import { continueWatchingQuery } from "@/lib/progress";
 import { formatClock } from "@/lib/format";
 import { MediaRow } from "./MediaRow";
+import { ArtworkImage } from "./ArtworkImage";
 
 const item = "w-[17rem] shrink-0 snap-start sm:w-[20rem]";
 
@@ -44,7 +45,7 @@ export function ContinueWatching({ title = "Continue watching", emptyText, inDas
           >
             <div className="relative aspect-video overflow-hidden rounded-[4px] bg-muted">
               {img ? (
-                <img src={img} alt="" loading="lazy" width={1600} height={900} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
+                <ArtworkImage path={row.series?.backdrop_url ?? row.series?.poster_url ?? ""} variant="thumbnail" sizes="(max-width: 640px) 272px, 320px" alt="" loading="lazy" width={1600} height={900} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]" />
               ) : null}
               <span className="text-caption pointer-events-none absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-[3px] bg-scrim px-2 py-1 font-medium text-media-ink backdrop-blur-sm">
                 <Play className="size-3 fill-current" /> Resume at {formatClock(row.position_seconds)}

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { mediaUrl } from "@/lib/media";
+import { ArtworkImage } from "@/components/catalog/ArtworkImage";
 import { formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -38,7 +39,7 @@ export function EpisodeCarousel({ episodes, currentId, backdrop, to = "/watch/$e
         return <li key={ep.id} className="w-[min(76vw,300px)] shrink-0 snap-start">
           <Link to={to} params={{ episodeId: ep.id }} aria-current={active ? "true" : undefined} draggable={false} className="episode-card group block rounded-md outline-offset-4 focus-visible:outline-primary">
             <div className="relative aspect-video overflow-hidden rounded-md bg-surface">
-              {src ? <img src={src} alt={ep.title} loading="lazy" draggable={false} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="flex size-full items-center justify-center"><Play className="size-8 text-muted-foreground" /></div>}
+              {src ? <ArtworkImage path={ep.thumbnail_url ?? backdrop ?? ""} variant="thumbnail" sizes="(max-width: 400px) 76vw, 300px" alt={ep.title} loading="lazy" draggable={false} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="flex size-full items-center justify-center"><Play className="size-8 text-muted-foreground" /></div>}
               <span className="absolute left-3 top-3 rounded-sm bg-scrim px-2 py-1 text-xs font-medium text-media-ink">{String(ep.episode_number).padStart(2, "0")}</span>
               <span className={cn("absolute bottom-3 left-3 rounded-sm px-2 py-1 text-xs font-medium", active ? "bg-primary text-primary-foreground" : "bg-scrim text-media-ink")}>{active ? "Now playing" : ep.is_free ? "Free" : formatDuration(ep.duration_seconds ?? 0)}</span>
               <span className={cn("absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity", active ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100")}><Play className="size-4 fill-current" /></span>

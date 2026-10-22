@@ -5,6 +5,7 @@ import { Info, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CatalogSeries } from "@/lib/catalog.functions";
 import { mediaUrl } from "@/lib/media";
+import { ArtworkImage } from "./ArtworkImage";
 import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -51,8 +52,10 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
             className={cn("absolute inset-0 -z-20 overflow-hidden transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0")}
           >
             {src ? (
-              <img
-                src={src}
+              <ArtworkImage
+                path={s.backdrop_url ?? s.poster_url ?? ""}
+                variant="backdrop"
+                sizes="100vw"
                 alt=""
                 width={1920}
                 height={1080}
@@ -140,7 +143,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                   )}
                 >
                   <div className="relative aspect-video overflow-hidden rounded-[4px] bg-muted">
-                    {thumb ? <img src={thumb} alt="" loading="lazy" width={320} height={180} className="size-full object-cover transition-transform duration-700 ease-out group-hover/thumb:scale-[1.03]" /> : null}
+                    {thumb ? <ArtworkImage path={s.backdrop_url ?? s.poster_url ?? ""} variant="thumbnail" sizes="176px" alt="" loading="lazy" width={320} height={180} className="size-full object-cover transition-transform duration-700 ease-out group-hover/thumb:scale-[1.03]" /> : null}
                     <span className="text-caption pointer-events-none absolute bottom-2 left-2 rounded-[3px] bg-scrim px-2 py-1 font-medium text-media-ink backdrop-blur-sm">
                       {s.title}
                     </span>
