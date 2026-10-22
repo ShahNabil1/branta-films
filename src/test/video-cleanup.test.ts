@@ -5,7 +5,7 @@ vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from:
   select: () => ({ order: () => ({ limit: mocks.queued }) }),
   delete: () => ({ eq: mocks.remove }),
   update: (values: unknown) => ({ eq: (...args: unknown[]) => mocks.retry(values, ...args) }),
-} : { select: () => ({ eq: () => ({ limit: mocks.active }) }) } }));
+} : { select: () => ({ eq: () => ({ limit: mocks.active }) }) } } }));
 vi.mock("@/lib/r2.server", () => ({ r2DeleteObject: mocks.r2Delete }));
 import { flushVideoCleanup } from "@/lib/video-cleanup.server";
 
