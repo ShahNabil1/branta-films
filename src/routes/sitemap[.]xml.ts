@@ -30,13 +30,16 @@ export const Route = createFileRoute("/sitemap.xml")({
           const pageSize = 1000;
           for (let offset = 0; ; ) {
             // Public read policies only return published series.
-            const { data, error } = await supabase.from("series").select("slug").order("id").range(offset, offset + pageSize - 1);
+            const { data, error } = await supabase.from("series").select("slug, episodes(id)").order("id").range(offset, offset + pageSize - 1);
             if (error) return new Response("Sitemap unavailable", { status: 503, headers: { "Cache-Control": "no-store" } });
             if (!data.length) break;
             for (const row of data) {
               const location = router.buildLocation({ to: "/series/$slug", params: { slug: row.slug }, search: () => ({}), hash: "" });
               const path = sitemapPathForLocation(router, location, routeId);
               if (path) entries.push({ path });
+              if (isSitemapRouteIncluded(router.routesById["/episode/$episodeId"])) {
+                for (const episode of row.episodes ?? []) entries.push({ path: `/episode/${episode.id}` });
+              }
             }
             offset += data.length;
           }

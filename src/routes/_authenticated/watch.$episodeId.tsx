@@ -1,19 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { WatchView } from "@/components/player/WatchView";
+import { episodeDetailsQuery } from "@/lib/queries";
+import { contentSeo, seoHead } from "@/lib/content-seo";
 
 export const Route = createFileRoute("/_authenticated/watch/$episodeId")({
   staticData: { sitemap: false },
-  head: () => ({
-    meta: [
-      { title: "Now playing — Branta Films" },
-      { name: "description", content: "Watch Branta Films originals." },
-      { name: "robots", content: "noindex" },
-      { property: "og:title", content: "Now playing — Branta Films" },
-      { property: "og:description", content: "Watch Branta Films originals." },
-      { property: "og:type", content: "video.episode" },
-      { name: "twitter:card", content: "summary" },
-    ],
-  }),
+  loader: async ({ context, params }) => {
+    const ep = await context.queryClient.ensureQueryData(episodeDetailsQuery(params.episodeId));
+    if (!ep?.series) throw notFound();
+    return contentSeo(ep, { seriesTitle: ep.series.title, number: ep.episode_number, fallbackImage: ep.series.backdrop_url ?? ep.series.poster_url });
+  },
+  head: ({ loaderData, params }) => seoHead(loaderData ?? contentSeo({ title: "Now playing" }), `/watch/${params.episodeId}`, "video.episode", true),
   component: WatchPage,
 });
 
