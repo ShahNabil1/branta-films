@@ -1,10 +1,11 @@
 # Branta Films roadmap
 
 ## Current request — Cache lifetime warning
-- [ ] Diagnose live font/static caching and existing Cloudflare rules
-- [ ] Add safe one-year versioned font caching with automatic file-address invalidation
-- [ ] Preserve private-data isolation and existing artwork/query invalidation
-- [ ] Verify fonts, cache configuration and public pages; identify platform-owned script limitations
+- [x] Diagnose live fonts: no Cache-Control; existing hashed assets return one-year immutable headers; Cloudflare API lists no accessible brantatech.com zone, so dashboard rules could not be inspected
+- [x] Move all five fonts into Vite's hashed asset flow and use the same imported URL for Geist preload; Nitro's existing assets policy supplies one-year caching and changed files get new addresses
+- [x] Preserve private-data isolation and existing artwork/query invalidation; no shared account/checkout/playback caching introduced
+- [x] Verify all fonts including Bangla, Home/Browse/auth, desktop/mobile and 19 regression tests; build OK, no runtime errors
+- [ ] Confirm live hashed font Cache-Control after owner publishes; platform-owned /~flock.js and Cloudflare email-decode TTL remain outside app control
 
 ## Current request — Lighthouse screenshots
 - [x] Fix orange Sign in contrast through the shared primary foreground token
