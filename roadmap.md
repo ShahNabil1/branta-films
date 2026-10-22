@@ -2,9 +2,9 @@
 
 ## Current request — Cloudflare image transformations and caching
 - [x] Link the new workspace Cloudflare connection
-- [ ] Use bounded Cloudflare artwork transformations with original-image fallback
-- [ ] Test transformation URLs and image-only one-year caching
-- [ ] Explain dashboard cache settings and verify live transformation availability
+- [x] Use bounded Cloudflare artwork transformations with original-image fallback
+- [x] Test transformation URLs and image-only one-year caching — 23 tests pass; desktop/mobile artwork and fallback load; build OK
+- [x] Verify live transformation availability and prepare dashboard cache instructions — live transformed cover works; connection returns no accessible zones, so dashboard rules remain owner-managed
 
 ## Current request — AI-generated identity and content SEO
 - [x] Connect Google Search Console freshly in the new workspace; disregard previous workspace connections
