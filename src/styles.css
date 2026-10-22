@@ -431,12 +431,11 @@
 }
 .cinema-action svg,
 .site-nav-action svg { transition: transform 260ms var(--ease-tap); }
-.site-nav-action {
-  --nav-tone: var(--nav-home);
-  border: 1px solid color-mix(in oklab, var(--nav-tone) 35%, transparent);
-  background: color-mix(in oklab, var(--nav-tone) 11%, var(--background));
-  color: var(--nav-tone);
-}
+.header-nav { color: var(--muted-foreground); background: transparent; touch-action: manipulation; letter-spacing: 0; }
+.header-nav:hover, .header-nav[data-status="active"] { color: var(--foreground); background: transparent; }
+.header-utility { color: var(--muted-foreground); background: transparent; touch-action: manipulation; }
+.header-utility:hover { color: var(--foreground); background: var(--muted); }
+.site-nav-action { color: var(--foreground); background: transparent; }
 .nav-home { --nav-tone: var(--nav-home); }
 .nav-browse { --nav-tone: var(--nav-browse); }
 .nav-search { --nav-tone: var(--nav-search); }
@@ -476,8 +475,7 @@
   .cinema-action:hover::before { transform: translateX(125%); }
   .cinema-action:hover svg { transform: translateX(2px) rotate(-8deg); }
   .cinema-action-secondary:hover { background: var(--muted); border-color: var(--foreground); }
-  .site-nav-action:hover svg { transform: translateY(-1px) rotate(-10deg); }
-  .site-nav-action:hover { background: var(--nav-tone); color: var(--action-ink); border-color: var(--nav-tone); transform: translateY(-1px); }
+  .site-nav-action:hover { background: var(--muted); }
   .discover-action:hover { color: var(--action-ink); border-color: var(--discover-tint); transform: translateY(-2px); }
   .discover-action:hover::before { opacity: 1; }
   .discover-action:hover svg { transform: translateX(4px) rotate(-12deg); }
