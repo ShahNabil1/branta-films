@@ -2,10 +2,11 @@
 
 ## Current request — AI-generated identity and content SEO
 - [x] Connect Google Search Console freshly in the new workspace; disregard previous workspace connections
-- [ ] Update site identity, titles, social metadata and structured data
-- [ ] Persist validated optional series/episode metadata overrides and add admin controls
-- [ ] Apply automatic defaults and overrides to series/episode pages; keep private playback protected
-- [ ] Verify metadata rules and public pages; authenticated editing unavailable on external Supabase
+- [x] Update site identity, titles, social metadata and structured data
+- [x] Persist validated optional series/episode metadata overrides and add admin controls
+- [x] Apply automatic defaults and overrides to series/episode pages; keep private playback protected
+- [x] Verify metadata rules, public episode SSR, sign-in destination and sitemap; build OK
+- [ ] Verify actual signed-in admin save and R2 OG upload — blocked: external Supabase has no managed test session
 
 ## Current request — Payments, coupons, popups (3 phases)
 - [x] Phase 1: per-episode prices, cart, purchase popup on locked episodes, checkout (bKash/Nagad/Rocket + TrxID), viewer Orders page, admin Payments approve/reject + receiving numbers

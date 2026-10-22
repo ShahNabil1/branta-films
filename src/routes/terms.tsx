@@ -13,7 +13,9 @@ export const Route = createFileRoute("/terms")({
       { property: "og:description", content: description },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://films.brantatech.com/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://films.brantatech.com/terms" }],
   }),
   component: () => (
     <LegalPage
