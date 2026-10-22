@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, Loader2, RefreshCw, Upload, Trash2 } from "lucide-react";
@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { mediaUrl } from "@/lib/media";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
 import { Button } from "@/components/ui/button";
+import { formatClock } from "@/lib/format";
+import { adminQuery } from "@/lib/admin-queries";
 
 export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, onUpload }: { episodeId: string; title: string; thumbnail: string | null; editing: boolean; busy: boolean; onUpload: (file: File | undefined) => Promise<void> }) {
   const input = useRef<HTMLInputElement>(null);
@@ -26,11 +28,19 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, 
     if (data?.source && data.source.expiresAt > Date.now() + 60_000) return data.source;
     return (await readMedia({ data: { episodeId } })).source;
   }, [data, readMedia, episodeId]);
+  const durationSeconds = data && "durationSeconds" in data ? data.durationSeconds : null;
+  useEffect(() => {
+    if (durationSeconds == null) return;
+    void qc.invalidateQueries({ queryKey: adminQuery.queryKey });
+    void qc.invalidateQueries({ queryKey: ["catalog"] });
+  }, [durationSeconds, qc]);
   async function remove() {
     setDeleting(true);
     try {
       const result = await removeVideo({ data: { episodeId } });
       await qc.invalidateQueries({ queryKey: ["admin-episode-media", episodeId] });
+      await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
+      await qc.invalidateQueries({ queryKey: ["catalog"] });
       setConfirmDelete(false);
       if (result.cleanupPending) toast.warning("Video removed. Storage cleanup will retry on your next episode visit.");
       else toast.success("Video deleted from the episode and R2.");
@@ -44,11 +54,12 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, 
     {data?.status === "ready" ? <><div className="overflow-hidden rounded-lg"><VideoPlayer key={data.source?.url} getSource={getSource} poster={mediaUrl(thumbnail)} title={title} onProgress={() => {}} /></div>
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><span className="flex items-center gap-1.5 font-semibold text-success"><Check className="size-4" />Saved video · MP4</span>{data.sizeBytes != null ? <span className="tabular-nums text-muted-foreground">{(data.sizeBytes / 1024 / 1024).toFixed(1)} MB</span> : null}</div></> : <p className="text-sm text-muted-foreground">{data?.status === "missing" ? "Saved video file is missing. Replace it to restore playback." : "No video uploaded yet."}</p>}
     {data?.cleanupPending ? <div className="flex flex-wrap items-center gap-2"><p role="status" className="text-xs text-warning">Old video cleanup is pending.</p><Button type="button" variant="outline" size="sm" onClick={() => void refetch()}><RefreshCw />Retry cleanup</Button></div> : null}
-    {editing ? <div className="flex flex-wrap gap-2">
+    {durationSeconds != null ? <p className="text-sm tabular-nums text-muted-foreground">Duration · {formatClock(durationSeconds)}</p> : null}
+    <div className="flex flex-wrap gap-2">
       <input ref={input} type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy || deleting} onChange={(e) => { void onUpload(e.target.files?.[0]); e.target.value = ""; }} />
-      <Button type="button" disabled={busy || deleting} onClick={() => input.current?.click()}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>
-      {hasVideo ? <Button type="button" variant="outline" className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={busy || deleting} onClick={() => setConfirmDelete(true)}><Trash2 />Delete video</Button> : null}
-    </div> : null}
+      <Button type="button" title={!editing ? "Select Edit to change the video" : undefined} disabled={!editing || busy || deleting} onClick={() => input.current?.click()}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>
+      {hasVideo ? <Button type="button" variant="outline" title={!editing ? "Select Edit to change the video" : undefined} className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={!editing || busy || deleting} onClick={() => setConfirmDelete(true)}><Trash2 />Delete video</Button> : null}
+    </div>
     <ConfirmDialog open={confirmDelete} onClose={() => { if (!deleting) setConfirmDelete(false); }} title="Delete episode video?" description="The video will be permanently removed from this episode and private R2 storage. Episode details and thumbnail will stay." confirmLabel="Delete video" destructive busy={deleting} onConfirm={() => void remove()} />
   </div>;
 }

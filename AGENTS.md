@@ -30,8 +30,8 @@
 - Catalogue uses MediaRow/SeriesCard/HeroCarousel; watch uses EpisodeCarousel for shared styling and touch navigation.
 - Video changes queue old keys privately; admin operations drain the queue, retaining failed R2 deletes for retry. Why: no orphaned videos.
 - Avatars use `profilePicture`, saved images first; protected people reads resolve Auth pictures for private-safe consistency.
-- Series metadata uses tested `series-metadata.ts` defaults.
-- Players own dark tokens and absolute sizing; HLS loads dynamically, MP4 stays original. Why: light themes cannot obscure playback.
+- Metadata uses tested defaults; durations use Mediabunny private MP4 reads, never form input. Why: clocks match files.
+- Players own dark sizing/tokens and dynamic HLS. Why: visible playback in all themes.
 - Design system mirrors the brantatech-com project: typography scale/motion are `@utility` classes in `src/styles.css`, `:root` is the dark palette and the `.light` class re-themes a subtree to the warm light palette; page primitives (`SiteContainer`, `Eyebrow`) live in `src/components/layout/primitives.tsx`; shadcn `Button` is the pill button. Why: one place to keep every page on the reference design.
 - Viewer accounts use `DashboardShell`/`DashboardKit`; admin uses `AdminShell`/`AdminKit` and scoped `.admin-theme` tokens, with navigation passed as data. Why: admin reference styling can change without altering viewer or public pages.
 - Admin operations use shared server middleware validating `has_role` as the caller before privileged access; full-page content editors use Tiptap, sanitized on save, and protected loaders query paginated collections. Why: all CRUD paths enforce the same permissions and drafts remain visible to administrators.

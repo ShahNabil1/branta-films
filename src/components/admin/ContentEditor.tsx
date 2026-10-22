@@ -35,7 +35,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: baseHtml ?? rawHtml,
     genres: series?.genres ?? [], year: initialReleaseYear(series?.release_year, id === "new"), maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0, discount: series?.discount_price_bdt?.toString() ?? "",
     order: series?.sort_order ?? (Math.max(0, ...data.series.map((s) => s.sort_order)) + 10), featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
-    parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
+    parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1),
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
     thumbnail: episode?.thumbnail_url ?? null as string | null,
   };
@@ -65,7 +65,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         poster_url: values.poster, backdrop_url: values.backdrop,
       } }) : await saveAdminEpisode({ data: {
         ...(id === "new" ? {} : { id }), series_id: values.parent, title: values.title, episode_number: values.number,
-        synopsis_html: values.html, duration_seconds: values.duration, is_free: values.free, is_published: values.published, thumbnail_url: values.thumbnail,
+        synopsis_html: values.html, is_free: values.free, is_published: values.published, thumbnail_url: values.thumbnail,
       } });
       await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
       await qc.invalidateQueries({ queryKey: ["catalog"] });
@@ -104,13 +104,15 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       });
       const result = await finishAdminVideo({ data: { episodeId: id, key: upload.key, size: file.size } });
       await qc.invalidateQueries({ queryKey: ["admin-episode-media", id] });
+      await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
+      await qc.invalidateQueries({ queryKey: ["catalog"] });
       if (result.cleanupPending) toast.warning("Video saved. Old file cleanup will retry on your next episode visit.");
       setVideoUploaded(true); toast.success("Video uploaded");
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
     finally { setBusy(false); setProgress(null); }
   }
   const field = (label: string, key: "title" | "slug") => <Field label={label}><Input className="admin-input" aria-label={label} value={values[key]} required onChange={(e) => set(key, e.target.value)} /></Field>;
-  const numeric = (label: string, key: "price" | "order" | "number" | "duration", min: number) => <Field label={label}><Input className="admin-input" aria-label={label} type="number" min={min} value={values[key]} onChange={(e) => set(key, Number(e.target.value))} /></Field>;
+  const numeric = (label: string, key: "price" | "order" | "number", min: number) => <Field label={label}><Input className="admin-input" aria-label={label} type="number" min={min} value={values[key]} onChange={(e) => set(key, Number(e.target.value))} /></Field>;
   const toggle = (label: string, key: "published" | "featured" | "free") => <ToggleField label={label} checked={values[key]} onChange={(v) => set(key, v)} />;
 
   const slots = kind === "series" ? ["poster", "backdrop"] as const : ["thumbnail"] as const;
@@ -132,7 +134,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
               <Field label="Release year"><Input className="admin-input" aria-label="Release year" type="number" min={1900} max={2200} step={1} value={values.year} onChange={e=>set("year",e.target.value)}/></Field>
               <Field label="Maturity rating"><Select value={values.maturity} onValueChange={v=>set("maturity",v)} disabled={!editing || busy}><SelectTrigger aria-label="Maturity rating" className="admin-input"><SelectValue/></SelectTrigger><SelectContent className="admin-theme">{maturityOptions.map(r=><SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent></Select></Field>
             </> : <>
-              {numeric("Episode number", "number", 1)}{numeric("Duration (seconds)", "duration", 0)}
+              {numeric("Episode number", "number", 1)}
             </>}
           </div></Panel>
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
