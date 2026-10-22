@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Cache lifetime warning
+- [ ] Diagnose live font/static caching and existing Cloudflare rules
+- [ ] Add safe one-year versioned font caching with automatic file-address invalidation
+- [ ] Preserve private-data isolation and existing artwork/query invalidation
+- [ ] Verify fonts, cache configuration and public pages; identify platform-owned script limitations
+
 ## Current request — Lighthouse screenshots
 - [x] Fix orange Sign in contrast through the shared primary foreground token
 - [x] Enable production browser source maps without embedding original source contents; resolved config verifies client enabled and SSR disabled; live map delivery needs next publish
