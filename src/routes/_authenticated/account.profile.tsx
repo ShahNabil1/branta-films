@@ -1,3 +1,4 @@
+import { BdPhoneInput } from "@/components/forms/BdPhoneInput";
 import { isDirty } from "@/lib/dirty";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -152,7 +153,42 @@ function ProfilePage() {
         </form>
       </Panel>
 
+      <PhoneSection />
       <ChangeEmailSection />
     </>
+  );
+}
+
+function PhoneSection() {
+  const { profile, user } = useAuth();
+  const queryClient = useQueryClient();
+  const original = profile?.phone ?? "";
+  const [phone, setPhone] = useState(original);
+  const [editing, setEditing] = useState(false);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { if (!editing) setPhone(original); }, [original, editing]);
+  const valid = /^01[3-9]\d{8}$/.test(phone);
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !valid || phone === original) return;
+    setBusy(true);
+    const { error } = await supabase.from("profiles").update({ phone }).eq("id", user.id);
+    setBusy(false);
+    if (error) { toast.error("Could not save your number."); return; }
+    toast.success("Mobile number saved");
+    setEditing(false);
+    await queryClient.invalidateQueries({ queryKey: ["me"] });
+  }
+  return (
+    <Panel title="Mobile number" description="Used for payment support and account help." delay={160}>
+      <form onSubmit={save} noValidate className="max-w-xl space-y-4">
+        <BdPhoneInput value={phone} onChange={setPhone} invalid={editing && phone !== "" && !valid} disabled={!editing || busy} className="h-12 rounded-xl" />
+        {editing && phone !== "" && !valid ? <p className="text-xs text-destructive">Enter 11 digits starting with 013–019.</p> : null}
+        {editing ? <div className="flex gap-3">
+          <Button type="submit" disabled={!valid || phone === original || busy}>{busy ? "Saving…" : "Save changes"}</Button>
+          <Button type="button" variant="outline" disabled={busy} onClick={() => { setPhone(original); setEditing(false); }}>Cancel</Button>
+        </div> : <Button type="button" variant="outline" onClick={() => setEditing(true)}>{original ? "Edit number" : "Add number"}</Button>}
+      </form>
+    </Panel>
   );
 }

@@ -13,7 +13,7 @@ type AuthState = {
   loading: boolean;
   roles: AppRole[];
   isStaff: boolean;
-  profile: { full_name: string; email: string; avatar_url: string | null } | null;
+  profile: { full_name: string; email: string; avatar_url: string | null; phone?: string | null } | null;
 };
 
 const AuthContext = createContext<AuthState>({
@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from("user_roles").select("role").eq("user_id", userId),
         supabase
           .from("profiles")
-          .select("full_name, email, avatar_url")
+          .select("full_name, email, avatar_url, phone")
           .eq("id", userId)
           .maybeSingle(),
       ]);
