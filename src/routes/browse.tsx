@@ -9,6 +9,8 @@ import { SiteShell } from "@/components/site/SiteShell";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { catalogQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
+import { needsBanglaFont } from "@/lib/catalog-loading";
+import banglaFont from "@/assets/fonts/solaimanlipi-normal-v1.0.woff2?url";
 
 type BrowseSearch = { genre?: string | undefined };
 
@@ -32,7 +34,9 @@ export const Route = createFileRoute("/browse")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: SITE_URL + "/browse" }],
+    links: [{ rel: "canonical", href: SITE_URL + "/browse" },
+      ...(needsBanglaFont(loaderData ?? []) ? [{ rel: "preload", href: banglaFont, as: "font", type: "font/woff2", crossOrigin: "anonymous" as const }] : []),
+    ],
     scripts: [jsonLd({ "@context": "https://schema.org", "@type": "CollectionPage", name: "Browse AI-generated series", url: SITE_URL + "/browse", mainEntity: { "@type": "ItemList", itemListElement: (loaderData ?? []).map((series, i) => ({ "@type": "ListItem", position: i + 1, name: series.title, url: `${SITE_URL}/series/${series.slug}` })) } })],
     };
   },

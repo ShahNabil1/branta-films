@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import type { CatalogSeries } from "@/lib/catalog.functions";
 import { catalogQuery } from "@/lib/queries";
 import { mediaUrl } from "@/lib/media";
+import { featuredSlides, firstHeroPreload, needsBanglaFont } from "@/lib/catalog-loading";
+import banglaFont from "@/assets/fonts/solaimanlipi-normal-v1.0.woff2?url";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -28,7 +30,11 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-    links: [{ rel: "canonical", href: SITE_URL + "/" }],
+    links: [
+      { rel: "canonical", href: SITE_URL + "/" },
+      ...firstHeroPreload(loaderData ?? []),
+      ...(needsBanglaFont(loaderData ?? []) ? [{ rel: "preload", href: banglaFont, as: "font", type: "font/woff2", crossOrigin: "anonymous" as const }] : []),
+    ],
     scripts: [jsonLd({ "@context": "https://schema.org", "@type": "WebSite", "@id": SITE_URL + "/#website", name: "Branta Films", url: SITE_URL + "/", description: SITE_DESCRIPTION, publisher: { "@type": "Organization", name: "Branta Tech", url: "https://brantatech.com" }, inLanguage: "en" })],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
@@ -48,7 +54,7 @@ function cardProps(s: CatalogSeries) {
 function HomePage() {
   const { data: catalog } = useSuspenseQuery(catalogQuery);
 
-  const hero = useMemo(() => [...catalog].sort((a, b) => Number(b.is_featured) - Number(a.is_featured)).slice(0, 5), [catalog]);
+  const hero = useMemo(() => featuredSlides(catalog), [catalog]);
   const free = catalog.filter((s) => s.episodes.some((e) => e.is_free));
   const genres = useMemo(() => {
     const map = new Map<string, CatalogSeries[]>();

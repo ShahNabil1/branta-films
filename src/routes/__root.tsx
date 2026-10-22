@@ -17,6 +17,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { isAccountShieldPath } from "@/lib/devtools-scope";
+import { AUTH_ORIGIN, needsAuthPreconnect } from "@/lib/catalog-loading";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart";
 import { CartSheet } from "@/components/commerce/CartSheet";
@@ -79,7 +80,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   staticData: { sitemap: false },
-  head: () => ({
+  head: ({ matches }) => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
@@ -87,6 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Branta Tech" },
     ],
     links: [
+      ...(matches.some(match => needsAuthPreconnect(match.pathname)) ? [{ rel: "preconnect", href: AUTH_ORIGIN, crossOrigin: "anonymous" as const }] : []),
       { rel: "stylesheet", href: appCss },
       { rel: "preload", href: geistFont, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
