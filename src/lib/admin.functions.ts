@@ -207,21 +207,74 @@ export const prepareAdminVideo = createServerFn({ method: "POST" }).middleware([
     return { key, url: await presignR2Put(key, 3600) };
   });
 
+async function saveEpisodeVideo(episodeId: string, key: string) {
+  const { r2ObjectSize } = await import("./r2.server");
+  const size = await r2ObjectSize(key);
+  if (!size) throw new Error("Video file was not found in R2. Check the key or URL and that the upload finished.");
+  const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
+  const { readVideoDuration } = await import("./video-duration.server");
+  const durationSeconds = await readVideoDuration(key);
+  const { error } = await sb.from("episode_media").upsert({ episode_id: episodeId, video_key: key, size_bytes: size, content_type: "video/mp4", uploaded_at: new Date().toISOString() });
+  if (error) throw new Error(error.message);
+  const { error: durationError } = await sb.from("episodes").update({ duration_seconds: durationSeconds }).eq("id", episodeId);
+  if (durationError) throw new Error("Video saved, but duration could not be saved. Reopen the episode to retry.");
+  const { flushVideoCleanup } = await import("./video-cleanup.server");
+  return { ok: true, cleanupPending: await flushVideoCleanup() };
+}
+
+const uploadKey = (episodeId: string) => new RegExp(`^videos/episodes/${episodeId}/[a-f0-9-]+\\.mp4$`);
+
 export const finishAdminVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
   .inputValidator((input: unknown) => z.object({ episodeId: id, key: z.string(), size: z.number().int().positive() }).parse(input))
   .handler(async ({ data }) => {
-    if (!new RegExp(`^videos/episodes/${data.episodeId}/[a-f0-9-]+\\.mp4$`).test(data.key)) throw new Error("Invalid upload.");
-    const { r2ObjectExists } = await import("./r2.server");
-    if (!(await r2ObjectExists(data.key))) throw new Error("Video upload has not completed.");
-    const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
-    const { readVideoDuration } = await import("./video-duration.server");
-    const durationSeconds = await readVideoDuration(data.key);
-    const { error } = await sb.from("episode_media").upsert({ episode_id: data.episodeId, video_key: data.key, size_bytes: data.size, content_type: "video/mp4", uploaded_at: new Date().toISOString() });
-    if (error) throw new Error(error.message);
-    const { error: durationError } = await sb.from("episodes").update({ duration_seconds: durationSeconds }).eq("id", data.episodeId);
-    if (durationError) throw new Error("Video saved, but duration could not be saved. Reopen the episode to retry.");
-    const { flushVideoCleanup } = await import("./video-cleanup.server");
-    return { ok: true, cleanupPending: await flushVideoCleanup() };
+    if (!uploadKey(data.episodeId).test(data.key)) throw new Error("Invalid upload.");
+    return saveEpisodeVideo(data.episodeId, data.key);
+  });
+
+/** Starts a multipart upload; parts are signed in batches and retried independently by the browser. */
+export const startAdminMultipartVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id }).parse(input)).handler(async ({ data, context }) => {
+    const { data: episode, error } = await context.supabase.from("episodes").select("id").eq("id", data.episodeId).single();
+    if (error || !episode) throw new Error("Save the episode before uploading a video.");
+    const key = `videos/episodes/${episode.id}/${crypto.randomUUID()}.mp4`;
+    const { r2CreateMultipart } = await import("./r2.server");
+    return { key, uploadId: await r2CreateMultipart(key, "video/mp4") };
+  });
+
+export const signAdminVideoParts = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id, key: z.string(), uploadId: z.string().min(1).max(1024), parts: z.array(z.number().int().min(1).max(10000)).min(1).max(100) }).parse(input))
+  .handler(async ({ data }) => {
+    if (!uploadKey(data.episodeId).test(data.key)) throw new Error("Invalid upload.");
+    const { presignR2Part } = await import("./r2.server");
+    return { urls: await Promise.all(data.parts.map(async n => ({ partNumber: n, url: await presignR2Part(data.key, data.uploadId, n, 3600) }))) };
+  });
+
+export const completeAdminMultipartVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id, key: z.string(), uploadId: z.string().min(1).max(1024), parts: z.array(z.object({ partNumber: z.number().int().min(1).max(10000), etag: z.string().min(1).max(200) })).min(1).max(10000) }).parse(input))
+  .handler(async ({ data }) => {
+    if (!uploadKey(data.episodeId).test(data.key)) throw new Error("Invalid upload.");
+    const { r2CompleteMultipart } = await import("./r2.server");
+    await r2CompleteMultipart(data.key, data.uploadId, data.parts);
+    return saveEpisodeVideo(data.episodeId, data.key);
+  });
+
+export const abortAdminMultipartVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id, key: z.string(), uploadId: z.string().min(1).max(1024) }).parse(input))
+  .handler(async ({ data }) => {
+    if (!uploadKey(data.episodeId).test(data.key)) throw new Error("Invalid upload.");
+    const { r2AbortMultipart } = await import("./r2.server");
+    await r2AbortMultipart(data.key, data.uploadId);
+    return { ok: true };
+  });
+
+/** Fallback: link a video the admin uploaded to R2 directly (object key or R2 URL). */
+export const attachAdminVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id, source: z.string().trim().min(1).max(2048) }).parse(input))
+  .handler(async ({ data }) => {
+    const { r2VideoKeyFromInput } = await import("./video-key");
+    const key = r2VideoKeyFromInput(data.source);
+    if (!key) throw new Error("Enter an R2 object key or URL for an .mp4 file inside the videos/ folder.");
+    return saveEpisodeVideo(data.episodeId, key);
   });
 
 export const deleteAdminVideo = createServerFn({ method: "POST" }).middleware([requireAdmin])
