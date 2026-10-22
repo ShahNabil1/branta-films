@@ -3,6 +3,7 @@ import { SeriesView } from "@/components/catalog/SeriesView";
 import { catalogQuery, seriesQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/account/series/$slug")({
+  staticData: { sitemap: false },
   loader: async ({ context, params }) => {
     const [series] = await Promise.all([
       context.queryClient.ensureQueryData(seriesQuery(params.slug)),

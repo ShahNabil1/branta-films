@@ -17,6 +17,7 @@ import { mediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/coupons")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "Coupons — Branta Films Admin" }, { name: "description", content: "Create and target coupons for series and episodes." },
     { property: "og:title", content: "Coupons — Branta Films Admin" }, { property: "og:description", content: "Branta Films administrator workspace." },

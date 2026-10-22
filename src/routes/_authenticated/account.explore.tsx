@@ -14,6 +14,7 @@ import { catalogQuery, seriesQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/account/explore")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Explore series — Branta Films" },

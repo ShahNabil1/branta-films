@@ -3,6 +3,7 @@ import { Compass, Film, LayoutDashboard, Receipt, Shield, UserRound } from "luci
 import { DashboardShell, type DashNavSection } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/account")({
+  staticData: { sitemap: false },
   component: AccountLayout,
 });
 

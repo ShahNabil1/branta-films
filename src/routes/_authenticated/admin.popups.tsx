@@ -14,6 +14,7 @@ import { isDirty } from "@/lib/dirty";
 import { mediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/_authenticated/admin/popups")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "Popups — Branta Films Admin" }, { name: "description", content: "Schedule promotional image popups for the site and dashboard." },
     { property: "og:title", content: "Popups — Branta Films Admin" }, { property: "og:description", content: "Branta Films administrator workspace." },

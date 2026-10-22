@@ -2,6 +2,7 @@ import { createFileRoute, type SearchSchemaInput } from '@tanstack/react-router'
 import { personQuery } from '@/lib/people-queries';
 import { PersonDetail } from '@/components/admin/PersonDetail';
 export const Route=createFileRoute('/_authenticated/admin/staff_/$id')({
+  staticData: { sitemap: false },
   validateSearch:(s:{page?:unknown} & SearchSchemaInput)=>({page:Math.max(0,Math.floor(Number(s['page'])||0))}),
   loaderDeps:({search})=>search,
   loader:({context,params,deps})=>context.queryClient.ensureQueryData(personQuery(params.id,deps.page)),

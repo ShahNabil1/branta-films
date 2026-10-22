@@ -7,6 +7,7 @@ import { LogOut, Film, Clock3 } from 'lucide-react';
 import { formatWatchTime } from '@/lib/people-rules';
 import { administerPerson } from '@/lib/people.functions';
 export const Route=createFileRoute('/_authenticated/admin/view-as/$id')({
+  staticData: { sitemap: false },
   loader:async({context,params})=>{await administerPerson({data:{id:params.id,action:'preview'}});return context.queryClient.ensureQueryData(personQuery(params.id));},
   head:()=>({meta:[{title:'Read-only account preview — Branta Films'},{name:'description',content:'Administrator read-only support view of a Branta Films viewer account.'},{property:'og:title',content:'Read-only account preview — Branta Films'},{property:'og:description',content:'Private administrator support preview.'},{property:'og:type',content:'website'},{name:'twitter:card',content:'summary'},{name:'robots',content:'noindex'}]}),
   errorComponent:({error})=><p role="alert">{error instanceof Error ? error.message : 'Account unavailable.'}</p>,notFoundComponent:()=><p>Viewer not found.</p>,component:Preview,

@@ -11,6 +11,7 @@ import { amrFromAccessToken, isFreshInviteSession } from "@/lib/invite";
 import { validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/set-password")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Set your password — Branta Films" },

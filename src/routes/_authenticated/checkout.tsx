@@ -18,6 +18,7 @@ import bkashLogo from "@/assets/bkash-logo.asset.json";
 import nagadLogo from "@/assets/nagad-logo.asset.json";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "Checkout — Branta Films" }, { name: "description", content: "Pay for your Branta Films series and episodes with bKash, Nagad or Rocket." },
     { property: "og:title", content: "Checkout — Branta Films" }, { property: "og:description", content: "Secure manual mobile payment checkout." },

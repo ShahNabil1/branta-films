@@ -7,6 +7,7 @@ import { listMyOrders } from "@/lib/commerce.functions";
 import { formatTaka } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/account/orders")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "Orders & payments — Branta Films" }, { name: "description", content: "Your Branta Films purchases and payment status." },
     { property: "og:title", content: "Orders & payments — Branta Films" }, { property: "og:description", content: "Your purchases and payment status." },

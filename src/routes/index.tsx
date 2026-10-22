@@ -1,3 +1,4 @@
+import { absoluteMediaUrl } from "@/lib/media";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -14,8 +15,10 @@ import { catalogQuery } from "@/lib/queries";
 import { mediaUrl } from "@/lib/media";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
+  staticData: { sitemap: true },
+  head: ({ loaderData }) => ({
     meta: [
+      ...shareImage(loaderData),
       { title: "Branta Films — Original series by Branta Tech" },
       { name: "description", content: "Stream premium original series from Branta Tech. Start free with episode one, unlock full seasons with bKash or Nagad." },
       { property: "og:title", content: "Branta Films — Original series by Branta Tech" },
@@ -27,6 +30,12 @@ export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: HomePage,
 });
+
+function shareImage(catalog: CatalogSeries[] | undefined) {
+  const s = catalog?.find((x) => x.is_featured && x.backdrop_url) ?? catalog?.find((x) => x.backdrop_url);
+  const url = absoluteMediaUrl(s?.backdrop_url);
+  return url ? [{ property: "og:image", content: url }, { name: "twitter:image", content: url }] : [];
+}
 
 function cardProps(s: CatalogSeries) {
   return { ...s, hasFreeEpisode: s.episodes.some((e) => e.is_free), episodeCount: s.episodes.length };
@@ -45,6 +54,7 @@ function HomePage() {
 
   return (
     <SiteShell overlayHeader>
+      <h1 className="sr-only">Stream Branta Films original series — start free with episode one</h1>
       <HeroCarousel slides={hero} />
 
       <div className="relative z-10 -mt-20 mx-auto max-w-[1440px] space-y-14 px-[clamp(1.25rem,4vw,3rem)] pb-20 md:-mt-28">

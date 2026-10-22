@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/account/library")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "My library — Branta Films" },

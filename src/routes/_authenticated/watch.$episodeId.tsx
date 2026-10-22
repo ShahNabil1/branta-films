@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { WatchView } from "@/components/player/WatchView";
 
 export const Route = createFileRoute("/_authenticated/watch/$episodeId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Now playing — Branta Films" },
