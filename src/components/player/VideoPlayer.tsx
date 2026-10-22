@@ -201,7 +201,19 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     setQuality(height);
     if (hls) hls.currentLevel = height === "auto" ? -1 : hls.levels.findIndex(level => level.height === height);
   };
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (muted || volume === 0) {
+      const level = volume === 0 ? 0.5 : volume;
+      setVolume(level);
+      if (v) v.volume = level;
+      setMuted(false);
+    } else setMuted(true);
+    poke();
+  };
   const onSurfaceTap = (event: React.PointerEvent<HTMLVideoElement>) => {
+    // Like YouTube/Netflix: a tap outside an open menu only closes it.
+    if (settingsOpenRef.current || volumeOpen) { setSettings(false); setVolumeOpen(false); poke(); return; }
     if (event.pointerType === "mouse") { toggle(); poke(); return; }
     const bounds = event.currentTarget.getBoundingClientRect();
     const side = event.clientX - bounds.left < bounds.width / 2 ? "left" : "right";
@@ -216,9 +228,31 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     setControls(true);
     window.clearTimeout(hideTimer.current);
     hideTimer.current = window.setTimeout(() => {
-      if (videoRef.current && !videoRef.current.paused && !settings) setControls(false);
+      if (videoRef.current && !videoRef.current.paused && !settingsOpenRef.current) { setControls(false); setVolumeOpen(false); }
     }, 2800);
   };
+
+  // Close the in-player menu on outside press or Escape.
+  useEffect(() => {
+    if (!settings) return;
+    const onDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (menuRef.current?.contains(target) || settingsButtonRef.current?.contains(target) || target === videoRef.current) return;
+      setSettings(false);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") { setSettings(false); settingsButtonRef.current?.focus(); } };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onEsc);
+    return () => { document.removeEventListener("pointerdown", onDown); document.removeEventListener("keydown", onEsc); };
+  }, [settings]);
+
+  // Collapse the touch volume slider on outside press.
+  useEffect(() => {
+    if (!volumeOpen) return;
+    const onDown = (e: PointerEvent) => { if (!volumeRef.current?.contains(e.target as Node)) setVolumeOpen(false); };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [volumeOpen]);
 
   const onKey = (e: React.KeyboardEvent) => {
     if (e.target instanceof HTMLInputElement || e.target instanceof HTMLButtonElement) return;
@@ -229,7 +263,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     } else if (k === "arrowright" || k === "l") seek(10);
     else if (k === "arrowleft" || k === "j") seek(-10);
     else if (k === "f") toggleFs();
-    else if (k === "m") setMuted((m) => !m);
+    else if (k === "m") toggleMute();
     poke();
   };
 
