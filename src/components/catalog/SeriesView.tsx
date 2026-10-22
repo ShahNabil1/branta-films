@@ -6,6 +6,7 @@ import { PriceTag } from "@/components/catalog/PriceTag";
 import { PurchaseDialog } from "@/components/commerce/PurchaseDialog";
 import { RichText } from "@/components/content/RichText";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
+import { ArtworkImage } from "@/components/catalog/ArtworkImage";
 import { MediaRow, posterItem } from "@/components/catalog/MediaRow";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
@@ -53,7 +54,7 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
         )}
       >
         <div className="absolute inset-0 -z-20 overflow-hidden" aria-hidden="true">
-          {backdrop ? <img src={backdrop} alt="" width={1920} height={1080} fetchPriority="high" className="animate-ken-burns size-full object-cover" /> : null}
+          {backdrop ? <ArtworkImage path={series.backdrop_url ?? ""} variant="backdrop" sizes={inDashboard ? "(min-width: 1024px) calc(100vw - 300px), 100vw" : "100vw"} alt="" width={1920} height={1080} fetchPriority="high" className="animate-ken-burns size-full object-cover" /> : null}
         </div>
         <div className="cinema-mask absolute inset-0 -z-10" />
         <div
@@ -63,8 +64,10 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
           )}
         >
           {poster ? (
-            <img
-              src={poster}
+            <ArtworkImage
+              path={series.poster_url ?? ""}
+              variant="poster"
+              sizes={inDashboard ? "200px" : "260px"}
               alt={`${series.title} poster`}
               width={600}
               height={900}
@@ -136,7 +139,7 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
                     onClick={(e) => { if (!open && !pending && !isStaff) { e.preventDefault(); startBuy(ep.id); } }}
                   >
                     <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[4px] bg-muted sm:w-52">
-                      {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 ease-out group-hover/ep:scale-[1.03]" /> : null}
+                      {thumb ? <ArtworkImage path={ep.thumbnail_url ?? series.backdrop_url ?? ""} variant="thumbnail" sizes="(max-width: 640px) 128px, 208px" alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 ease-out group-hover/ep:scale-[1.03]" /> : null}
                       <div className="absolute inset-0 bg-scrim/30 transition-colors duration-300 group-hover/ep:bg-transparent" />
                       <span className="absolute inset-0 grid place-items-center">
                         <span className={cn("grid size-10 place-items-center rounded-full", open ? "bg-primary text-primary-foreground" : "bg-scrim text-media-ink backdrop-blur-sm")}>

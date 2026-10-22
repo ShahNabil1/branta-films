@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { mediaUrl } from "@/lib/media";
+import { ArtworkImage } from "./ArtworkImage";
 import { formatTaka } from "@/lib/format";
 import { seriesPrice } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -44,8 +45,10 @@ export function SeriesCard({
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-[4px] bg-muted">
         {src ? (
-          <img
-            src={src}
+          <ArtworkImage
+            path={poster_url ?? ""}
+            variant="poster"
+            sizes="(max-width: 640px) 45vw, 260px"
             alt={`${title} poster`}
             width={600}
             height={900}
