@@ -3,7 +3,7 @@ import { z } from "zod";
 
 /** Public recovery action: deliberately returns only existence, never account details. */
 export const sendPasswordRecoveryCode = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ email: z.string().trim().email().max(254), captchaToken: z.string().min(1).max(4096) }).parse(input))
+  .inputValidator((input: unknown) => z.object({ email: z.string().trim().email().max(254), captchaToken: z.string().min(1).max(4096).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { requestRecoveryCode } = await import("./password-recovery");
@@ -34,7 +34,7 @@ export const sendPasswordRecoveryCode = createServerFn({ method: "POST" })
             return fetch(input, { ...init, headers: h });
           } },
         });
-        const { error } = await publicClient.auth.resetPasswordForEmail(email, { captchaToken: data.captchaToken });
+        const { error } = await publicClient.auth.resetPasswordForEmail(email, data.captchaToken ? { captchaToken: data.captchaToken } : {});
         if (error && /captcha/i.test(error.message)) throw new Error("The security check failed. Please try it again.");
         if (!error) return;
         if (error.status === 429 || /rate|seconds/i.test(error.message)) {

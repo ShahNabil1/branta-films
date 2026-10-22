@@ -7,7 +7,8 @@ import { AuthLayout, FormAlert, GoogleIcon, OrDivider, authLinkCls } from "@/com
 import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
-import { Turnstile, type TurnstileHandle } from "@/components/auth/Turnstile";
+import { Turnstile } from "@/components/auth/Turnstile";
+import { useCaptcha } from "@/components/auth/useCaptcha";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { recordSignIn } from "@/lib/account.functions";
@@ -61,10 +62,8 @@ function AuthPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState<null | "form" | "google" | "passkey">(null);
   const recorded = useRef(false);
-  const [captcha, setCaptcha] = useState<string | null>(null);
-  const captchaRef = useRef<TurnstileHandle>(null);
+  const { captcha, setCaptcha, required: captchaRequired, captchaRef, checkError: checkCaptchaError } = useCaptcha();
   useEffect(() => { setCaptcha(null); }, [mode, confirmEmail]);
-  const needCaptcha = () => { if (captcha) return captcha; setFormError("Please complete the security check."); return null; };
 
   useEffect(() => {
     if (loading || !user) return;
@@ -162,8 +161,7 @@ function AuthPage() {
     const fields: ("email" | "fullName" | "password")[] =
       mode === "signup" ? ["fullName", "email", "password"] : ["email", "password"];
     if (!validate(fields)) return;
-    const captchaToken = needCaptcha();
-    if (!captchaToken) return;
+    const captchaToken = captcha ?? undefined;
     setBusy("form");
     setFormError(null);
     try {
@@ -173,7 +171,7 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin + "/auth",
-            captchaToken,
+            ...(captchaToken ? { captchaToken } : {}),
             data: { full_name: fullName.trim() },
           },
         });
@@ -185,14 +183,14 @@ function AuthPage() {
           return;
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken } });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password, options: captchaToken ? { captchaToken } : {} });
         if (error) {
           if (/not confirmed/i.test(error.message)) {
             // Account exists but was never confirmed: ask for a fresh code (needs a new security check).
             setCode("");
             setConfirmEmail(email.trim());
             setNotice(
-              `Your email isn't confirmed yet. Complete the security check and press "Send a new code".`,
+              `Your email isn't confirmed yet. Press "Send a new code".`,
             );
             return;
           }
@@ -202,6 +200,10 @@ function AuthPage() {
         toast.success("Welcome back");
       }
     } catch (err) {
+      if (checkCaptchaError(err)) {
+        setFormError("Complete the security check, then try again.");
+        return;
+      }
       const msg = err instanceof Error ? err.message : "";
       setFormError(
         /invalid login/i.test(msg)
@@ -220,14 +222,14 @@ function AuthPage() {
 
   async function resendConfirmCode() {
     if (busy || !confirmEmail) return;
-    const captchaToken = needCaptcha();
-    if (!captchaToken) return;
+    const captchaToken = captcha ?? undefined;
     setBusy("form");
     setFormError(null);
-    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail, options: { captchaToken } });
+    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail, options: captchaToken ? { captchaToken } : {} });
     captchaRef.current?.reset();
     setBusy(null);
     if (error) {
+      if (checkCaptchaError(error)) { setFormError("Complete the security check, then send a new code."); return; }
       setFormError(
         /rate|seconds/i.test(error.message)
           ? "Please wait a minute before requesting another code."
@@ -294,7 +296,7 @@ function AuthPage() {
               Send a new code
             </button>
           </div>
-          <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="signup_resend" />
+          {captchaRequired ? <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="signup_resend" /> : null}
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
@@ -423,11 +425,11 @@ function AuthPage() {
             </Link>
           </div>
         ) : null}
-        <Turnstile key={mode} ref={captchaRef} onToken={setCaptcha} action={isSignup ? "signup" : "signin"} />
+        {captchaRequired ? <Turnstile key={mode} ref={captchaRef} onToken={setCaptcha} action={isSignup ? "signup" : "signin"} /> : null}
         {formError ? <FormAlert>{formError}</FormAlert> : null}
         <Button
           type="submit"
-          disabled={disabled || !captcha}
+          disabled={disabled}
           size="lg" className="w-full"
         >
           {busy === "form" ? "Please wait…" : isSignup ? "Create account" : "Sign in"}

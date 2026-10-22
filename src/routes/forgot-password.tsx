@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { ArrowRight, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
 import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
-import { Turnstile, type TurnstileHandle } from "@/components/auth/Turnstile";
+import { Turnstile } from "@/components/auth/Turnstile";
+import { useCaptcha } from "@/components/auth/useCaptcha";
 import { supabase } from "@/integrations/supabase/client";
 import { completePasswordReset } from "@/lib/account.functions";
 import { sendPasswordRecoveryCode } from "@/lib/password-recovery.functions";
@@ -50,20 +51,18 @@ function ForgotPasswordPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [captcha, setCaptcha] = useState<string | null>(null);
-  const captchaRef = useRef<TurnstileHandle>(null);
+  const { captcha, setCaptcha, required: captchaRequired, captchaRef, checkError: checkCaptchaError } = useCaptcha();
 
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
     const err = validateField("email", email);
     setEmailError(err);
     if (err || busy) return;
-    if (!captcha) { setFormError("Please complete the security check."); return; }
     setBusy(true);
     setFormError(null);
     setNotice(null);
     try {
-      const result = await sendPasswordRecoveryCode({ data: { email: email.trim(), captchaToken: captcha } });
+      const result = await sendPasswordRecoveryCode({ data: { email: email.trim(), captchaToken: captcha ?? undefined } });
       if (result.status === "not_found") {
         setStep("email");
         setCode("");
@@ -74,6 +73,7 @@ function ForgotPasswordPage() {
       setStep("code");
       setNotice(`We emailed a 6-digit code to ${email.trim()}. It expires in 10 minutes.`);
     } catch (error) {
+      if (checkCaptchaError(error)) { setFormError("Complete the security check, then request your code again."); return; }
       setFormError(error instanceof Error ? error.message : "Could not send your reset code. Please try again.");
     } finally {
       setBusy(false);
@@ -161,11 +161,11 @@ function ForgotPasswordPage() {
             maxLength={254}
             disabled={busy}
           />
-          <Turnstile key="email" ref={captchaRef} onToken={setCaptcha} action="recover" />
+          {captchaRequired ? <Turnstile key="email" ref={captchaRef} onToken={setCaptcha} action="recover" /> : null}
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
-            disabled={busy || !captcha}
+            disabled={busy}
             size="lg" className="w-full"
           >
             {busy ? "Sending…" : "Send code"}
@@ -203,7 +203,7 @@ function ForgotPasswordPage() {
               </button>
             </div>
           </div>
-          <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="recover_resend" />
+          {captchaRequired ? <Turnstile key="resend" ref={captchaRef} onToken={setCaptcha} action="recover_resend" /> : null}
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
