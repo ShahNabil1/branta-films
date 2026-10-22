@@ -397,6 +397,27 @@ export type Database = {
         }
         Relationships: []
       }
+      video_cleanup_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          updated_at: string
+          video_key: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          updated_at?: string
+          video_key: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          updated_at?: string
+          video_key?: string
+        }
+        Relationships: []
+      }
       viewer_sessions: {
         Row: {
           city: string | null
