@@ -1,0 +1,1 @@
+CREATE POLICY "Private video cleanup records" ON public.video_cleanup_queue FOR ALL TO authenticated USING (false) WITH CHECK (false);
