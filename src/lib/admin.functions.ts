@@ -27,6 +27,25 @@ const episodeSchema = z.object({
   thumbnail_url: z.string().startsWith("images/episodes/").nullable(),
 });
 
+/** Admin-only previews include drafts; never return the permanent R2 key. */
+export const getAdminEpisodeMedia = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ episodeId: id }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { data: episode, error: episodeError } = await context.supabase.from("episodes")
+      .select("id, thumbnail_url").eq("id", data.episodeId).single();
+    if (episodeError || !episode) throw new Error("Episode not found.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: media, error } = await supabaseAdmin.from("episode_media")
+      .select("video_key, content_type, size_bytes").eq("episode_id", episode.id).maybeSingle();
+    if (error) throw new Error("Could not read saved video.");
+    const base = { thumbnail: episode.thumbnail_url, sizeBytes: media?.size_bytes ?? null, contentType: media?.content_type ?? null };
+    if (!media) return { ...base, status: "empty" as const, source: null };
+    const { r2ObjectExists, presignR2Get } = await import("./r2.server");
+    const { PLAYBACK_LINK_TTL_SECONDS } = await import("./access");
+    if (!(await r2ObjectExists(media.video_key))) return { ...base, status: "missing" as const, source: null };
+    return { ...base, status: "ready" as const, source: { url: await presignR2Get(media.video_key, PLAYBACK_LINK_TTL_SECONDS), expiresAt: Date.now() + PLAYBACK_LINK_TTL_SECONDS * 1000 } };
+  });
+
 export const getAdminOverview = createServerFn({ method: "POST" }).middleware([requireAdmin]).handler(async ({ context }) => {
   const sb = context.supabase;
   // Paginate mutable collections rather than silently losing rows at Supabase's 1000-row limit.

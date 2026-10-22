@@ -19,6 +19,7 @@ import { isDirty } from "@/lib/dirty";
 import { ARTWORK_SPECS, type ArtworkSlot } from "@/lib/artwork";
 import { ImageCropDialog } from "./ImageCropDialog";
 import { PriceTag } from "@/components/catalog/PriceTag";
+import { AdminEpisodeVideo } from "./AdminEpisodeVideo";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -102,6 +103,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         xhr.send(file);
       });
       await finishAdminVideo({ data: { episodeId: id, key: upload.key, size: file.size } });
+      await qc.invalidateQueries({ queryKey: ["admin-episode-media", id] });
       setVideoUploaded(true); toast.success("Video uploaded");
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
     finally { setBusy(false); setProgress(null); }
@@ -115,9 +117,10 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     <PageHeader back={kind === "series" ? { to: "/admin/series", label: "Series" } : { to: `/admin/series/${values.parent}` as "/admin/series", label: parentSeries?.title ?? "Series" }} title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} description={existing?.title ?? "Fill in the details and save."} action={id === "new" ? undefined : editing ? <Button type="button" variant="outline" onClick={cancel} disabled={busy}><X />Cancel</Button> : <Button type="button" onClick={() => setEditing(true)} className="transition-all duration-200 hover:-translate-y-0.5"><Pencil />Edit</Button>} />
     {kind === "series" && id !== "new" ? <EpisodesPanel seriesId={id} /> : null}
     <form onSubmit={save} className="space-y-6">
-      <fieldset disabled={!editing} className="min-w-0 space-y-6 disabled:[&_input]:cursor-not-allowed disabled:[&_input]:opacity-80">
+      <div className="min-w-0 space-y-6">
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0 space-y-6">
+          <fieldset disabled={!editing || busy} className="min-w-0 space-y-6 disabled:[&_input]:cursor-not-allowed disabled:[&_input]:opacity-80">
           <Panel title="Details" description="What viewers see on the series page."><div className="grid gap-4 sm:grid-cols-2">{field("Title", "title")}
             {kind === "series" ? <>{field("Slug", "slug")}
               <Field label="Tagline" className="sm:col-span-2"><Textarea className="admin-input min-h-28 resize-y" aria-label="Tagline" rows={4} maxLength={500} value={values.tagline} onChange={e=>set("tagline",e.target.value)}/></Field>
@@ -132,38 +135,41 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
             </>}
           </div></Panel>
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
+          </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
-            <label className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-10 text-center transition-all duration-300 hover:border-primary/50 hover:bg-accent", busy && "pointer-events-none opacity-60")}>
+            <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} />
+            {editing ? <label className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-10 text-center transition-all duration-300 hover:border-primary/50 hover:bg-accent", busy && "pointer-events-none opacity-60")}>
               <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary"><Upload className="size-5" /></span><span className="text-sm font-bold">Choose video file</span><span className="text-xs text-muted-foreground">Click to browse your computer</span>
               <input type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy} onChange={(e) => void video(e.target.files?.[0])} />
-            </label>
+            </label> : null}
             {progress !== null ? <div className="flex items-center gap-3 text-sm"><progress max={100} value={progress} className="admin-progress w-full" /><span className="tabular-nums">{progress}%</span></div> : null}
             {videoUploaded ? <p className="flex items-center gap-2 text-sm font-semibold text-success"><Check className="size-4" />Video saved securely.</p> : null}
           </div>}</Panel> : null}
         </div>
-        <div className="space-y-6">
+        <fieldset disabled={!editing || busy} className="min-w-0 space-y-6">
           <Panel title="Visibility"><div className="space-y-2.5">{toggle("Published", "published")}{kind === "series" ? toggle("Featured", "featured") : toggle("Free episode", "free")}</div>{kind === "series" ? <div className="mt-4 grid gap-4">{numeric("Regular price (BDT)", "price", 0)}<Field label="Discounted price (BDT)"><Input className="admin-input" aria-label="Discounted price (BDT)" type="number" min={0} placeholder="No discount" value={values.discount} onChange={(e) => set("discount", e.target.value)} /></Field>{discountError ? <p className="-mt-2 text-xs font-semibold text-destructive">{discountError}</p> : values.discount.trim() !== "" && values.price > 0 ? <div className="-mt-1 flex items-center justify-between rounded-xl bg-primary/5 px-3 py-2 text-xs"><span className="text-muted-foreground">Viewers see</span><PriceTag price={values.price} discount={Number(values.discount)} /></div> : <p className="-mt-2 text-xs text-muted-foreground">Leave empty for no discount.</p>}</div> : null}</Panel>
           <Panel title="Artwork" description="JPG, PNG or WebP. You can crop and zoom before upload."><div className="space-y-5">{slots.map((slot) => <div key={slot} className="space-y-2">
             <div className="flex items-baseline justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{ARTWORK_SPECS[slot].label}</p><p className="text-[11px] tabular-nums text-muted-foreground">Best {ARTWORK_SPECS[slot].width} × {ARTWORK_SPECS[slot].height} · {ARTWORK_SPECS[slot].ratio}</p></div>
             <div className={cn("group relative overflow-hidden rounded-xl border border-border bg-muted", slot === "poster" ? "aspect-[2/3]" : "aspect-video")}>
               {values[slot] ? <img src={mediaUrl(values[slot]) ?? undefined} alt={slot} className="size-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="grid size-full place-items-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
             </div>
+            {slot === "thumbnail" && !values.thumbnail ? <p className="text-xs text-muted-foreground">No episode thumbnail saved.</p> : null}
             <div className="flex flex-wrap gap-2">
               <label className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted", busy && "pointer-events-none opacity-60")}>
                 <Upload className="size-3.5" />{values[slot] ? "Replace" : "Upload"}
                 <input type="file" className="sr-only" aria-label={`Upload ${slot}`} accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => { pickImage(e.target.files?.[0], slot); e.target.value = ""; }} />
               </label>
-              {values[slot] ? <button type="button" disabled={busy} onClick={() => set(slot, null)} className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs font-semibold text-destructive transition-all duration-200 hover:-translate-y-0.5 hover:bg-destructive/10 disabled:opacity-60"><Trash2 className="size-3.5" />Remove</button> : null}
+              {values[slot] ? <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => set(slot, null)} className="border-destructive/30 bg-destructive/5 text-destructive hover:bg-destructive/10"><Trash2 className="size-3.5" />Remove</Button> : null}
             </div>
           </div>)}</div></Panel>
-        </div>
+        </fieldset>
       </div>
-      </fieldset>
+      </div>
       {editing ? <div className="admin-rise sticky bottom-4 z-10 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/90 p-4 shadow-lg backdrop-blur-md">
         <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className={cn("size-2 rounded-full", changed ? "bg-primary" : "bg-success")} />{changed ? "Unsaved changes" : "All changes saved"}</p>
         <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim() || Boolean(discountError)} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
       </div> : null}
     </form>
-    <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={(blob) => uploadCropped(blob, cropping!.slot)} />
+    <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={async (blob) => { if (cropping) await uploadCropped(blob, cropping.slot); }} />
   </>;
 }

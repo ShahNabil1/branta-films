@@ -17,7 +17,7 @@
 
 - Prebundle all Tiptap editor packages at startup and reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: late editor discovery invalidates in-flight module URLs, while mixing dependency generations crashes React hooks.
 
-- Video files live only in private Cloudflare R2; `episode_media.video_key` is service-role only and links are issued by `getPlaybackSource` after `decidePlayback` (src/lib/access.ts). Why: no client can ever learn a permanent video address.
+- Private R2 video keys stay service-role only. Viewer links use `getPlaybackSource`/`decidePlayback`; admin previews use role-verified `getAdminEpisodeMedia`, short-lived links and no watch-history writes. Why: private previews are not viewing activity.
 - Playback access rules live in one pure function (`decidePlayback`) with tests. Why: one place to change who can watch what.
 - All files (images and videos) live only in the private R2 bucket; Supabase Storage is not used. Images sit under `images/` (series/, episodes/, avatars/) and are proxied by `/api/public/media/*` (prefix + extension allow-list); videos sit under `videos/` and are never proxied. Why: owner wants every file in R2, and videos must stay behind access checks.
 - Roles are in `user_roles` (`admin`, `manager`); `is_staff()` / `has_role()` gate RLS. Viewers have no role row. Why: avoids privilege escalation via profile edits.
