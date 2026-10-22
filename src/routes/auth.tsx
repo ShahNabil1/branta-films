@@ -10,6 +10,7 @@ import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
 import { Turnstile } from "@/components/auth/Turnstile";
 import { useCaptcha } from "@/components/auth/useCaptcha";
+import { GoogleOneTap } from "@/components/auth/GoogleOneTap";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { passkeyLoginOptions, passkeyLoginVerify } from "@/lib/passkey.functions";
@@ -332,6 +333,7 @@ function AuthPage() {
       }
     >
       <div className="space-y-3">
+        <GoogleOneTap enabled={!user && !loading && !disabled} onError={setFormError} />
         <Button
           type="button"
           variant="outline"

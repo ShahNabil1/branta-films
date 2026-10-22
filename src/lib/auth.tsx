@@ -42,6 +42,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((event, next) => {
       setSession(next);
       setLoading(false);
+      if (event === "SIGNED_IN" && next && !isFreshInviteSession(amrFromAccessToken(next.access_token), Date.now() / 1000)) {
+        // A restored session or token refresh must not produce a new enrollment offer.
+        try { sessionStorage.setItem("branta-passkey-offer", next.user.id); } catch { /* Optional enhancement. */ }
+      }
+      if (event === "SIGNED_OUT") {
+        try { sessionStorage.removeItem("branta-passkey-offer"); } catch { /* Optional enhancement. */ }
+      }
       if (event === "SIGNED_IN" || event === "INITIAL_SESSION") routeInvite(next);
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       void router.invalidate();

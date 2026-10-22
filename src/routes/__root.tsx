@@ -15,6 +15,7 @@ import appCss from "../styles.css?url";
 import geistFont from "../assets/fonts/geist-latin-variable.woff2?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
+import { PasskeyOffer } from "@/components/auth/PasskeyOffer";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { isAccountShieldPath } from "@/lib/devtools-scope";
 import { AUTH_ORIGIN, needsAuthPreconnect } from "@/lib/catalog-loading";
@@ -123,6 +124,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ViewerPresence />
+        <PasskeyOffer />
         <CartProvider>
           <DevToolsShield enabled={isAccountShieldPath(pathname)}>
             <Outlet />
