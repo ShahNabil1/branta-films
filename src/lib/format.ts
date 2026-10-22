@@ -3,9 +3,7 @@ export function formatTaka(amount: number) {
 }
 
 export function formatDuration(seconds: number) {
-  const m = Math.round(seconds / 60);
-  if (m < 60) return `${m}m`;
-  return `${Math.floor(m / 60)}h ${m % 60}m`;
+  return formatClock(seconds);
 }
 
 export function formatClock(seconds: number) {

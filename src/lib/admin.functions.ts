@@ -23,7 +23,7 @@ const seriesSchema = z.object({
 const seriesWithRules = seriesSchema.refine((s) => s.discount_price_bdt == null || s.discount_price_bdt < s.price_bdt, { message: "Discounted price must be lower than the regular price.", path: ["discount_price_bdt"] });
 const episodeSchema = z.object({
   id: id.optional(), series_id: id, title: z.string().trim().min(1).max(200), episode_number: z.number().int().min(1),
-  synopsis_html: z.string().max(100000), duration_seconds: z.number().int().min(0), is_free: z.boolean(), is_published: z.boolean(),
+  synopsis_html: z.string().max(100000), is_free: z.boolean(), is_published: z.boolean(),
   thumbnail_url: z.string().startsWith("images/episodes/").nullable(),
 });
 
@@ -32,7 +32,7 @@ export const getAdminEpisodeMedia = createServerFn({ method: "POST" }).middlewar
   .inputValidator((input: unknown) => z.object({ episodeId: id }).parse(input))
   .handler(async ({ data, context }) => {
     const { data: episode, error: episodeError } = await context.supabase.from("episodes")
-      .select("id, thumbnail_url").eq("id", data.episodeId).single();
+      .select("id, thumbnail_url, duration_seconds").eq("id", data.episodeId).single();
     if (episodeError || !episode) throw new Error("Episode not found.");
     const { flushVideoCleanup } = await import("./video-cleanup.server");
     const cleanupPending = await flushVideoCleanup();
@@ -45,7 +45,16 @@ export const getAdminEpisodeMedia = createServerFn({ method: "POST" }).middlewar
     const { r2ObjectExists, presignR2Get } = await import("./r2.server");
     const { PLAYBACK_LINK_TTL_SECONDS } = await import("./access");
     if (!(await r2ObjectExists(media.video_key))) return { ...base, status: "missing" as const, source: null };
-    return { ...base, status: "ready" as const, source: { url: await presignR2Get(media.video_key, PLAYBACK_LINK_TTL_SECONDS), expiresAt: Date.now() + PLAYBACK_LINK_TTL_SECONDS * 1000 } };
+    const { readVideoDuration } = await import("./video-duration.server");
+    let durationSeconds: number | null = null;
+    try {
+      durationSeconds = await readVideoDuration(media.video_key);
+      if (episode.duration_seconds !== durationSeconds) {
+        const { error: durationError } = await supabaseAdmin.from("episodes").update({ duration_seconds: durationSeconds }).eq("id", episode.id);
+        if (durationError) throw new Error("Could not save video duration.");
+      }
+    } catch { durationSeconds = null; }
+    return { ...base, durationSeconds, status: "ready" as const, source: { url: await presignR2Get(media.video_key, PLAYBACK_LINK_TTL_SECONDS), expiresAt: Date.now() + PLAYBACK_LINK_TTL_SECONDS * 1000 } };
   });
 
 export const getAdminOverview = createServerFn({ method: "POST" }).middleware([requireAdmin]).handler(async ({ context }) => {
@@ -201,8 +210,12 @@ export const finishAdminVideo = createServerFn({ method: "POST" }).middleware([r
     const { r2ObjectExists } = await import("./r2.server");
     if (!(await r2ObjectExists(data.key))) throw new Error("Video upload has not completed.");
     const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
+    const { readVideoDuration } = await import("./video-duration.server");
+    const durationSeconds = await readVideoDuration(data.key);
     const { error } = await sb.from("episode_media").upsert({ episode_id: data.episodeId, video_key: data.key, size_bytes: data.size, content_type: "video/mp4", uploaded_at: new Date().toISOString() });
     if (error) throw new Error(error.message);
+    const { error: durationError } = await sb.from("episodes").update({ duration_seconds: durationSeconds }).eq("id", data.episodeId);
+    if (durationError) throw new Error("Video saved, but duration could not be saved. Reopen the episode to retry.");
     const { flushVideoCleanup } = await import("./video-cleanup.server");
     return { ok: true, cleanupPending: await flushVideoCleanup() };
   });
@@ -213,6 +226,8 @@ export const deleteAdminVideo = createServerFn({ method: "POST" }).middleware([r
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("episode_media").delete().eq("episode_id", data.episodeId);
     if (error) throw new Error("Could not remove video.");
+    const { error: durationError } = await supabaseAdmin.from("episodes").update({ duration_seconds: 0 }).eq("id", data.episodeId);
+    if (durationError) throw new Error("Video removed, but its duration could not be cleared. Please retry.");
     const { flushVideoCleanup } = await import("./video-cleanup.server");
     return { ok: true, cleanupPending: await flushVideoCleanup() };
   });
