@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Supabase-controlled Turnstile
+- [ ] Allow tokenless auth when Supabase captcha is off; show Turnstile when Supabase requests it
+- [ ] Apply to signup, password login and code resend/recovery; remove artificial invite-password gate
+- [ ] Test both captcha-required and disabled responses and verify browser flow
+
 ## Current request — Colourful controls and avatar
 - [x] Give selected navigation and catalogue actions colourful idle/hover states and playful tap motion
 - [x] Share uploaded/Google avatar selection across header and profile with replacement priority

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 /** Public recovery action: deliberately returns only existence, never account details. */
 export const sendPasswordRecoveryCode = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ email: z.string().trim().email().max(254), captchaToken: z.string().min(1).max(4096) }).parse(input))
+  .inputValidator((input: unknown) => z.object({ email: z.string().trim().email().max(254), captchaToken: z.string().min(1).max(4096).optional() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { requestRecoveryCode } = await import("./password-recovery");
