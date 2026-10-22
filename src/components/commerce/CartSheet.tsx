@@ -45,7 +45,7 @@ export function CartSheet() {
 
 export function CartButton() {
   const { items, setOpen } = useCart();
-  return <TooltipProvider delayDuration={250}><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Cart, ${items.length} items`} onClick={() => setOpen(true)} className="header-utility relative size-11">
+  return <TooltipProvider delayDuration={250}><Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon" aria-label={`Cart, ${items.length} items`} onClick={() => setOpen(true)} className="header-utility nav-cart relative size-11">
     <ShoppingCart className="size-[18px]" />
     {items.length ? <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold leading-4 text-primary-foreground">{items.length}</span> : null}
   </Button></TooltipTrigger><TooltipContent side="bottom" className="border border-border bg-popover text-popover-foreground">Cart</TooltipContent></Tooltip></TooltipProvider>;

@@ -482,6 +482,12 @@
 .header-utility:hover svg { transform: scale(1.14); }
 .header-utility:active { transform: scale(0.92); transition-duration: 70ms; }
 .nav-cart { --nav-tone: var(--primary); }
+@media (prefers-reduced-motion: reduce) {
+  .header-nav, .header-utility { transition: color 200ms ease, background-color 200ms ease; }
+  .header-nav::before, .header-utility::before { display: none; }
+  .header-nav:hover, .header-utility:hover { transform: none; }
+  .header-utility:hover svg { transform: none; }
+}
 .site-nav-action { color: var(--foreground); background: transparent; }
 .nav-home { --nav-tone: var(--nav-home); }
 .nav-browse { --nav-tone: var(--nav-browse); }
