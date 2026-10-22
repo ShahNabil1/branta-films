@@ -16,6 +16,7 @@ export default defineConfig({
         "@tiptap/extension-text-style",
         "@tiptap/extension-text-align",
         "@radix-ui/react-switch",
+        "@radix-ui/react-tooltip",
         "@dnd-kit/core",
         "@dnd-kit/sortable",
         "@dnd-kit/modifiers",
