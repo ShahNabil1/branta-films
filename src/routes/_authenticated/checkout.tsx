@@ -24,9 +24,9 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 
 const METHODS = [
-  { id: "bkash", label: "bKash", tone: "bg-[oklch(0.6_0.22_0)]" },
-  { id: "nagad", label: "Nagad", tone: "bg-[oklch(0.65_0.2_35)]" },
-  { id: "rocket", label: "Rocket", tone: "bg-[oklch(0.5_0.2_300)]" },
+  { id: "bkash", label: "bKash" },
+  { id: "nagad", label: "Nagad" },
+  { id: "rocket", label: "Rocket" },
 ] as const;
 
 function CheckoutPage() {
@@ -88,7 +88,7 @@ function CheckoutPage() {
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="font-semibold">1. Choose how you pay</h2>
             {numbers.isPending ? <Loader2 className="mt-4 size-5 animate-spin text-muted-foreground" /> : available.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Payments are not open yet. Please check back soon.</p> : <>
-              <div className="mt-4 grid grid-cols-3 gap-2">{available.map((m) => <button key={m.id} type="button" onClick={() => setMethod(m.id)} aria-pressed={method === m.id} className={cn("flex h-14 items-center justify-center gap-2 rounded-xl border font-semibold transition-all active:scale-95", method === m.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}><span className={cn("size-2.5 rounded-full", m.tone)} />{m.label}</button>)}</div>
+              <div className="mt-4 grid grid-cols-3 gap-2">{available.map((m) => <button key={m.id} type="button" onClick={() => setMethod(m.id)} aria-pressed={method === m.id} className={cn("flex h-14 items-center justify-center gap-2 rounded-xl border font-semibold transition-all active:scale-95", method === m.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}><span className={cn("size-2.5 rounded-full", method === m.id ? "bg-primary" : "bg-muted-foreground")} />{m.label}</button>)}</div>
               <div className="mt-4 rounded-xl bg-secondary/60 p-4 text-sm">
                 <p className="text-muted-foreground">{numbers.data?.instructions}</p>
                 <div className="mt-3 flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Send Money to ({METHODS.find((m) => m.id === method)?.label} Personal)</p><p className="font-mono text-xl font-bold tracking-wider">{merchant}</p></div>

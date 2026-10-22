@@ -19,9 +19,11 @@ import { Route as SetPasswordRouteImport } from './routes/set-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
 import { Route as AuthenticatedAccountLibraryRouteImport } from './routes/_authenticated/account.library'
+import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAccountProfileRouteImport } from './routes/_authenticated/account.profile'
 import { Route as AuthenticatedAccountSecurityRouteImport } from './routes/_authenticated/account.security'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
@@ -87,6 +89,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
+  id: '/checkout',
+  path: '/checkout',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const SeriesSlugRoute = SeriesSlugRouteImport.update({
   id: '/series/$slug',
   path: '/series/$slug',
@@ -102,6 +109,12 @@ const AuthenticatedAccountLibraryRoute =
   AuthenticatedAccountLibraryRouteImport.update({
     id: '/library',
     path: '/library',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
+const AuthenticatedAccountOrdersRoute =
+  AuthenticatedAccountOrdersRouteImport.update({
+    id: '/orders',
+    path: '/orders',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
 const AuthenticatedAccountProfileRoute =
@@ -201,8 +214,10 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
+  '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/account/security': typeof AuthenticatedAccountSecurityRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
@@ -228,8 +243,10 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/set-password': typeof SetPasswordRoute
   '/terms': typeof TermsRoute
+  '/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
+  '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
   '/account/security': typeof AuthenticatedAccountSecurityRoute
   '/admin/staff': typeof AuthenticatedAdminStaffRoute
@@ -259,8 +276,10 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
+  '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
   '/_authenticated/account/security': typeof AuthenticatedAccountSecurityRoute
   '/_authenticated/admin/staff': typeof AuthenticatedAdminStaffRoute
@@ -290,8 +309,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/account'
     | '/admin'
+    | '/checkout'
     | '/series/$slug'
     | '/account/library'
+    | '/account/orders'
     | '/account/profile'
     | '/account/security'
     | '/admin/staff'
@@ -317,8 +338,10 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/set-password'
     | '/terms'
+    | '/checkout'
     | '/series/$slug'
     | '/account/library'
+    | '/account/orders'
     | '/account/profile'
     | '/account/security'
     | '/admin/staff'
@@ -347,8 +370,10 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/account'
     | '/_authenticated/admin'
+    | '/_authenticated/checkout'
     | '/series/$slug'
     | '/_authenticated/account/library'
+    | '/_authenticated/account/orders'
     | '/_authenticated/account/profile'
     | '/_authenticated/account/security'
     | '/_authenticated/admin/staff'
@@ -452,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/checkout': {
+      id: '/_authenticated/checkout'
+      path: '/checkout'
+      fullPath: '/checkout'
+      preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/series/$slug': {
       id: '/series/$slug'
       path: '/series/$slug'
@@ -471,6 +503,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/account/library'
       preLoaderRoute: typeof AuthenticatedAccountLibraryRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
+    '/_authenticated/account/orders': {
+      id: '/_authenticated/account/orders'
+      path: '/orders'
+      fullPath: '/account/orders'
+      preLoaderRoute: typeof AuthenticatedAccountOrdersRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
     '/_authenticated/account/profile': {
@@ -583,6 +622,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAccountRouteChildren {
   AuthenticatedAccountLibraryRoute: typeof AuthenticatedAccountLibraryRoute
+  AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
   AuthenticatedAccountProfileRoute: typeof AuthenticatedAccountProfileRoute
   AuthenticatedAccountSecurityRoute: typeof AuthenticatedAccountSecurityRoute
   AuthenticatedAccountIndexRoute: typeof AuthenticatedAccountIndexRoute
@@ -590,6 +630,7 @@ interface AuthenticatedAccountRouteChildren {
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
   AuthenticatedAccountLibraryRoute: AuthenticatedAccountLibraryRoute,
+  AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
   AuthenticatedAccountProfileRoute: AuthenticatedAccountProfileRoute,
   AuthenticatedAccountSecurityRoute: AuthenticatedAccountSecurityRoute,
   AuthenticatedAccountIndexRoute: AuthenticatedAccountIndexRoute,
@@ -633,12 +674,14 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRouteWithChildren
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedWatchEpisodeIdRoute: typeof AuthenticatedWatchEpisodeIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRouteWithChildren,
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedWatchEpisodeIdRoute: AuthenticatedWatchEpisodeIdRoute,
 }
 
