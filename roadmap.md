@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Saved episode media
+- [ ] Show persisted video preview and metadata when reopening an episode; refresh after replacement
+- [ ] Distinguish missing thumbnail from missing video and preserve saved artwork
+- [ ] Verify media rules and explain automatic multi-resolution encoding; authenticated check blocked by external Supabase session access
+
 ## Current request — Series metadata controls
 - [x] Larger multiline tagline, genre dropdown with individual + additions/removal, maturity dropdown
 - [x] Editable current-year default for new series; preserve existing years
