@@ -15,7 +15,6 @@ import { validateField, validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/forgot-password")({
   staticData: { sitemap: false },
-  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Reset your password — Branta Films" },

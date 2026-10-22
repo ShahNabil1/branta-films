@@ -12,7 +12,6 @@ import { validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/set-password")({
   staticData: { sitemap: false },
-  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Set your password — Branta Films" },

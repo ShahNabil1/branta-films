@@ -14,6 +14,7 @@ import { formatTaka } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [
     { title: "Payments — Branta Films Admin" }, { name: "description", content: "Verify bKash, Nagad and Rocket payments." },
     { property: "og:title", content: "Payments — Branta Films Admin" }, { property: "og:description", content: "Branta Films administrator workspace." },

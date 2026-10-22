@@ -16,6 +16,7 @@ import { passkeyRegisterOptions, passkeyRegisterVerify } from "@/lib/passkey.fun
 import { validateNewPassword } from "@/lib/validation";
 
 export const Route = createFileRoute("/_authenticated/account/security")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Sign-in & security — Branta Films" },

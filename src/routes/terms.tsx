@@ -4,7 +4,6 @@ import { LegalPage } from "@/components/content/LegalPage";
 const description = "The terms that apply when you use Branta Films, a streaming service by Branta Tech.";
 
 export const Route = createFileRoute("/terms")({
-  staticData: { sitemap: false },
   staticData: { sitemap: true },
   head: () => ({
     meta: [

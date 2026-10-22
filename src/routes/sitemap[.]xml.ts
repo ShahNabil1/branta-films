@@ -6,7 +6,6 @@ const BASE_URL = "https://films.brantatech.com";
 
 export const Route = createFileRoute("/sitemap.xml")({
   staticData: { sitemap: false },
-  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: async () => {

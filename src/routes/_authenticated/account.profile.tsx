@@ -17,6 +17,7 @@ import { AVATAR_TYPES, MAX_AVATAR_BYTES } from "@/lib/media";
 import { uploadAvatar as uploadAvatarFn } from "@/lib/avatar.functions";
 
 export const Route = createFileRoute("/_authenticated/account/profile")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Profile — Branta Films" },
