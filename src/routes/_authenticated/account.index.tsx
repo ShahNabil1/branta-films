@@ -79,7 +79,7 @@ function AccountOverview() {
         <StatTile to="/account/library" icon={Film} label="Series unlocked" value={counts?.unlocks ?? "–"} delay={120} compactMobile />
       </div>
       <Panel delay={240}>
-        <ContinueWatching emptyText="Nothing in progress yet. Start an episode and it will appear here." />
+        <ContinueWatching inDashboard emptyText="Nothing in progress yet. Start an episode and it will appear here." />
       </Panel>
     </>
   );
