@@ -74,8 +74,8 @@ function PopupEditor({ draft, isNew, onDone, onCancel }: { draft: Draft; isNew: 
   });
   async function onFile(file: File | undefined) {
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) return toast.error("Use a JPG, PNG or WebP image.");
-    if (file.size > 8 * 1024 * 1024) return toast.error("Image must be under 8 MB.");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) { toast.error("Use a JPG, PNG or WebP image."); return; }
+    if (file.size > 8 * 1024 * 1024) { toast.error("Image must be under 8 MB."); return; }
     setUploading(true);
     try {
       const buf = new Uint8Array(await file.arrayBuffer()); let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));

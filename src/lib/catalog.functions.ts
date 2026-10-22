@@ -28,7 +28,8 @@ export type CatalogSeries = Database["public"]["Tables"]["series"]["Row"] & {
 };
 
 /** Adds the automatic-offer sale price for a series and each of its episodes. */
-async function withOffers<E extends { id: string; price_bdt?: number | null }, T extends { id: string; price_bdt: number; episodes?: E[] }>(rows: T[]): Promise<(Omit<T, "episodes"> & { discount_price_bdt: number | null; episodes: (E & { sale_price_bdt: number | null })[] })[]> {
+type Ep<T> = T extends { episodes?: (infer E)[] } ? E : never;
+async function withOffers<T extends { id: string; price_bdt: number; episodes?: { id: string; price_bdt?: number | null }[] }>(rows: T[]): Promise<(Omit<T, "episodes"> & { discount_price_bdt: number | null; episodes: (Ep<T> & { sale_price_bdt: number | null })[] })[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { loadAutoOffers } = await import("./commerce.server");
   const { salePrice } = await import("./cart-pricing");
@@ -41,7 +42,7 @@ async function withOffers<E extends { id: string; price_bdt?: number | null }, T
   return rows.map((s) => ({
     ...s,
     discount_price_bdt: sale("series", s.id, null, s.price_bdt),
-    episodes: (s.episodes ?? []).map((e) => ({ ...e, sale_price_bdt: e.price_bdt ? sale("episode", e.id, s.id, e.price_bdt) : null })),
+    episodes: (s.episodes ?? []).map((e) => ({ ...e, sale_price_bdt: e.price_bdt ? sale("episode", e.id, s.id, e.price_bdt) : null })) as (Ep<T> & { sale_price_bdt: number | null })[],
   }));
 }
 
