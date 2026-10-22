@@ -13,6 +13,8 @@ import { BD_PHONE_RE, TRX_ID_RE, maskCouponCode } from "@/lib/cart-pricing";
 import { formatTaka } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import bkashLogo from "@/assets/bkash-logo.asset.json";
+import nagadLogo from "@/assets/nagad-logo.asset.json";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [
@@ -24,9 +26,8 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 
 const METHODS = [
-  { id: "bkash", label: "bKash" },
-  { id: "nagad", label: "Nagad" },
-  { id: "rocket", label: "Rocket" },
+  { id: "bkash", label: "bKash", logo: bkashLogo.url },
+  { id: "nagad", label: "Nagad", logo: nagadLogo.url },
 ] as const;
 
 function CheckoutPage() {
@@ -38,7 +39,7 @@ function CheckoutPage() {
   const numbersFn = useServerFn(getPaymentNumbers);
   const [codeInput, setCodeInput] = useState("");
   const [code, setCode] = useState<string | null>(null);
-  const [method, setMethod] = useState<"bkash" | "nagad" | "rocket">("bkash");
+  const [method, setMethod] = useState<"bkash" | "nagad">("bkash");
   const [phone, setPhone] = useState("");
   const [trx, setTrx] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +58,7 @@ function CheckoutPage() {
   const available = METHODS.filter((m) => numbers.data?.[m.id]);
   useEffect(() => { if (available.length && !available.some((m) => m.id === method)) setMethod(available[0]!.id); }, [available, method]);
   const merchant = numbers.data?.[method] ?? "";
-  const cleanPhone = phone.replace(/[\s-]/g, "").replace(/^\+?88/, "");
+  const cleanPhone = phone;
   const phoneOk = BD_PHONE_RE.test(cleanPhone);
   const trxOk = TRX_ID_RE.test(trx);
   const canPay = Boolean(q && q.lines.length && q.total > 0 && phoneOk && trxOk && merchant && !quote.isFetching && !submitting);
@@ -88,9 +89,9 @@ function CheckoutPage() {
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="font-semibold">1. Choose how you pay</h2>
             {numbers.isPending ? <Loader2 className="mt-4 size-5 animate-spin text-muted-foreground" /> : available.length === 0 ? <p className="mt-3 text-sm text-muted-foreground">Payments are not open yet. Please check back soon.</p> : <>
-              <div className="mt-4 grid grid-cols-3 gap-2">{available.map((m) => <button key={m.id} type="button" onClick={() => setMethod(m.id)} aria-pressed={method === m.id} className={cn("flex h-14 items-center justify-center gap-2 rounded-xl border font-semibold transition-all active:scale-95", method === m.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}><span className={cn("size-2.5 rounded-full", method === m.id ? "bg-primary" : "bg-muted-foreground")} />{m.label}</button>)}</div>
+              <div className="mt-4 grid grid-cols-2 gap-3">{available.map((m) => <button key={m.id} type="button" onClick={() => setMethod(m.id)} aria-pressed={method === m.id} className={cn("relative flex h-20 items-center justify-center gap-3 rounded-xl border-2 font-semibold transition-all active:scale-95", method === m.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40")}><span className="grid size-12 place-items-center overflow-hidden rounded-xl bg-white p-1"><img src={m.logo} alt="" className="size-full object-contain" /></span><span className="text-base">{m.label}</span>{method === m.id ? <Check className="absolute right-2 top-2 size-4 text-primary" /> : null}</button>)}</div>
               <div className="mt-4 rounded-xl bg-secondary/60 p-4 text-sm">
-                <p className="text-muted-foreground">{numbers.data?.instructions}</p>
+                <ol className="list-decimal space-y-1 pl-5 text-muted-foreground"><li>Open your {METHODS.find((m) => m.id === method)?.label} app and choose <b className="text-foreground">Send Money</b>.</li><li>Send the exact amount below to the number shown.</li><li>Copy the Transaction ID from the confirmation SMS and enter it below.</li></ol>{numbers.data?.instructions ? <p className="mt-2 text-muted-foreground">{numbers.data.instructions}</p> : null}
                 <div className="mt-3 flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Send Money to ({METHODS.find((m) => m.id === method)?.label} Personal)</p><p className="font-mono text-xl font-bold tracking-wider">{merchant}</p></div>
                   <Button type="button" variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(merchant); toast.success("Number copied"); }}><Copy />Copy</Button></div>
                 {q ? <p className="mt-3">Amount: <span className="font-bold tabular-nums">{formatTaka(q.total)}</span></p> : null}
@@ -100,8 +101,8 @@ function CheckoutPage() {
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="font-semibold">2. Confirm your payment</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1.5"><span className="text-sm font-medium">Number you paid from</span><Input inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" value={phone} onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s-]/g, "").slice(0, 16))} aria-invalid={phone !== "" && !phoneOk} />{phone && !phoneOk ? <span className="text-xs text-destructive">Enter an 11-digit number starting with 01.</span> : null}</label>
-              <label className="space-y-1.5"><span className="text-sm font-medium">Transaction ID</span><Input className="font-mono uppercase tracking-wider" placeholder="e.g. 9ACD7XK2LM" value={trx} onChange={(e) => setTrx(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20))} aria-invalid={trx !== "" && !trxOk} />{trx && !trxOk ? <span className="text-xs text-destructive">6–20 letters or digits, exactly as in your SMS.</span> : null}</label>
+              <label className="space-y-1.5"><span className="text-sm font-medium">Number you paid from</span><div className={cn("flex h-10 items-center overflow-hidden rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring", phone !== "" && !phoneOk ? "border-destructive" : "border-input")}><span className="flex h-full items-center gap-2 border-r border-border bg-secondary/60 px-3"><svg viewBox="0 0 10 6" className="h-4 w-[26px] rounded-[2px]" aria-label="Bangladesh flag"><rect width="10" height="6" fill="#006a4e" /><circle cx="4.5" cy="3" r="2" fill="#f42a41" /></svg><span className="font-mono text-sm font-semibold">+88</span></span><input inputMode="numeric" autoComplete="tel-national" placeholder="01XXXXXXXXX" maxLength={11} value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))} aria-invalid={phone !== "" && !phoneOk} className="h-full min-w-0 flex-1 bg-transparent px-3 font-mono tracking-wider outline-none" /></div>{phone && !phoneOk ? <span className="text-xs text-destructive">Enter 11 digits starting with 013–019.</span> : null}</label>
+              <label className="space-y-1.5"><span className="text-sm font-medium">Transaction ID</span><Input className="font-mono uppercase tracking-wider" placeholder="e.g. 9ACD7XK2LM" value={trx} onChange={(e) => setTrx(e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 20))} inputMode="text" autoCapitalize="characters" spellCheck={false} aria-invalid={trx !== "" && !trxOk} />{trx && !trxOk ? <span className="text-xs text-destructive">6–20 letters or digits, exactly as in your SMS.</span> : null}</label>
             </div>
             <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />Our team checks every payment. Your series or episodes unlock automatically once it's confirmed — usually within minutes.</p>
           </section>
