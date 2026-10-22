@@ -12,6 +12,12 @@ describe("profile picture selection", () => {
   it("finds the linked Google identity picture", () => {
     expect(profilePicture(null, { identities: [{ provider: "google", identity_data: { picture: "https://lh3.googleusercontent.com/linked" } }] })).toBe("https://lh3.googleusercontent.com/linked");
   });
+  it("resolves a staff profile with no saved avatar from its Auth Google identity", () => {
+    expect(profilePicture({ avatar_url: null }, { identities: [{ provider: "google", identity_data: { avatar_url: "https://lh3.googleusercontent.com/staff" } }] })).toBe("https://lh3.googleusercontent.com/staff");
+  });
+  it("keeps a staff replacement ahead of the linked Google identity", () => {
+    expect(profilePicture({ avatar_url: "images/avatars/staff.webp" }, { identities: [{ provider: "google", identity_data: { picture: "https://lh3.googleusercontent.com/staff" } }] })).toBe("/api/public/media/images/avatars/staff.webp");
+  });
   it("rejects invalid provider pictures and leaves the initials fallback", () => {
     expect(profilePicture(null, { user_metadata: { picture: "javascript:bad", avatar_url: 42 } })).toBeNull();
   });
