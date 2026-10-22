@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Mobile player and upload status
+- [ ] Fix mobile play hit targets, adjustable volume and unclipped playback settings
+- [ ] Add real upload bytes, percentage, speed/ETA, stage/error/retry states and navigation/close/suspension safeguards
+- [ ] Test mobile interactions and upload failure/retry; verify current build
+
 ## Current request — Automatic video duration and visible controls
 - [x] Remove manual duration entry; derive and persist actual MP4 duration on uploads and existing saved-video inspection
 - [x] Show Replace/Delete before Edit, preserving the explicit Edit requirement
