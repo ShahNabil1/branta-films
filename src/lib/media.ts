@@ -20,6 +20,16 @@ export const IMAGE_WIDTHS = {
 } as const;
 export type ImageVariant = keyof typeof IMAGE_WIDTHS;
 
+/** Shared by image markup and preload hints so the browser reuses one request. */
+export function artworkSources(path: string, variant: ImageVariant) {
+  const widths = IMAGE_WIDTHS[variant];
+  const transformed = transformedMediaUrl(path, widths[1]);
+  return {
+    src: transformed ?? mediaUrl(path) ?? undefined,
+    srcSet: transformed ? widths.map(width => `${transformedMediaUrl(path, width)} ${width}w`).join(", ") : undefined,
+  };
+}
+
 /** Only public catalogue artwork; never transform video keys or external avatars. */
 export function transformedMediaUrl(path: string, width: number): string | null {
   if (!isAllowedMediaPath(path) || path.startsWith("images/avatars/")) return null;

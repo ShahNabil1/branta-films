@@ -1,5 +1,9 @@
 # Branta Films roadmap
 
+## Current request — Network dependency tree and LCP
+- [ ] Preload the first visible homepage artwork with matching responsive candidates; shorten the Bangla font discovery chain
+- [ ] Add connection hints only for needed external origins; verify requests and regression tests
+
 ## Current request — DevTools CPU and account-only scope
 - [x] Remove expensive package; scope blocking to /account and descendants, clearing timer/listeners on exit
 - [x] 21 tests pass (scope, lifecycle, access, routes); Home/Browse/auth browser checks pass with no detector requests/errors; build OK
