@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Cloudflare image transformations and caching
+- [x] Link the new workspace Cloudflare connection
+- [ ] Use bounded Cloudflare artwork transformations with original-image fallback
+- [ ] Test transformation URLs and image-only one-year caching
+- [ ] Explain dashboard cache settings and verify live transformation availability
+
 ## Current request — AI-generated identity and content SEO
 - [x] Connect Google Search Console freshly in the new workspace; disregard previous workspace connections
 - [x] Update site identity, titles, social metadata and structured data
