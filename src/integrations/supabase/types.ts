@@ -49,6 +49,95 @@ export type Database = {
           },
         ]
       }
+      coupon_targets: {
+        Row: {
+          coupon_id: string
+          target_id: string
+          target_type: string
+        }
+        Insert: {
+          coupon_id: string
+          target_id: string
+          target_type: string
+        }
+        Update: {
+          coupon_id?: string
+          target_id?: string
+          target_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_targets_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      coupons: {
+        Row: {
+          applies_to: string
+          auto_apply: boolean
+          cap_amount: number | null
+          code: string
+          created_at: string
+          deleted_at: string | null
+          description: string | null
+          discount_type: string
+          discount_value: number
+          ends_at: string | null
+          id: string
+          is_active: boolean
+          max_uses_per_customer: number | null
+          max_uses_total: number | null
+          min_spend: number
+          name: string
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          applies_to?: string
+          auto_apply?: boolean
+          cap_amount?: number | null
+          code: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          discount_type: string
+          discount_value: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses_per_customer?: number | null
+          max_uses_total?: number | null
+          min_spend?: number
+          name: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          applies_to?: string
+          auto_apply?: boolean
+          cap_amount?: number | null
+          code?: string
+          created_at?: string
+          deleted_at?: string | null
+          description?: string | null
+          discount_type?: string
+          discount_value?: number
+          ends_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses_per_customer?: number | null
+          max_uses_total?: number | null
+          min_spend?: number
+          name?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       episode_media: {
         Row: {
           content_type: string
@@ -81,6 +170,44 @@ export type Database = {
           },
         ]
       }
+      episode_unlocks: {
+        Row: {
+          created_at: string
+          episode_id: string
+          granted_by: string | null
+          id: string
+          order_id: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          episode_id: string
+          granted_by?: string | null
+          id?: string
+          order_id?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          episode_id?: string
+          granted_by?: string | null
+          id?: string
+          order_id?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_unlocks_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       episodes: {
         Row: {
           created_at: string
@@ -89,6 +216,7 @@ export type Database = {
           id: string
           is_free: boolean
           is_published: boolean
+          price_bdt: number | null
           series_id: string
           synopsis_html: string
           thumbnail_url: string | null
@@ -102,6 +230,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          price_bdt?: number | null
           series_id: string
           synopsis_html?: string
           thumbnail_url?: string | null
@@ -115,6 +244,7 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          price_bdt?: number | null
           series_id?: string
           synopsis_html?: string
           thumbnail_url?: string | null
@@ -130,6 +260,111 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      order_items: {
+        Row: {
+          coupon_id: string | null
+          discount_bdt: number
+          final_price_bdt: number
+          id: string
+          item_id: string
+          item_type: string
+          order_id: string
+          title: string
+          unit_price_bdt: number
+        }
+        Insert: {
+          coupon_id?: string | null
+          discount_bdt?: number
+          final_price_bdt: number
+          id?: string
+          item_id: string
+          item_type: string
+          order_id: string
+          title: string
+          unit_price_bdt: number
+        }
+        Update: {
+          coupon_id?: string | null
+          discount_bdt?: number
+          final_price_bdt?: number
+          id?: string
+          item_id?: string
+          item_type?: string
+          order_id?: string
+          title?: string
+          unit_price_bdt?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          coupon_code: string | null
+          created_at: string
+          discount_bdt: number
+          id: string
+          method: string
+          reject_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sender_phone: string
+          status: string
+          subtotal_bdt: number
+          total_bdt: number
+          trx_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_code?: string | null
+          created_at?: string
+          discount_bdt?: number
+          id?: string
+          method: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sender_phone: string
+          status?: string
+          subtotal_bdt: number
+          total_bdt: number
+          trx_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_code?: string | null
+          created_at?: string
+          discount_bdt?: number
+          id?: string
+          method?: string
+          reject_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sender_phone?: string
+          status?: string
+          subtotal_bdt?: number
+          total_bdt?: number
+          trx_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       passkey_credentials: {
         Row: {
@@ -185,6 +420,90 @@ export type Database = {
           id?: string
           password_hash?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      payment_settings: {
+        Row: {
+          bkash: string
+          id: boolean
+          instructions: string
+          nagad: string
+          rocket: string
+          updated_at: string
+        }
+        Insert: {
+          bkash?: string
+          id?: boolean
+          instructions?: string
+          nagad?: string
+          rocket?: string
+          updated_at?: string
+        }
+        Update: {
+          bkash?: string
+          id?: boolean
+          instructions?: string
+          nagad?: string
+          rocket?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      popups: {
+        Row: {
+          action_target: string | null
+          action_type: string
+          action_url: string | null
+          alt: string
+          created_at: string
+          delay_seconds: number
+          ends_at: string | null
+          frequency: string
+          id: string
+          image_key: string | null
+          is_active: boolean
+          placement: string
+          sort_order: number
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_target?: string | null
+          action_type?: string
+          action_url?: string | null
+          alt?: string
+          created_at?: string
+          delay_seconds?: number
+          ends_at?: string | null
+          frequency?: string
+          id?: string
+          image_key?: string | null
+          is_active?: boolean
+          placement?: string
+          sort_order?: number
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_target?: string | null
+          action_type?: string
+          action_url?: string | null
+          alt?: string
+          created_at?: string
+          delay_seconds?: number
+          ends_at?: string | null
+          frequency?: string
+          id?: string
+          image_key?: string | null
+          is_active?: boolean
+          placement?: string
+          sort_order?: number
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -250,7 +569,6 @@ export type Database = {
           backdrop_url: string | null
           created_at: string
           description_html: string
-          discount_price_bdt: number | null
           genres: string[]
           id: string
           is_featured: boolean
@@ -269,7 +587,6 @@ export type Database = {
           backdrop_url?: string | null
           created_at?: string
           description_html?: string
-          discount_price_bdt?: number | null
           genres?: string[]
           id?: string
           is_featured?: boolean
@@ -288,7 +605,6 @@ export type Database = {
           backdrop_url?: string | null
           created_at?: string
           description_html?: string
-          discount_price_bdt?: number | null
           genres?: string[]
           id?: string
           is_featured?: boolean
@@ -595,6 +911,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      active_offers: {
+        Args: never
+        Returns: {
+          cap_amount: number
+          code: string
+          coupon_id: string
+          discount_type: string
+          discount_value: number
+          name: string
+          target_id: string
+          target_type: string
+        }[]
+      }
+      coupon_use_count: {
+        Args: { _coupon: string; _user?: string }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
