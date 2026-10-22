@@ -21,7 +21,7 @@ function identity() {
 /** Optional enhancement: the existing OAuth button remains available everywhere. */
 export function GoogleOneTap({ enabled, onError }: { enabled: boolean; onError: (message: string) => void }) {
   useEffect(() => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
+    const clientId = import.meta.env['VITE_GOOGLE_CLIENT_ID'] as string | undefined;
     if (!enabled || !clientId || window.self !== window.top) return;
     let cancelled = false;
     let exchanging = false;
