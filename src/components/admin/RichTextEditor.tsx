@@ -37,7 +37,8 @@ export function RichTextEditor({ value, onChange, onReady, editable = true }: { 
         {["14px", "16px", "20px", "24px", "32px"].map((s) => <option key={s}>{s}</option>)}
       </select>
       <label title="Text color" className="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-2 text-xs font-semibold">Colour<input type="color" aria-label="Text color" className="size-5 cursor-pointer rounded border-0 bg-transparent p-0" onChange={(e) => editor.chain().focus().setColor(e.target.value).run()} /></label>
+      <Button type="button" size="sm" variant="ghost" title="Reset to the site's default text colour" onClick={() => editor.chain().focus().unsetColor().run()} className="h-8 rounded-lg px-2 text-xs font-semibold text-muted-foreground hover:bg-card hover:text-primary">Default colour</Button>
     </div>
-    <EditorContent editor={editor} />
+    <div className="rte-site-canvas"><p className="rte-site-canvas-note">Preview matches the website background</p><EditorContent editor={editor} /></div>
   </div>;
 }
