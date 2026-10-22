@@ -91,6 +91,7 @@ export function StatTile({
   value,
   hint,
   delay = 0,
+  compactMobile = false,
 }: {
   to: NonNullable<LinkProps["to"]>;
   icon: LucideIcon;
@@ -98,21 +99,22 @@ export function StatTile({
   value: ReactNode;
   hint?: string;
   delay?: number;
+  compactMobile?: boolean;
 }) {
   return (
     <Link
       to={to}
-      className="animate-rise group relative flex flex-col rounded-2xl border border-border bg-surface p-5 transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-card)]"
+      className={cn("animate-rise group relative flex rounded-2xl border border-border bg-surface transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-card)]", compactMobile ? "min-h-16 flex-row items-center gap-2 rounded-lg px-3 py-3 sm:flex-col sm:items-stretch sm:gap-0 sm:rounded-2xl sm:p-5" : "flex-col p-5")}
       style={{ ["--rise-delay" as string]: `${delay}ms` }}
     >
-      <div className="flex items-center justify-between">
-        <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/20">
-          <Icon className="size-[18px]" aria-hidden />
+      <div className={cn("flex items-center justify-between", compactMobile && "shrink-0")}>
+        <span className={cn("inline-flex items-center justify-center bg-primary/10 text-primary ring-1 ring-primary/20", compactMobile ? "size-7 rounded-lg sm:size-10 sm:rounded-xl" : "size-10 rounded-xl")}>
+          <Icon className={compactMobile ? "size-3.5 sm:size-[18px]" : "size-[18px]"} aria-hidden />
         </span>
-        <ArrowUpRight aria-hidden className="size-4 text-muted-foreground transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary" />
+        <ArrowUpRight aria-hidden className={cn("size-4 text-muted-foreground transition-[color,transform] duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary", compactMobile && "hidden sm:block")} />
       </div>
-      <p className="text-small mt-5 text-muted-foreground">{label}</p>
-      <p className="text-h3 mt-1 font-semibold text-foreground">{value}</p>
+      <p className={compactMobile ? "min-w-0 flex-1 text-xs leading-4 text-muted-foreground sm:mt-5 sm:flex-none sm:text-sm" : "text-small mt-5 text-muted-foreground"}>{label}</p>
+      <p className={compactMobile ? "shrink-0 text-lg font-semibold tabular-nums text-foreground sm:mt-1 sm:text-3xl" : "text-h3 mt-1 font-semibold text-foreground"}>{value}</p>
       {hint ? <p className="text-caption mt-1 text-muted-foreground">{hint}</p> : null}
     </Link>
   );
