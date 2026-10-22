@@ -10,7 +10,7 @@ import { moveItem } from "@/lib/artwork";
 type Item = { id: string };
 
 /** Drag-and-drop vertical list. Order updates instantly; `onReorder` persists it (rolls back on failure). */
-export function SortableList<T extends Item>({ items, onReorder, render, disabled }: {
+export function SortableList<T extends Item>({ items, onReorder, render, disabled = false }: {
   items: T[]; disabled?: boolean;
   onReorder: (ids: string[]) => Promise<unknown>;
   render: (item: T, index: number, handle: ReactNode) => ReactNode;
@@ -45,7 +45,7 @@ export function SortableList<T extends Item>({ items, onReorder, render, disable
 
 const Grip = () => <span className="grid h-10 w-7 place-items-center rounded-lg text-muted-foreground"><GripVertical className="size-5" /></span>;
 
-function Row({ id, disabled, children }: { id: string; disabled?: boolean; children: (handle: ReactNode) => ReactNode }) {
+function Row({ id, disabled, children }: { id: string; disabled: boolean; children: (handle: ReactNode) => ReactNode }) {
   const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({ id, disabled });
   const handle = <button type="button" ref={setActivatorNodeRef} {...attributes} {...listeners} aria-label="Drag to reorder"
     className={cn("grid h-10 w-7 shrink-0 touch-none place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary", disabled ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing")}>
