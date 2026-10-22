@@ -170,6 +170,6 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim() || Boolean(discountError)} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
       </div> : null}
     </form>
-    <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={(blob) => { if (cropping) return uploadCropped(blob, cropping.slot); }} />
+    <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={async (blob) => { if (cropping) await uploadCropped(blob, cropping.slot); }} />
   </>;
 }
