@@ -105,7 +105,8 @@
   --popover: #111111;
   --popover-foreground: var(--foreground);
   --primary: #ff5d00;
-  --primary-foreground: #ffffff;
+  /* Dark ink keeps normal-sized labels legible on the brand orange in every theme. */
+  --primary-foreground: var(--action-ink);
   --primary-hover: #e95200;
   --secondary: #1c1c1c;
   --secondary-foreground: var(--foreground);
