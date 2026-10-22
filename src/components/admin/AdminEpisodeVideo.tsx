@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, Loader2, RefreshCw, Upload, Trash2 } from "lucide-react";
-import { deleteAdminVideo, getAdminEpisodeMedia } from "@/lib/admin.functions";
+import { Check, Link2, Loader2, RefreshCw, Upload, Trash2 } from "lucide-react";
+import { attachAdminVideo, deleteAdminVideo, getAdminEpisodeMedia } from "@/lib/admin.functions";
 import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { toast } from "sonner";
 import { mediaUrl } from "@/lib/media";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { formatClock } from "@/lib/format";
 import { adminQuery } from "@/lib/admin-queries";
 
@@ -17,6 +18,22 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, 
   const [deleting, setDeleting] = useState(false);
   const qc = useQueryClient();
   const removeVideo = useServerFn(deleteAdminVideo);
+  const attach = useServerFn(attachAdminVideo);
+  const [linkOpen, setLinkOpen] = useState(false);
+  const [link, setLink] = useState("");
+  const [linking, setLinking] = useState(false);
+  async function linkVideo() {
+    setLinking(true);
+    try {
+      const result = await attach({ data: { episodeId, source: link } });
+      await qc.invalidateQueries({ queryKey: ["admin-episode-media", episodeId] });
+      await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
+      await qc.invalidateQueries({ queryKey: ["catalog"] });
+      setLink(""); setLinkOpen(false);
+      toast.success(result.cleanupPending ? "Video linked. Old file cleanup will retry later." : "Video linked from R2.");
+    } catch (err) { toast.error(err instanceof Error ? err.message : "Could not link video."); }
+    finally { setLinking(false); }
+  }
   const readMedia = useServerFn(getAdminEpisodeMedia);
   const { data, isPending, error, refetch } = useQuery({
     queryKey: ["admin-episode-media", episodeId],
@@ -58,8 +75,15 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, 
     <div className="flex flex-wrap gap-2">
       <input ref={input} type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy || deleting} onChange={(e) => { void onUpload(e.target.files?.[0]); e.target.value = ""; }} />
       <Button type="button" title={!editing ? "Select Edit to change the video" : undefined} disabled={!editing || busy || deleting} onClick={() => input.current?.click()}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>
+      <Button type="button" variant="outline" title={!editing ? "Select Edit to change the video" : undefined} disabled={!editing || busy || deleting || linking} onClick={() => setLinkOpen(v => !v)}><Link2 />Link from R2</Button>
       {hasVideo ? <Button type="button" variant="outline" title={!editing ? "Select Edit to change the video" : undefined} className="border-destructive/30 text-destructive hover:bg-destructive/10" disabled={!editing || busy || deleting} onClick={() => setConfirmDelete(true)}><Trash2 />Delete video</Button> : null}
     </div>
+    {linkOpen && editing ? <div className="space-y-2 rounded-lg border border-border p-3">
+      <label htmlFor={`r2-link-${episodeId}`} className="text-sm font-medium">R2 object key or URL</label>
+      <Input id={`r2-link-${episodeId}`} value={link} onChange={e => setLink(e.target.value)} placeholder="videos/series/my-series/e01.mp4" disabled={linking} />
+      <p className="text-xs text-muted-foreground">Upload the MP4 in the Cloudflare R2 dashboard (bucket branta-films, inside the videos/ folder), then paste its key or URL here. Duration is read automatically.</p>
+      <div className="flex gap-2"><Button type="button" size="sm" disabled={!link.trim() || linking} onClick={() => void linkVideo()}>{linking ? <Loader2 className="animate-spin" /> : <Link2 />}Link video</Button><Button type="button" size="sm" variant="ghost" disabled={linking} onClick={() => setLinkOpen(false)}>Cancel</Button></div>
+    </div> : null}
     <ConfirmDialog open={confirmDelete} onClose={() => { if (!deleting) setConfirmDelete(false); }} title="Delete episode video?" description="The video will be permanently removed from this episode and private R2 storage. Episode details and thumbnail will stay." confirmLabel="Delete video" destructive busy={deleting} onConfirm={() => void remove()} />
   </div>;
 }
