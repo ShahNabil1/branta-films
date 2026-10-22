@@ -26,7 +26,7 @@ export const getPeopleDirectory=createServerFn({method:'POST'}).middleware([requ
       const episode=episodes.find(e=>e.id===watching?.current_episode_id);
       return {...p,role:roles.find(r=>r.user_id===p.id&&r.role==='admin')?.role??roles.find(r=>r.user_id===p.id)?.role??'viewer',status,paid:hasPaidAccess(unlocks.filter(u=>u.user_id===p.id),series),watching:series.find(s=>s.id===episode?.series_id)?.title??null,watched_seconds:devices.reduce((a,s)=>a+Number(s.watched_seconds),0),last_seen_at:devices.map(s=>s.last_seen_at).sort().at(-1)??null,banned_until:restrictions.find(r=>r.user_id===p.id)?.banned_until??null};
     });
-    const filtered=audience.filter(p=>`${p.full_name} ${p.email}`.toLowerCase().includes(data.search.toLowerCase()));
+    const filtered=audience.filter(p=>`${p.full_name} ${p.email} ${p.phone??''}`.toLowerCase().includes(data.search.toLowerCase()));
     // Only resolve Auth pictures for this page, and never return Auth metadata.
     const people=await Promise.all(filtered.slice(data.page*25,data.page*25+25).map(async p=>{
       if(p.avatar_url?.trim())return p;

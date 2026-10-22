@@ -13,6 +13,7 @@ import { BD_PHONE_RE, TRX_ID_RE, maskCouponCode } from "@/lib/cart-pricing";
 import { formatTaka } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { BdPhoneInput } from "@/components/forms/BdPhoneInput";
 import bkashLogo from "@/assets/bkash-logo.asset.json";
 import nagadLogo from "@/assets/nagad-logo.asset.json";
 
@@ -101,7 +102,7 @@ function CheckoutPage() {
           <section className="rounded-2xl border border-border bg-surface p-5">
             <h2 className="font-semibold">2. Confirm your payment</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <label className="space-y-1.5"><span className="text-sm font-medium">Number you paid from</span><div className={cn("flex h-10 items-center overflow-hidden rounded-md border bg-background focus-within:ring-2 focus-within:ring-ring", phone !== "" && !phoneOk ? "border-destructive" : "border-input")}><span className="flex h-full items-center gap-2 border-r border-border bg-secondary/60 px-3"><svg viewBox="0 0 10 6" className="h-4 w-[26px] rounded-[2px]" aria-label="Bangladesh flag"><rect width="10" height="6" fill="#006a4e" /><circle cx="4.5" cy="3" r="2" fill="#f42a41" /></svg><span className="font-mono text-sm font-semibold">+88</span></span><input inputMode="numeric" autoComplete="tel-national" placeholder="01XXXXXXXXX" maxLength={11} value={phone} onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 11))} aria-invalid={phone !== "" && !phoneOk} className="h-full min-w-0 flex-1 bg-transparent px-3 font-mono tracking-wider outline-none" /></div>{phone && !phoneOk ? <span className="text-xs text-destructive">Enter 11 digits starting with 013–019.</span> : null}</label>
+              <label className="space-y-1.5"><span className="text-sm font-medium">Number you paid from</span><BdPhoneInput value={phone} onChange={setPhone} invalid={phone !== "" && !phoneOk} />{phone && !phoneOk ? <span className="text-xs text-destructive">Enter 11 digits starting with 013–019.</span> : null}</label>
               <label className="space-y-1.5"><span className="text-sm font-medium">Transaction ID</span><Input className="font-mono uppercase tracking-wider" placeholder="e.g. 9ACD7XK2LM" value={trx} onChange={(e) => setTrx(e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 20))} inputMode="text" autoCapitalize="characters" spellCheck={false} aria-invalid={trx !== "" && !trxOk} />{trx && !trxOk ? <span className="text-xs text-destructive">6–20 letters or digits, exactly as in your SMS.</span> : null}</label>
             </div>
             <p className="mt-4 flex items-start gap-2 text-xs text-muted-foreground"><ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />Our team checks every payment. Your series or episodes unlock automatically once it's confirmed — usually within minutes.</p>

@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         supabase.from("user_roles").select("role").eq("user_id", userId),
         supabase
           .from("profiles")
-          .select("full_name, email, avatar_url")
+          .select("full_name, email, avatar_url, phone")
           .eq("id", userId)
           .maybeSingle(),
       ]);

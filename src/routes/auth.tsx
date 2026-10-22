@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { BdPhoneInput } from "@/components/forms/BdPhoneInput";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { ArrowRight, Fingerprint, KeyRound, Mail, UserRound } from "lucide-react";
@@ -49,6 +50,8 @@ function AuthPage() {
   const target = safeRedirect(redirect, "/");
 
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const phoneError = phone === "" ? "Enter your mobile number." : /^01[3-9]\d{8}$/.test(phone) ? undefined : "Enter 11 digits starting with 013–019.";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -150,7 +153,9 @@ function AuthPage() {
     if (busy) return;
     const fields: ("email" | "fullName" | "password")[] =
       mode === "signup" ? ["fullName", "email", "password"] : ["email", "password"];
+    if (mode === "signup") setTouched((t) => ({ ...t, phone: true }));
     if (!validate(fields)) return;
+    if (mode === "signup" && phoneError) { document.getElementById("phone")?.focus(); return; }
     const captchaToken = captcha ?? undefined;
     setBusy("form");
     setFormError(null);
@@ -162,7 +167,7 @@ function AuthPage() {
           options: {
             emailRedirectTo: window.location.origin + "/auth",
             ...(captchaToken ? { captchaToken } : {}),
-            data: { full_name: fullName.trim() },
+            data: { full_name: fullName.trim(), phone },
           },
         });
         if (error) throw error;
@@ -372,6 +377,13 @@ function AuthPage() {
             maxLength={100}
             disabled={disabled}
           />
+        ) : null}
+        {isSignup ? (
+          <div className="space-y-1.5">
+            <label htmlFor="phone" className="text-sm font-medium">Mobile number</label>
+            <BdPhoneInput id="phone" value={phone} onChange={(v) => { setPhone(v); setFormError(null); }} invalid={Boolean(touched["phone"] && phoneError)} disabled={disabled} className="h-12 rounded-xl" />
+            {touched["phone"] && phoneError ? <p className="text-xs text-destructive">{phoneError}</p> : null}
+          </div>
         ) : null}
         <SmartField
           id="email"
