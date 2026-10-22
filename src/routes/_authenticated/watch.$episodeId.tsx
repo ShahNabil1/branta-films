@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { seriesPrice } from "@/lib/pricing";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Lock, Play } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { BrandLogo } from "@/components/brand/Logo";
 import { RichText } from "@/components/content/RichText";
@@ -14,8 +14,11 @@ import { useAuth } from "@/lib/auth";
 import { mediaUrl } from "@/lib/media";
 import { getPlaybackSource, type PlaybackResult } from "@/lib/playback.functions";
 import { saveProgress } from "@/lib/progress";
-import { formatDuration, formatTaka } from "@/lib/format";
-import { cn } from "@/lib/utils";
+import { formatTaka } from "@/lib/format";
+import { EpisodeCarousel } from "@/components/player/EpisodeCarousel";
+import { MediaRow, posterItem } from "@/components/catalog/MediaRow";
+import { SeriesCard } from "@/components/catalog/SeriesCard";
+import { catalogQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/_authenticated/watch/$episodeId")({
   head: () => ({
@@ -37,6 +40,7 @@ function useWatchData(episodeId: string, userId: string | undefined) {
     queryKey: ["watch", episodeId, userId],
     enabled: Boolean(userId),
     queryFn: async () => {
+      if (!userId) return null;
       const { data: ep, error } = await supabase
         .from("episodes")
         .select("id, series_id, episode_number, title, synopsis_html, duration_seconds, is_free, series:series_id(id, slug, title, poster_url, backdrop_url, price_bdt, discount_price_bdt)")
@@ -45,8 +49,8 @@ function useWatchData(episodeId: string, userId: string | undefined) {
       if (error) throw error;
       if (!ep) return null;
       const [{ data: siblings }, { data: progress }] = await Promise.all([
-        supabase.from("episodes").select("id, episode_number, title, duration_seconds, is_free").eq("series_id", ep.series_id).order("episode_number"),
-        supabase.from("watch_progress").select("position_seconds, completed").eq("user_id", userId!).eq("episode_id", episodeId).maybeSingle(),
+        supabase.from("episodes").select("id, episode_number, title, duration_seconds, is_free, thumbnail_url").eq("series_id", ep.series_id).order("episode_number"),
+        supabase.from("watch_progress").select("position_seconds, completed").eq("user_id", userId).eq("episode_id", episodeId).maybeSingle(),
       ]);
       return {
         episode: ep,
@@ -99,26 +103,28 @@ function WatchPage() {
     [user, data, episodeId, queryClient],
   );
 
+  const { data: catalog = [] } = useQuery(catalogQuery);
+  const suggestions = catalog.filter(series => series.id !== data?.series.id);
   const next = data?.siblings.find((s) => s.episode_number === (data.episode.episode_number ?? 0) + 1);
 
   return (
     <div className="min-h-svh bg-background">
       <header className="flex h-14 items-center gap-4 border-b border-border px-[clamp(1rem,3vw,2rem)]">
         {data ? (
-          <Link to="/series/$slug" params={{ slug: data.series.slug }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="size-4" /> {data.series.title}
-          </Link>
+          <Button asChild variant="ghost" size="sm" className="site-nav-action max-w-[70%] justify-start"><Link to="/series/$slug" params={{ slug: data.series.slug }} className="min-w-0">
+            <ArrowLeft className="size-4" /> <span className="truncate">{data.series.title}</span>
+          </Link></Button>
         ) : (
-          <Link to="/" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+          <Button asChild variant="ghost" size="sm" className="site-nav-action"><Link to="/">
             <ArrowLeft className="size-4" /> Back
-          </Link>
+          </Link></Button>
         )}
         <div className="ml-auto">
           <BrandLogo />
         </div>
       </header>
 
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-[clamp(1rem,3vw,2rem)] py-6 xl:grid-cols-[1fr_360px]">
+      <div className="mx-auto flex max-w-[1280px] flex-col gap-9 px-4 py-6 sm:px-8">
         <div className="min-w-0">
           <div className="overflow-hidden rounded-md border border-border bg-surface">
             {isPending || !initial ? (
@@ -158,36 +164,16 @@ function WatchPage() {
           {data ? (
             <div className="mt-6">
               <Eyebrow>Episode {data.episode.episode_number}</Eyebrow>
-              <h1 className="mt-3 text-h2">{data.episode.title}</h1>
+              <h1 className="mt-3 text-3xl font-semibold sm:text-4xl">{data.episode.title}</h1>
               <RichText html={data.episode.synopsis_html} className="mt-4 max-w-3xl text-foreground/80" />
             </div>
           ) : null}
         </div>
 
-        {data ? (
-          <aside aria-label="Episodes" className="xl:sticky xl:top-6 xl:self-start">
-            <h2 className="text-eyebrow text-muted-foreground">Episodes</h2>
-            <ol className="mt-4 space-y-1">
-              {data.siblings.map((s) => (
-                <li key={s.id}>
-                  <Link
-                    to="/watch/$episodeId"
-                    params={{ episodeId: s.id }}
-                    className={cn(
-                      "text-small flex items-center gap-3 rounded-md px-3 py-3 transition-colors hover:bg-surface",
-                      s.id === episodeId && "bg-surface text-primary",
-                    )}
-                  >
-                    <span className="w-6 text-caption tabular-nums text-muted-foreground">{String(s.episode_number).padStart(2, "0")}</span>
-                    <span className="min-w-0 flex-1 truncate">{s.title}</span>
-                    {s.id === episodeId ? <Play className="size-3.5 fill-current" /> : null}
-                    <span className="text-caption tabular-nums text-muted-foreground">{s.is_free ? "Free" : formatDuration(s.duration_seconds)}</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-          </aside>
-        ) : null}
+        {data ? <EpisodeCarousel episodes={data.siblings} currentId={episodeId} backdrop={data.series.backdrop_url} /> : null}
+        {suggestions.length ? <MediaRow title="More to discover" seeAll>
+          {suggestions.map(series => <SeriesCard key={series.id} {...series} episodeCount={series.episodes.length} hasFreeEpisode={series.episodes.some(ep => ep.is_free)} className={posterItem} />)}
+        </MediaRow> : null}
       </div>
     </div>
   );
