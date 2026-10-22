@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, Settings2, Check, X } from "lucide-react";
+import { Loader2, Maximize, Minimize, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX, Settings2, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatClock } from "@/lib/format";
 import { PROGRESS_SAVE_INTERVAL_MS, isCompleted } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { PLAYBACK_SPEEDS, QUALITY_HEIGHTS, seekTarget, networkQualityCap } from "@/lib/player-rules";
 import type Hls from "hls.js";
 import { cn } from "@/lib/utils";
-import { BrandedDialog } from "@/components/ui/branded-dialog";
 
 type Props = {
   /** Fetches a fresh short-lived link; called on start and whenever the link expires. */
@@ -481,18 +480,39 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   );
 }
 
-function PlayerButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
+function PlayerButton({ label, onClick, children, expanded, ref }: { label: string; onClick: () => void; children: React.ReactNode; expanded?: boolean | undefined; ref?: React.Ref<HTMLButtonElement> | undefined }) {
   return (
     <Button
+      ref={ref}
       variant="ghost"
       size="icon"
       type="button"
       onClick={onClick}
       aria-label={label}
+      aria-expanded={expanded}
       title={label}
-      className="player-control size-11 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink [&_svg]:size-5"
+      className="player-control size-10 shrink-0 text-media-ink hover:bg-media-ink/15 hover:text-media-ink sm:size-11 [&_svg]:size-5"
     >
       {children}
     </Button>
+  );
+}
+
+function MenuRow({ label, value, onClick }: { label: string; value: string; onClick: () => void }) {
+  return (
+    <button type="button" role="menuitem" onClick={onClick} className="player-control flex min-h-10 w-full items-center gap-3 px-3 text-left text-sm hover:bg-media-ink/10">
+      <span className="flex-1">{label}</span>
+      <span className="text-media-ink/70">{value}</span>
+      <ChevronRight className="size-4 text-media-ink/70" />
+    </button>
+  );
+}
+
+function MenuOption({ selected, disabled, onClick, children }: { selected: boolean; disabled?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button type="button" role="menuitemradio" aria-checked={selected} disabled={disabled} onClick={onClick} className="player-control flex min-h-9 w-full items-center gap-3 px-3 text-left text-sm hover:bg-media-ink/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent">
+      <span className="flex size-4 items-center justify-center">{selected ? <Check className="size-4 text-primary" /> : null}</span>
+      <span className={cn("flex-1", selected && "font-medium")}>{children}</span>
+    </button>
   );
 }
