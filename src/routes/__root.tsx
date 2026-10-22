@@ -15,6 +15,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/lib/cart";
+import { CartSheet } from "@/components/commerce/CartSheet";
+import { PopupRunner } from "@/components/commerce/PopupRunner";
 import { buttonVariants } from "@/components/ui/button";
 import { Eyebrow } from "@/components/layout/primitives";
 import { ViewerPresence } from "@/components/security/ViewerPresence";
@@ -113,9 +116,13 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ViewerPresence />
-        <DevToolsShield>
-          <Outlet />
-        </DevToolsShield>
+        <CartProvider>
+          <DevToolsShield>
+            <Outlet />
+          </DevToolsShield>
+          <CartSheet />
+          <PopupRunner />
+        </CartProvider>
         <Toaster position="top-center" />
       </AuthProvider>
     </QueryClientProvider>

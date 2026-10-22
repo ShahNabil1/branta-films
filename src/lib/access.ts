@@ -11,7 +11,7 @@ export type PlaybackContext = {
 /**
  * Who may receive a video link:
  * - Free episodes: any signed-in user.
- * - Paid episodes: only users who unlocked the series.
+ * - Paid episodes: users who unlocked the whole series or bought that episode.
  * - Staff (admin/manager) can preview everything, including unpublished.
  */
 export function decidePlayback(ctx: PlaybackContext): PlaybackDecision {

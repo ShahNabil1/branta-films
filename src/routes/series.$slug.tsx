@@ -1,13 +1,16 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { PriceTag } from "@/components/catalog/PriceTag";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { Clock, ShoppingCart } from "lucide-react";
+import { PurchaseDialog } from "@/components/commerce/PurchaseDialog";
+import { useOwnership } from "@/lib/ownership";
 import { CheckCircle2, Lock, Play } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
 import { RichText } from "@/components/content/RichText";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
 import { MediaRow, posterItem } from "@/components/catalog/MediaRow";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { mediaUrl } from "@/lib/media";
 import { catalogQuery, seriesQuery } from "@/lib/queries";
@@ -46,17 +49,18 @@ function SeriesPage() {
   const { data: series } = useSuspenseQuery(seriesQuery(slug));
   const { data: catalog } = useSuspenseQuery(catalogQuery);
   const { user, isStaff } = useAuth();
-  const { data: unlocked } = useQuery({
-    queryKey: ["unlock", series?.id, user?.id],
-    enabled: Boolean(user && series),
-    queryFn: async () => {
-      const { data } = await supabase.from("series_unlocks").select("id").eq("series_id", series!.id).eq("user_id", user!.id).maybeSingle();
-      return Boolean(data);
-    },
-  });
+  const { data: own } = useOwnership(series?.id, series?.episodes.map((e) => e.id) ?? []);
+  const [buying, setBuying] = useState<{ episodeId: string | null } | null>(null);
   if (!series) return null;
 
-  const hasAccess = Boolean(unlocked) || isStaff;
+  const hasAccess = Boolean(own?.series) || isStaff;
+  const episodeOpen = (id: string) => hasAccess || Boolean(own?.episodes.has(id));
+  const buyable = series.episodes.filter((e) => !e.is_free && !episodeOpen(e.id) && !own?.pendingEpisodes.has(e.id))
+    .map((e) => ({ id: e.id, episode_number: e.episode_number, title: e.title, price_bdt: e.price_bdt, image: e.thumbnail_url ?? series.backdrop_url }));
+  const startBuy = (episodeId: string | null) => {
+    if (!user) { window.location.assign(`/auth?redirect=${encodeURIComponent(window.location.pathname)}`); return; }
+    setBuying({ episodeId });
+  };
   const backdrop = mediaUrl(series.backdrop_url);
   const poster = mediaUrl(series.poster_url);
   const first = series.episodes.find((e) => e.is_free) ?? series.episodes[0];
@@ -112,12 +116,16 @@ function SeriesPage() {
                     <CheckCircle2 className="size-4" /> Full series unlocked
                   </span>
                 ) : (
+                  own?.pendingSeries ? (
+                    <span className="text-small inline-flex h-14 items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-6 font-medium text-primary"><Clock className="size-4" /> Payment awaiting verification</span>
+                  ) : (
                   <div className="flex flex-col gap-1.5">
-                    <Button variant="glass" size="xl" disabled>
-                      <Lock /> Unlock all episodes · <PriceTag price={series.price_bdt} discount={series.discount_price_bdt} />
+                    <Button variant="glass" size="xl" onClick={() => startBuy(null)}>
+                      <ShoppingCart /> Unlock all episodes · <PriceTag price={series.price_bdt} discount={series.discount_price_bdt} />
                     </Button>
-                    <span className="text-caption pl-6 text-muted-foreground">bKash & Nagad payments open soon.</span>
+                    <span className="text-caption pl-6 text-muted-foreground">bKash · Nagad · Rocket{buyable.some((e) => e.price_bdt) ? " · or buy single episodes" : ""}</span>
                   </div>
+                  )
                 )
               ) : null}
             </div>
@@ -133,7 +141,8 @@ function SeriesPage() {
           </div>
           <ol className="mt-6">
             {series.episodes.map((ep) => {
-              const open = ep.is_free || hasAccess;
+              const open = ep.is_free || episodeOpen(ep.id);
+              const pending = !open && (own?.pendingEpisodes.has(ep.id) || own?.pendingSeries);
               const thumb = mediaUrl(ep.thumbnail_url ?? series.backdrop_url);
               return (
                 <li key={ep.id} className="border-b border-border last:border-0">
@@ -141,6 +150,7 @@ function SeriesPage() {
                     to="/watch/$episodeId"
                     params={{ episodeId: ep.id }}
                     className="group/ep flex gap-4 py-4"
+                    onClick={(e) => { if (!open && !pending && !isStaff) { e.preventDefault(); startBuy(ep.id); } }}
                   >
                     <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-[4px] bg-muted sm:w-52">
                       {thumb ? <img src={thumb} alt="" loading="lazy" width={480} height={270} className="size-full object-cover transition-transform duration-700 ease-out group-hover/ep:scale-[1.03]" /> : null}
@@ -164,7 +174,7 @@ function SeriesPage() {
                             ep.is_free ? "bg-primary/15 text-primary" : open ? "bg-success/15 text-success" : "bg-foreground/10 text-muted-foreground",
                           )}
                         >
-                          {ep.is_free ? "Free" : open ? "Unlocked" : "Locked"}
+                          {ep.is_free ? "Free" : open ? "Unlocked" : pending ? "Verifying" : ep.price_bdt ? <PriceTag price={ep.price_bdt} discount={ep.sale_price_bdt} badge={false} className="text-caption" /> : "Locked"}
                         </span>
                       </div>
                       <RichText html={ep.synopsis_html} className="mt-1.5 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-3" />
@@ -210,6 +220,8 @@ function SeriesPage() {
           </MediaRow>
         </div>
       ) : null}
+      {buying ? <PurchaseDialog open onClose={() => setBuying(null)} focusEpisodeId={buying.episodeId} episodes={buyable}
+        series={{ id: series.id, title: series.title, price_bdt: hasAccess || own?.pendingSeries ? 0 : series.price_bdt, image: series.poster_url ?? series.backdrop_url }} /> : null}
     </SiteShell>
   );
 }

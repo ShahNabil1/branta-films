@@ -27,12 +27,10 @@ export const getPlaybackSource = createServerFn({ method: "POST" })
     ]);
     if (!episode) return { status: "unavailable" };
 
-    const { data: unlock } = await supabase
-      .from("series_unlocks")
-      .select("id")
-      .eq("user_id", userId)
-      .eq("series_id", episode.series_id)
-      .maybeSingle();
+    const [{ data: unlock }, { data: episodeUnlock }] = await Promise.all([
+      supabase.from("series_unlocks").select("id").eq("user_id", userId).eq("series_id", episode.series_id).maybeSingle(),
+      supabase.from("episode_unlocks").select("id").eq("user_id", userId).eq("episode_id", episode.id).maybeSingle(),
+    ]);
 
     const seriesPublished = (episode.series as { is_published: boolean } | null)?.is_published ?? false;
     const decision = decidePlayback({
@@ -40,7 +38,7 @@ export const getPlaybackSource = createServerFn({ method: "POST" })
       isStaff: Boolean(staff),
       published: episode.is_published && seriesPublished,
       isFree: episode.is_free,
-      unlocked: Boolean(unlock),
+      unlocked: Boolean(unlock) || Boolean(episodeUnlock),
     });
     if (decision !== "allowed") return { status: decision };
 

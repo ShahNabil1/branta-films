@@ -6,6 +6,7 @@ import { BrandLogo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
+import { CartButton } from "@/components/commerce/CartSheet";
 
 const NAV = [
   { to: "/", label: "Home", icon: House, tone: "nav-home" },
@@ -70,6 +71,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
             <Search className="size-[18px]" />
           </Link>
           </Button>
+          <CartButton />
           {loading ? (
             <div className="size-9" aria-hidden="true" />
           ) : user ? (

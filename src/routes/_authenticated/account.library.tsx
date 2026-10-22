@@ -30,7 +30,7 @@ function LibraryPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("series_unlocks")
-        .select("created_at, series:series_id(id, slug, title, poster_url, genres, price_bdt, discount_price_bdt, release_year)")
+        .select("created_at, series:series_id(id, slug, title, poster_url, genres, price_bdt, release_year)")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -41,7 +41,6 @@ function LibraryPage() {
         poster_url: string | null;
         genres: string[];
         price_bdt: number;
-        discount_price_bdt: number | null;
         release_year: number | null;
       }[];
     },
