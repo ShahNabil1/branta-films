@@ -206,6 +206,8 @@
   --surface: oklch(1 0 0);
   --card: oklch(1 0 0);
   --foreground: oklch(0.21 0.006 60);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
   --muted: oklch(0.97 0.003 60);
   --muted-foreground: oklch(0.5 0.01 60);
   --border: oklch(0.925 0.004 60);
