@@ -13,11 +13,11 @@
 
 - Browser builds emit source maps without source contents; server maps stay private. Why: safe production diagnostics.
 
-- BrandLogo styles all shared logos. Why: consistent Branta image and Films wordmark.
+- BrandLogo owns shared logos. Why: consistency.
 
 - Local phone fields use BdPhoneInput and its normalizer. Why: consistent Bangla-digit conversion.
 
-- Bundle fonts as hashed assets; preload the same imported URL. Why: one-year caching with automatic invalidation on file changes.
+- Hash fonts; preload shared URLs. catalog-loading shares hero selection/srcset and auth-only connection hints. Why: early discovery without duplicate requests.
 
 Subdirectories have their own `AGENTS.md`; read it before changing files there.
 

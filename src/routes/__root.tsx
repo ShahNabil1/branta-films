@@ -17,8 +17,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
 import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { isAccountShieldPath } from "@/lib/devtools-scope";
-import { needsAuthPreconnect } from "@/lib/catalog-loading";
-import { supabase } from "@/integrations/supabase/client";
+import { AUTH_ORIGIN, needsAuthPreconnect } from "@/lib/catalog-loading";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart";
 import { CartSheet } from "@/components/commerce/CartSheet";
@@ -89,7 +88,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "author", content: "Branta Tech" },
     ],
     links: [
-      ...(matches.some(match => needsAuthPreconnect(match.pathname)) ? [{ rel: "preconnect", href: supabase.supabaseUrl, crossOrigin: "anonymous" as const }] : []),
+      ...(matches.some(match => needsAuthPreconnect(match.pathname)) ? [{ rel: "preconnect", href: AUTH_ORIGIN, crossOrigin: "anonymous" as const }] : []),
       { rel: "stylesheet", href: appCss },
       { rel: "preload", href: geistFont, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },

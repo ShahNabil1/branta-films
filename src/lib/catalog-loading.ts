@@ -1,5 +1,8 @@
 import { artworkSources } from "./media";
 
+// Public service origin; keep aligned with the integration-managed client.
+export const AUTH_ORIGIN = "https://ufxyrofqfcgtarjzouji.supabase.co";
+
 type FeaturedArtwork = { is_featured: boolean; backdrop_url: string | null; poster_url: string | null };
 
 export function featuredSlides<T extends FeaturedArtwork>(catalog: T[]): T[] {
