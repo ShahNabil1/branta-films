@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { PurchaseDialog } from "@/components/commerce/PurchaseDialog";
+import { useOwnership } from "@/lib/ownership";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -14,7 +15,6 @@ import { useAuth } from "@/lib/auth";
 import { mediaUrl } from "@/lib/media";
 import { getPlaybackSource, type PlaybackResult } from "@/lib/playback.functions";
 import { saveProgress } from "@/lib/progress";
-import { formatTaka } from "@/lib/format";
 import { EpisodeCarousel } from "@/components/player/EpisodeCarousel";
 import { MediaRow, posterItem } from "@/components/catalog/MediaRow";
 import { SeriesCard } from "@/components/catalog/SeriesCard";
@@ -106,6 +106,10 @@ function WatchPage() {
   const { data: catalog = [] } = useQuery(catalogQuery);
   const suggestions = catalog.filter(series => series.id !== data?.series.id);
   const next = data?.siblings.find((s) => s.episode_number === (data.episode.episode_number ?? 0) + 1);
+  const [buying, setBuying] = useState(false);
+  const { data: own } = useOwnership(data?.series.id, data?.siblings.map((s) => s.id) ?? []);
+  const buyable = (data?.siblings ?? []).filter((s) => !s.is_free && !own?.series && !own?.episodes.has(s.id) && !own?.pendingEpisodes.has(s.id))
+    .map((s) => ({ id: s.id, episode_number: s.episode_number, title: s.title, price_bdt: s.price_bdt, image: s.thumbnail_url ?? data?.series.backdrop_url ?? null }));
 
   return (
     <div className="min-h-svh bg-background">
@@ -173,6 +177,8 @@ function WatchPage() {
           {suggestions.map(series => <SeriesCard key={series.id} {...series} episodeCount={series.episodes.length} hasFreeEpisode={series.episodes.some(ep => ep.is_free)} className={posterItem} />)}
         </MediaRow> : null}
       </div>
+      {data && buying ? <PurchaseDialog open onClose={() => setBuying(false)} focusEpisodeId={episodeId} episodes={buyable}
+        series={{ id: data.series.id, title: data.series.title, price_bdt: own?.pendingSeries ? 0 : data.series.price_bdt, image: data.series.poster_url ?? data.series.backdrop_url }} /> : null}
     </div>
   );
 }

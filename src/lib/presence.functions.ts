@@ -13,7 +13,8 @@ export const recordPresence = createServerFn({ method: 'POST' }).middleware([req
       const { data: e, error } = await context.supabase.from('episodes').select('id,series_id,is_free').eq('id',data.episode).single();
       if (error || !e) throw new Error('Episode unavailable.');
       const [{ data: staff }, { data: unlock }] = await Promise.all([context.supabase.rpc('is_staff',{ _user_id:context.userId }),context.supabase.from('series_unlocks').select('id').eq('user_id',context.userId).eq('series_id',e.series_id).maybeSingle()]);
-      if (!e.is_free && !staff && !unlock) throw new Error('Unlock this series first.');
+      const { data: epUnlock } = await context.supabase.from('episode_unlocks').select('id').eq('user_id',context.userId).eq('episode_id',e.id).maybeSingle();
+      if (!e.is_free && !staff && !unlock && !epUnlock) throw new Error('Unlock this series first.');
     }
     const meta = trustedRequestMeta();
     const { error } = await sb.rpc('record_viewer_presence', { p_user: context.userId,p_session:sid,p_device:data.device,p_name:data.name,p_ip:meta.ip ?? '',p_country:meta.country ?? '',p_city:meta.city ?? '',p_agent:meta.user_agent ?? '',p_touch:data.touch,p_state:data.state,...(data.episode ? { p_episode: data.episode } : {}) });
