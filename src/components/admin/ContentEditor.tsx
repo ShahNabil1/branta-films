@@ -52,7 +52,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
       await qc.invalidateQueries({ queryKey: ["catalog"] });
       toast.success("Content saved");
       if (kind === "series") await navigate({ to: "/admin/series/$id", params: { id: row.id }, replace: true });
-      else await navigate({ to: "/admin/series/$id_/episodes/$episodeId", params: { id: values.parent, episodeId: row.id }, replace: true });
+      else await navigate({ to: "/admin/series/$id/episodes/$episodeId", params: { id: values.parent, episodeId: row.id }, replace: true });
     } catch (err) { toast.error(err instanceof Error ? err.message : "Could not save content"); }
     finally { setBusy(false); }
   }

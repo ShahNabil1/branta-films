@@ -35,7 +35,7 @@ export function EpisodesPanel({ seriesId }: { seriesId: string }) {
   };
 
   return <Panel title="Episodes" description={`${episodes.length} episode${episodes.length === 1 ? "" : "s"} · use the arrows to change their order`}
-    action={<Button asChild size="sm"><Link to="/admin/series/$id_/episodes/$episodeId" params={{ id: seriesId, episodeId: "new" }}><Plus />New episode</Link></Button>}>
+    action={<Button asChild size="sm"><Link to="/admin/series/$id/episodes/$episodeId" params={{ id: seriesId, episodeId: "new" }}><Plus />New episode</Link></Button>}>
     {episodes.length ? <ul className="space-y-2.5">{episodes.map((e, i) => {
       const art = mediaUrl(e.thumbnail_url ?? series?.backdrop_url ?? null);
       return <li key={e.id} className="admin-rise group flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/60 p-2.5 transition-all duration-300 hover:border-primary/30 hover:bg-card hover:shadow-md sm:flex-nowrap" style={{ animationDelay: `${i * 30}ms` }}>
@@ -45,7 +45,7 @@ export function EpisodesPanel({ seriesId }: { seriesId: string }) {
           <span className="absolute left-1.5 top-1.5 rounded-md bg-scrim px-1.5 py-0.5 text-[10px] font-bold text-foreground backdrop-blur">E{e.episode_number}</span>
         </div>
         <div className="min-w-0 flex-1"><p className="truncate font-semibold">{e.title}</p><div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"><Chip tone={e.is_published ? "success" : "neutral"}>{e.is_published ? "Published" : "Draft"}</Chip>{e.is_free ? <Chip tone="brand">Free</Chip> : null}<span>{minutes(e.duration_seconds)}</span></div></div>
-        <div className="flex gap-2"><Link className={editActionClass} to="/admin/series/$id_/episodes/$episodeId" params={{ id: seriesId, episodeId: e.id }} aria-label={`Edit ${e.title}`}><Pencil />Edit</Link><button type="button" className={deleteActionClass} disabled={busy} aria-label={`Delete ${e.title}`} onClick={() => setRemove({ id: e.id, title: e.title })}><Trash2 />Delete</button></div>
+        <div className="flex gap-2"><Link className={editActionClass} to="/admin/series/$id/episodes/$episodeId" params={{ id: seriesId, episodeId: e.id }} aria-label={`Edit ${e.title}`}><Pencil />Edit</Link><button type="button" className={deleteActionClass} disabled={busy} aria-label={`Delete ${e.title}`} onClick={() => setRemove({ id: e.id, title: e.title })}><Trash2 />Delete</button></div>
       </li>;
     })}</ul> : <div className="rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-12 text-center"><p className="text-sm font-bold">No episodes yet</p><p className="mt-1 text-sm text-muted-foreground">Use the New episode button above.</p></div>}
     <ConfirmDialog open={Boolean(remove)} onClose={() => !busy && setRemove(null)} title={`Delete ${remove?.title ?? "episode"}?`} description="This removes the episode and its video link. This action cannot be undone." confirmLabel="Delete" destructive busy={busy} onConfirm={() => remove && void run(() => deleteAdminContent({ data: { id: remove.id, kind: "episodes" } }), "Episode deleted")} />
