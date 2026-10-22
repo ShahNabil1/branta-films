@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
@@ -147,10 +147,11 @@ function SetPasswordPage() {
             autoComplete="new-password"
             disabled={busy || state !== "ready"}
           />
+          <Turnstile ref={captchaRef} onToken={setCaptcha} action="set_password" />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
-            disabled={busy || state !== "ready" || !pw || !confirm}
+            disabled={busy || state !== "ready" || !pw || !confirm || !captcha}
             size="lg" className="w-full"
           >
             {state === "checking" ? "Checking your invite…" : busy ? "Saving…" : "Set password"}
