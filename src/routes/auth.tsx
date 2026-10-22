@@ -47,7 +47,7 @@ function AuthPage() {
   const mode = modeParam ?? "signin";
   const navigate = useNavigate();
   const { user, loading, roles, session } = useAuth();
-  const target = safeRedirect(redirect, "/");
+  const target = safeRedirect(redirect, "/account");
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
