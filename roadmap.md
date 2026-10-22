@@ -1,7 +1,7 @@
 # Branta Films roadmap
 
 ## Current request — AI-generated identity and content SEO
-- [ ] Connect Google Search Console freshly in the new workspace; disregard previous workspace connections
+- [x] Connect Google Search Console freshly in the new workspace; disregard previous workspace connections
 - [ ] Update site identity, titles, social metadata and structured data
 - [ ] Persist validated optional series/episode metadata overrides and add admin controls
 - [ ] Apply automatic defaults and overrides to series/episode pages; keep private playback protected
