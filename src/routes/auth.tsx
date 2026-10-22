@@ -380,8 +380,8 @@ function AuthPage() {
         ) : null}
         {isSignup ? (
           <div className="space-y-1.5">
-            <label htmlFor="phone" className="text-sm font-medium">Mobile number</label>
-            <BdPhoneInput id="phone" value={phone} onChange={(v) => { setPhone(v); setFormError(null); }} invalid={Boolean(touched["phone"] && phoneError)} disabled={disabled} className="h-12 rounded-xl" />
+            <label htmlFor="phone" className="text-sm font-medium">Mobile number <span className="text-primary">*</span></label>
+            <BdPhoneInput id="phone" value={phone} onChange={(v) => { setPhone(v); setFormError(null); }} invalid={Boolean(touched["phone"] && phoneError)} disabled={disabled} className="h-12" />
             {touched["phone"] && phoneError ? <p className="text-xs text-destructive">{phoneError}</p> : null}
           </div>
         ) : null}
