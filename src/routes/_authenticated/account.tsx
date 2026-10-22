@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Film, LayoutDashboard, Shield, UserRound } from "lucide-react";
+import { Film, LayoutDashboard, Receipt, Shield, UserRound } from "lucide-react";
 import { DashboardShell, type DashNavSection } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/_authenticated/account")({
@@ -12,6 +12,7 @@ const SECTIONS: DashNavSection[] = [
     items: [
       { to: "/account", label: "Overview", icon: LayoutDashboard, exact: true },
       { to: "/account/library", label: "My library", icon: Film },
+      { to: "/account/orders", label: "Orders & payments", icon: Receipt },
     ],
   },
   {
