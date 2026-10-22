@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAccountAccess } from "./security-middleware";
 import { PASSWORD_REUSED_MESSAGE, validateNewPassword } from "./validation";
 
 async function admin() {
@@ -21,7 +21,7 @@ async function applyNewPassword(userId: string, newPassword: string) {
 }
 
 export const getSecurityOverview = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .handler(async ({ context }) => {
     const sb = await admin();
     const [{ data: hasPassword }, { data: userRes }] = await Promise.all([
@@ -34,7 +34,7 @@ export const getSecurityOverview = createServerFn({ method: "POST" })
 
 /** Signed-in password change: current password required (unless none was ever set). */
 export const changePassword = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) =>
     z
       .object({ currentPassword: z.string().max(200).optional(), newPassword: z.string().max(200) })
@@ -61,7 +61,7 @@ export const changePassword = createServerFn({ method: "POST" })
 
 /** Password reset after the emailed 6-digit recovery code (recovery session only, within 15 minutes). */
 export const completePasswordReset = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) => z.object({ newPassword: z.string().max(200) }).parse(input))
   .handler(async ({ data, context }) => {
     const amr = (
@@ -80,7 +80,7 @@ export const completePasswordReset = createServerFn({ method: "POST" })
 
 /** Invited staff choose their first password (invite session only, account must have no password yet). */
 export const completeInvite = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) => z.object({ newPassword: z.string().max(200) }).parse(input))
   .handler(async ({ data, context }) => {
     const { isFreshInviteSession } = await import("./invite");
@@ -101,7 +101,7 @@ export const completeInvite = createServerFn({ method: "POST" })
   });
 
 export const recordSignIn = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) => z.object({ method: z.string().max(30) }).parse(input))
   .handler(async ({ data, context }) => {
     const { logActivityAs } = await import("./request-meta.server");

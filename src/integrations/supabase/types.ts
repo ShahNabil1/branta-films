@@ -625,6 +625,22 @@ export type Database = {
           p_city: string
           p_country: string
           p_device: string
+          p_episode?: string
+          p_ip: string
+          p_name: string
+          p_session: string
+          p_state: string
+          p_touch: Json
+          p_user: string
+        }
+        Returns: undefined
+      }
+      record_viewer_presence_internal: {
+        Args: {
+          p_agent: string
+          p_city: string
+          p_country: string
+          p_device: string
           p_episode: string
           p_ip: string
           p_name: string

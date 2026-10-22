@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAccountAccess } from "./security-middleware";
 import { AVATAR_TYPES, MAX_AVATAR_BYTES } from "./media";
 
 /** Stores the signed-in user's profile picture in R2 under images/avatars/<userId>/. */
 export const uploadAvatar = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) => {
     if (!(input instanceof FormData)) throw new Error("Choose an image to upload.");
     const file = input.get("file");

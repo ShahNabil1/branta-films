@@ -33,6 +33,9 @@ import { Route as AuthenticatedWatchEpisodeIdRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminEpisodesIndexRouteImport } from './routes/_authenticated/admin.episodes.index'
 import { Route as AuthenticatedAdminSeriesIndexRouteImport } from './routes/_authenticated/admin.series.index'
 import { Route as AuthenticatedAdminSeriesIdRouteImport } from './routes/_authenticated/admin.series.$id'
+import { Route as AuthenticatedAdminStaffIdRouteImport } from './routes/_authenticated/admin.staff_.$id'
+import { Route as AuthenticatedAdminUsersIdRouteImport } from './routes/_authenticated/admin.users_.$id'
+import { Route as AuthenticatedAdminViewAsIdRouteImport } from './routes/_authenticated/admin.view-as.$id'
 import { Route as ApiPublicMediaSplatRouteImport } from './routes/api/public/media.$'
 import { Route as AuthenticatedAdminSeriesIdEpisodesEpisodeIdRouteImport } from './routes/_authenticated/admin.series.$id_.episodes.$episodeId'
 
@@ -165,6 +168,24 @@ const AuthenticatedAdminSeriesIdRoute =
     path: '/series/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminStaffIdRoute =
+  AuthenticatedAdminStaffIdRouteImport.update({
+    id: '/staff_/$id',
+    path: '/staff/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminUsersIdRoute =
+  AuthenticatedAdminUsersIdRouteImport.update({
+    id: '/users_/$id',
+    path: '/users/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminViewAsIdRoute =
+  AuthenticatedAdminViewAsIdRouteImport.update({
+    id: '/view-as/$id',
+    path: '/view-as/$id',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const ApiPublicMediaSplatRoute = ApiPublicMediaSplatRouteImport.update({
   id: '/api/public/media/$',
   path: '/api/public/media/$',
@@ -199,6 +220,9 @@ export interface FileRoutesByFullPath {
   '/account/': typeof AuthenticatedAccountIndexRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
+  '/admin/staff/$id': typeof AuthenticatedAdminStaffIdRoute
+  '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/admin/view-as/$id': typeof AuthenticatedAdminViewAsIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/admin/episodes/': typeof AuthenticatedAdminEpisodesIndexRoute
   '/admin/series/': typeof AuthenticatedAdminSeriesIndexRoute
@@ -224,6 +248,9 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountIndexRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
+  '/admin/staff/$id': typeof AuthenticatedAdminStaffIdRoute
+  '/admin/users/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/admin/view-as/$id': typeof AuthenticatedAdminViewAsIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/admin/episodes': typeof AuthenticatedAdminEpisodesIndexRoute
   '/admin/series': typeof AuthenticatedAdminSeriesIndexRoute
@@ -253,6 +280,9 @@ export interface FileRoutesById {
   '/_authenticated/account/': typeof AuthenticatedAccountIndexRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/series/$id': typeof AuthenticatedAdminSeriesIdRoute
+  '/_authenticated/admin/staff_/$id': typeof AuthenticatedAdminStaffIdRoute
+  '/_authenticated/admin/users_/$id': typeof AuthenticatedAdminUsersIdRoute
+  '/_authenticated/admin/view-as/$id': typeof AuthenticatedAdminViewAsIdRoute
   '/api/public/media/$': typeof ApiPublicMediaSplatRoute
   '/_authenticated/admin/episodes/': typeof AuthenticatedAdminEpisodesIndexRoute
   '/_authenticated/admin/series/': typeof AuthenticatedAdminSeriesIndexRoute
@@ -282,6 +312,9 @@ export interface FileRouteTypes {
     | '/account/'
     | '/admin/'
     | '/admin/series/$id'
+    | '/admin/staff/$id'
+    | '/admin/users/$id'
+    | '/admin/view-as/$id'
     | '/api/public/media/$'
     | '/admin/episodes/'
     | '/admin/series/'
@@ -307,6 +340,9 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/admin/series/$id'
+    | '/admin/staff/$id'
+    | '/admin/users/$id'
+    | '/admin/view-as/$id'
     | '/api/public/media/$'
     | '/admin/episodes'
     | '/admin/series'
@@ -335,6 +371,9 @@ export interface FileRouteTypes {
     | '/_authenticated/account/'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/series/$id'
+    | '/_authenticated/admin/staff_/$id'
+    | '/_authenticated/admin/users_/$id'
+    | '/_authenticated/admin/view-as/$id'
     | '/api/public/media/$'
     | '/_authenticated/admin/episodes/'
     | '/_authenticated/admin/series/'
@@ -524,6 +563,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSeriesIdRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/staff_/$id': {
+      id: '/_authenticated/admin/staff_/$id'
+      path: '/staff/$id'
+      fullPath: '/admin/staff/$id'
+      preLoaderRoute: typeof AuthenticatedAdminStaffIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/users_/$id': {
+      id: '/_authenticated/admin/users_/$id'
+      path: '/users/$id'
+      fullPath: '/admin/users/$id'
+      preLoaderRoute: typeof AuthenticatedAdminUsersIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/view-as/$id': {
+      id: '/_authenticated/admin/view-as/$id'
+      path: '/view-as/$id'
+      fullPath: '/admin/view-as/$id'
+      preLoaderRoute: typeof AuthenticatedAdminViewAsIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/api/public/media/$': {
       id: '/api/public/media/$'
       path: '/api/public/media/$'
@@ -565,6 +625,9 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminSeriesIdRoute: typeof AuthenticatedAdminSeriesIdRoute
+  AuthenticatedAdminStaffIdRoute: typeof AuthenticatedAdminStaffIdRoute
+  AuthenticatedAdminUsersIdRoute: typeof AuthenticatedAdminUsersIdRoute
+  AuthenticatedAdminViewAsIdRoute: typeof AuthenticatedAdminViewAsIdRoute
   AuthenticatedAdminEpisodesIndexRoute: typeof AuthenticatedAdminEpisodesIndexRoute
   AuthenticatedAdminSeriesIndexRoute: typeof AuthenticatedAdminSeriesIndexRoute
   AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute: typeof AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute
@@ -577,6 +640,9 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminSeriesIdRoute: AuthenticatedAdminSeriesIdRoute,
+  AuthenticatedAdminStaffIdRoute: AuthenticatedAdminStaffIdRoute,
+  AuthenticatedAdminUsersIdRoute: AuthenticatedAdminUsersIdRoute,
+  AuthenticatedAdminViewAsIdRoute: AuthenticatedAdminViewAsIdRoute,
   AuthenticatedAdminEpisodesIndexRoute: AuthenticatedAdminEpisodesIndexRoute,
   AuthenticatedAdminSeriesIndexRoute: AuthenticatedAdminSeriesIndexRoute,
   AuthenticatedAdminSeriesIdEpisodesEpisodeIdRoute:
