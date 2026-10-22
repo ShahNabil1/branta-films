@@ -1,6 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { AdminSection } from "@/components/admin/AdminSections";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+// Episodes are managed inside each series; keep the old address working.
 export const Route = createFileRoute("/_authenticated/admin/episodes/")({
-  head: () => ({ meta: [{ title: "Episodes — Branta Films" }, { name: "description", content: "Manage episodes in Branta Films administration." }, { property: "og:title", content: "Episodes — Branta Films" }, { property: "og:description", content: "Branta Films administrator workspace." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }, { name: "robots", content: "noindex" }] }),
-  component: () => <AdminSection section="episodes" />,
+  beforeLoad: () => { throw redirect({ to: "/admin/series", replace: true }); },
 });

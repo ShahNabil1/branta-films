@@ -4,6 +4,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Save, Upload, Check, ImagePlus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, Panel, Field, ToggleField } from "./AdminKit";
+import { EpisodesPanel } from "./EpisodesPanel";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,7 @@ import { adminQuery } from "@/lib/admin-queries";
 import { saveAdminEpisode, saveAdminSeries, uploadAdminImage, prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
 import { mediaUrl } from "@/lib/media";
 
-export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: string }) {
+export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
   const qc = useQueryClient();
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
     title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: series?.description_html ?? episode?.synopsis_html ?? "",
     genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0,
     order: series?.sort_order ?? 0, featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
-    parent: episode?.series_id ?? data.series[0]?.id ?? "", number: episode?.episode_number ?? 1, duration: episode?.duration_seconds ?? 0,
+    parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
     thumbnail: episode?.thumbnail_url ?? null as string | null,
   };
@@ -33,7 +34,8 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
   const [videoUploaded, setVideoUploaded] = useState(false);
   const changed = JSON.stringify(values) !== JSON.stringify(initial);
   const set = <K extends keyof typeof values>(key: K, value: (typeof values)[K]) => setValues((v) => ({ ...v, [key]: value }));
-  if (id !== "new" && !existing) return <Panel title="Content not found"><Button asChild variant="outline"><Link to={kind === "series" ? "/admin/series" : "/admin/episodes"}>Back to list</Link></Button></Panel>;
+  const parentSeries = data.series.find((s) => s.id === (episode?.series_id ?? seriesId));
+  if ((id !== "new" && !existing) || (kind === "episodes" && (!parentSeries || (episode && episode.series_id !== seriesId)))) return <Panel title="Content not found"><Button asChild variant="outline"><Link to="/admin/series">Back to series</Link></Button></Panel>;
   async function save(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
     try {
@@ -49,7 +51,8 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
       await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
       await qc.invalidateQueries({ queryKey: ["catalog"] });
       toast.success("Content saved");
-      await navigate({ to: kind === "series" ? "/admin/series/$id" : "/admin/episodes/$id", params: { id: row.id }, replace: true });
+      if (kind === "series") await navigate({ to: "/admin/series/$id", params: { id: row.id }, replace: true });
+      else await navigate({ to: "/admin/series/$id/episodes/$episodeId", params: { id: values.parent, episodeId: row.id }, replace: true });
     } catch (err) { toast.error(err instanceof Error ? err.message : "Could not save content"); }
     finally { setBusy(false); }
   }
@@ -86,19 +89,19 @@ export function ContentEditor({ kind, id }: { kind: "series" | "episodes"; id: s
   const field = (label: string, key: "title" | "slug" | "tagline" | "genres" | "year" | "maturity") => <Field label={label}><Input className="admin-input" aria-label={label} value={values[key]} required={key === "title" || key === "slug"} onChange={(e) => set(key, e.target.value)} /></Field>;
   const numeric = (label: string, key: "price" | "order" | "number" | "duration", min: number) => <Field label={label}><Input className="admin-input" aria-label={label} type="number" min={min} value={values[key]} onChange={(e) => set(key, Number(e.target.value))} /></Field>;
   const toggle = (label: string, key: "published" | "featured" | "free") => <ToggleField label={label} checked={values[key]} onChange={(v) => set(key, v)} />;
-  const back = kind === "series" ? "/admin/series" : "/admin/episodes";
+
   const slots = kind === "series" ? ["poster", "backdrop"] as const : ["thumbnail"] as const;
   return <>
-    <PageHeader back={{ to: back, label: kind === "series" ? "Series" : "Episodes" }} title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} description={existing?.title ?? "Fill in the details and save."} />
+    <PageHeader back={kind === "series" ? { to: "/admin/series", label: "Series" } : { to: `/admin/series/${values.parent}` as "/admin/series", label: parentSeries?.title ?? "Series" }} title={`${id === "new" ? "New" : "Edit"} ${kind === "series" ? "series" : "episode"}`} description={existing?.title ?? "Fill in the details and save."} />
     <form onSubmit={save} className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <div className="min-w-0 space-y-6">
           <Panel title="Details" description="What viewers see on the series page."><div className="grid gap-4 sm:grid-cols-2">{field("Title", "title")}
             {kind === "series" ? <>{field("Slug", "slug")}{field("Tagline", "tagline")}{field("Genres (comma separated)", "genres")}{field("Release year", "year")}{field("Maturity rating", "maturity")}</> : <>
-              <Field label="Series"><select aria-label="Series" required className="admin-input w-full border px-3" value={values.parent} onChange={(e) => set("parent", e.target.value)}>{data.series.map((s) => <option key={s.id} value={s.id}>{s.title}</option>)}</select></Field>
               {numeric("Episode number", "number", 1)}{numeric("Duration (seconds)", "duration", 0)}
             </>}
           </div></Panel>
+          {kind === "series" && id !== "new" ? <EpisodesPanel seriesId={id} /> : null}
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} /></Panel>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <label className={cn("flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-10 text-center transition-all duration-300 hover:border-primary/50 hover:bg-accent", busy && "pointer-events-none opacity-60")}>

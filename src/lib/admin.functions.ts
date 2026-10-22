@@ -70,6 +70,20 @@ export const saveAdminEpisode = createServerFn({ method: "POST" }).middleware([r
     return row;
   });
 
+/** Renumbers a series' episodes in the given order (1..n). Two passes avoid the unique (series, number) clash. */
+export const reorderAdminEpisodes = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ series_id: id, ids: z.array(id).min(1).max(500) }).parse(input))
+  .handler(async ({ data, context }) => {
+    for (const [pass, sign] of [[0, -1], [1, 1]] as const) {
+      void pass;
+      for (const [i, episodeId] of data.ids.entries()) {
+        const { error } = await context.supabase.from("episodes").update({ episode_number: sign * (i + 1) }).eq("id", episodeId).eq("series_id", data.series_id);
+        if (error) throw new Error(error.message);
+      }
+    }
+    return { ok: true };
+  });
+
 export const deleteAdminContent = createServerFn({ method: "POST" }).middleware([requireAdmin])
   .inputValidator((input: unknown) => z.object({ id, kind: z.enum(["series", "episodes"]) }).parse(input))
   .handler(async ({ data, context }) => {

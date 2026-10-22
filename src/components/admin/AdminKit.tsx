@@ -44,3 +44,8 @@ export function Field({ label, hint, children, className }: { label: string; hin
 export function ToggleField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return <label className={cn("flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 transition-all duration-300", checked ? "admin-gradient-soft border-primary/40" : "border-border bg-background/60 hover:border-primary/30")}><span className="text-sm font-medium">{label}</span><Switch checked={checked} onCheckedChange={onChange} /></label>;
 }
+
+const actionBase = "inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold ring-1 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-3.5";
+export const editActionClass = `${actionBase} bg-primary/10 text-accent-foreground ring-primary/25 hover:bg-primary hover:text-primary-foreground hover:shadow-primary/25`;
+export const deleteActionClass = `${actionBase} bg-destructive/10 text-destructive ring-destructive/25 hover:bg-destructive hover:text-destructive-foreground hover:shadow-destructive/25`;
+export const moveActionClass = "grid size-8 place-items-center rounded-full bg-muted text-muted-foreground ring-1 ring-border transition-all duration-200 hover:-translate-y-0.5 hover:bg-card hover:text-primary hover:ring-primary/30 disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4";
