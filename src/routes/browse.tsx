@@ -1,5 +1,4 @@
-import { absoluteMediaUrl } from "@/lib/media";
-import { SITE_URL, jsonLd } from "@/lib/content-seo";
+import { SITE_URL, SITE_OG_IMAGE, jsonLd } from "@/lib/content-seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
