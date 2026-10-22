@@ -1,3 +1,4 @@
+import { absoluteMediaUrl } from "@/lib/media";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
@@ -15,8 +16,12 @@ export const Route = createFileRoute("/browse")({
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
   }),
-  head: () => ({
+  head: ({ loaderData }) => {
+    const s = loaderData?.find((x) => x.is_featured && x.backdrop_url) ?? loaderData?.find((x) => x.backdrop_url);
+    const img = absoluteMediaUrl(s?.backdrop_url);
+    return {
     meta: [
+      ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
       { title: "Browse series — Branta Films" },
       { name: "description", content: "Browse every Branta Films original series by genre — thrillers, family dramas, mysteries and more." },
       { property: "og:title", content: "Browse series — Branta Films" },
@@ -24,7 +29,8 @@ export const Route = createFileRoute("/browse")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
-  }),
+    };
+  },
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: BrowsePage,
 });

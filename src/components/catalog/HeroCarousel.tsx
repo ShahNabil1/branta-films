@@ -75,10 +75,10 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
             <span aria-hidden className="size-1.5 rounded-full bg-primary" />
             Branta Original · {current.genres.join(" / ")}
           </p>
-          <h1 className="animate-fade-up text-cinema-shadow text-hero mt-6 max-w-[14ch] [animation-delay:60ms]">
+          <h2 className="animate-fade-up text-cinema-shadow text-hero mt-6 max-w-[14ch] [animation-delay:60ms]">
             {current.title}
             <span className="text-primary">.</span>
-          </h1>
+          </h2>
           {current.tagline ? (
             <p className="animate-fade-up text-cinema-shadow text-body-lg mt-6 max-w-xl text-foreground/85 [animation-delay:120ms]">
               {current.tagline}
