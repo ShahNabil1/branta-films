@@ -13,6 +13,8 @@ import { adminQuery } from "@/lib/admin-queries";
 import { saveAdminEpisode, saveAdminSeries, uploadAdminImage, prepareAdminVideo, finishAdminVideo } from "@/lib/admin.functions";
 import { mediaUrl } from "@/lib/media";
 import { isDirty } from "@/lib/dirty";
+import { ARTWORK_SPECS, type ArtworkSlot } from "@/lib/artwork";
+import { ImageCropDialog } from "./ImageCropDialog";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -27,7 +29,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const initial = {
     title: existing?.title ?? "", slug: series?.slug ?? "", tagline: series?.tagline ?? "", html: baseHtml ?? rawHtml,
     genres: series?.genres.join(", ") ?? "", year: series?.release_year?.toString() ?? "", maturity: series?.maturity_rating ?? "13+", price: series?.price_bdt ?? 0,
-    order: series?.sort_order ?? 0, featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
+    order: series?.sort_order ?? (Math.max(0, ...data.series.map((s) => s.sort_order)) + 10), featured: series?.is_featured ?? false, published: existing?.is_published ?? false,
     parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1), duration: episode?.duration_seconds ?? 0,
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
     thumbnail: episode?.thumbnail_url ?? null as string | null,
@@ -37,6 +39,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   const [progress, setProgress] = useState<number | null>(null);
   const [videoUploaded, setVideoUploaded] = useState(false);
   const [editing, setEditing] = useState(id === "new");
+  const [cropping, setCropping] = useState<{ file: File; slot: ArtworkSlot } | null>(null);
   const changed = isDirty(values, initial);
   const onEditorReady = (html: string) => { setBaseHtml(html); setValues((v) => (v.html === rawHtml ? { ...v, html } : v)); };
   const cancel = () => { setValues(initial); setEditing(false); };
@@ -64,17 +67,18 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     } catch (err) { toast.error(err instanceof Error ? err.message : "Could not save content"); }
     finally { setBusy(false); }
   }
-  async function image(file: File | undefined, slot: "poster" | "backdrop" | "thumbnail") {
+  function pickImage(file: File | undefined, slot: ArtworkSlot) {
     if (!file) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 10 * 1024 * 1024) { toast.error("Choose a JPG, PNG or WebP image under 10 MB."); return; }
-    setBusy(true);
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 25 * 1024 * 1024) { toast.error("Choose a JPG, PNG or WebP image under 25 MB."); return; }
+    setCropping({ file, slot });
+  }
+  async function uploadCropped(blob: Blob, slot: ArtworkSlot) {
     try {
-      const base64 = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1] ?? ""); reader.onerror = reject; reader.readAsDataURL(file); });
-      const result = await uploadAdminImage({ data: { kind, id: id === "new" ? crypto.randomUUID() : id, slot, contentType: file.type as "image/jpeg" | "image/png" | "image/webp", base64 } });
-      set(slot, result.key);
+      const base64 = await new Promise<string>((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1] ?? ""); reader.onerror = reject; reader.readAsDataURL(blob); });
+      const result = await uploadAdminImage({ data: { kind, id: id === "new" ? crypto.randomUUID() : id, slot, contentType: "image/webp", base64 } });
+      set(slot, result.key); setCropping(null);
       toast.success("Image uploaded");
     } catch (err) { toast.error(err instanceof Error ? err.message : "Upload failed"); }
-    finally { setBusy(false); }
   }
   async function video(file: File | undefined) {
     if (!file) return;
@@ -122,16 +126,16 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           </div>}</Panel> : null}
         </div>
         <div className="space-y-6">
-          <Panel title="Visibility"><div className="space-y-2.5">{toggle("Published", "published")}{kind === "series" ? toggle("Featured", "featured") : toggle("Free episode", "free")}</div>{kind === "series" ? <div className="mt-4 grid gap-4">{numeric("Price (BDT)", "price", 0)}{numeric("Sort order", "order", -10000)}</div> : null}</Panel>
-          <Panel title="Artwork" description="JPG, PNG or WebP up to 10 MB."><div className="space-y-5">{slots.map((slot) => <div key={slot} className="space-y-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{slot}</p>
+          <Panel title="Visibility"><div className="space-y-2.5">{toggle("Published", "published")}{kind === "series" ? toggle("Featured", "featured") : toggle("Free episode", "free")}</div>{kind === "series" ? <div className="mt-4 grid gap-4">{numeric("Price (BDT)", "price", 0)}</div> : null}</Panel>
+          <Panel title="Artwork" description="JPG, PNG or WebP. You can crop and zoom before upload."><div className="space-y-5">{slots.map((slot) => <div key={slot} className="space-y-2">
+            <div className="flex items-baseline justify-between gap-2"><p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">{ARTWORK_SPECS[slot].label}</p><p className="text-[11px] tabular-nums text-muted-foreground">Best {ARTWORK_SPECS[slot].width} × {ARTWORK_SPECS[slot].height} · {ARTWORK_SPECS[slot].ratio}</p></div>
             <div className={cn("group relative overflow-hidden rounded-xl border border-border bg-muted", slot === "poster" ? "aspect-[2/3]" : "aspect-video")}>
               {values[slot] ? <img src={mediaUrl(values[slot]) ?? undefined} alt={slot} className="size-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <div className="grid size-full place-items-center text-muted-foreground"><ImagePlus className="size-6" /></div>}
             </div>
             <div className="flex flex-wrap gap-2">
               <label className={cn("inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted", busy && "pointer-events-none opacity-60")}>
                 <Upload className="size-3.5" />{values[slot] ? "Replace" : "Upload"}
-                <input type="file" className="sr-only" aria-label={`Upload ${slot}`} accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => void image(e.target.files?.[0], slot)} />
+                <input type="file" className="sr-only" aria-label={`Upload ${slot}`} accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => { pickImage(e.target.files?.[0], slot); e.target.value = ""; }} />
               </label>
               {values[slot] ? <button type="button" disabled={busy} onClick={() => set(slot, null)} className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs font-semibold text-destructive transition-all duration-200 hover:-translate-y-0.5 hover:bg-destructive/10 disabled:opacity-60"><Trash2 className="size-3.5" />Remove</button> : null}
             </div>
@@ -144,5 +148,6 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
         <Button type="submit" variant={changed ? "default" : "outline"} disabled={busy || !changed || !values.title.trim()} className={cn("transition-all duration-200", changed && "hover:-translate-y-0.5")}>{busy ? <Loader2 className="animate-spin" /> : changed ? <Save /> : <Check />}{busy ? "Saving…" : changed ? "Save changes" : "No changes"}</Button>
       </div> : null}
     </form>
+    <ImageCropDialog file={cropping?.file ?? null} slot={cropping?.slot ?? "poster"} onClose={() => setCropping(null)} onDone={(blob) => uploadCropped(blob, cropping!.slot)} />
   </>;
 }
