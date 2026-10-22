@@ -319,6 +319,7 @@ export type Database = {
           discount_bdt: number
           id: string
           method: string
+          paid_to: string | null
           reject_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -336,6 +337,7 @@ export type Database = {
           discount_bdt?: number
           id?: string
           method: string
+          paid_to?: string | null
           reject_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -353,6 +355,7 @@ export type Database = {
           discount_bdt?: number
           id?: string
           method?: string
+          paid_to?: string | null
           reject_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null

@@ -47,7 +47,7 @@ export const placeOrder = createServerFn({ method: "POST" }).middleware([require
     if (q.total <= 0) throw new Error("Free items do not need a payment.");
     const { data: order, error } = await sb.from("orders").insert({
       user_id: context.userId, subtotal_bdt: q.subtotal, discount_bdt: q.discount, total_bdt: q.total,
-      coupon_code: q.appliedLabel, method: data.method, sender_phone: data.sender_phone, trx_id: data.trx_id,
+      coupon_code: q.appliedLabel, method: data.method, sender_phone: data.sender_phone, trx_id: data.trx_id, paid_to: numbers[data.method],
     }).select("id").single();
     if (error) throw new Error(error.code === "23505" ? "This Transaction ID has already been submitted." : "Could not submit your payment. Please try again.");
     const { error: itemsError } = await sb.from("order_items").insert(q.lines.map((l) => ({
