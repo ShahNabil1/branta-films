@@ -11,6 +11,8 @@
 
 # Architecture rules
 
+- All local mobile-number fields use BdPhoneInput and the browser-safe phone-input normalizer. Why: signup, checkout and profile must convert Bangla digits consistently before validation.
+
 Subdirectories have their own `AGENTS.md`; read it before changing files there.
 
 - Shared account-access middleware and restrictive RLS enforce bans/revoked sessions; browser fingerprints are best-effort. Why: UI-only checks cannot secure playback.
