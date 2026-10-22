@@ -12,6 +12,29 @@ export function absoluteMediaUrl(path: string | null | undefined): string | null
   return url.startsWith("http") ? url : `https://films.brantatech.com${url}`;
 }
 
+/** Fixed width families bound the number of billable transformation variants. */
+export const IMAGE_WIDTHS = {
+  poster: [240, 480, 720],
+  backdrop: [640, 960, 1280, 1920],
+  thumbnail: [320, 640, 960],
+} as const;
+export type ImageVariant = keyof typeof IMAGE_WIDTHS;
+
+/** Only public catalogue artwork; never transform video keys or external avatars. */
+export function transformedMediaUrl(path: string, width: number): string | null {
+  if (!isAllowedMediaPath(path) || path.startsWith("images/avatars/")) return null;
+  const allowed = Object.values(IMAGE_WIDTHS).some(widths => (widths as readonly number[]).includes(width));
+  if (!allowed) return null;
+  const source = mediaUrl(path);
+  return source ? `https://films.brantatech.com/cdn-cgi/image/width=${width},fit=scale-down,quality=80,format=auto${source}` : null;
+}
+
+export function mediaCacheControl(path: string): string {
+  return isAllowedMediaPath(path) && !path.startsWith("images/avatars/")
+    ? "public, max-age=31536000, immutable"
+    : "public, max-age=86400, stale-while-revalidate=604800";
+}
+
 /** Only the images/ folder is public through the media route; videos/ never is. */
 export const ALLOWED_MEDIA_PREFIXES = ["images/series/", "images/episodes/", "images/avatars/", "images/popups/"] as const;
 

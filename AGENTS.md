@@ -39,3 +39,4 @@ Subdirectories have their own `AGENTS.md`; read it before changing files there.
 - Manual payments create `orders`/`order_items`; only admin `reviewAdminOrder` writes `series_unlocks`/`episode_unlocks`. Playback allows series OR episode unlock. Why: unlocks only after verification.
 - Popups live in `popups` (R2 `images/popups/`), rendered by `PopupRunner` in `__root` using `popup-schedule` areas; they close only via [X] or their action. Why: admin-scheduled, one at a time.
 - Every route sets `staticData.sitemap`; `/sitemap.xml` derives static pages from the router and adds published series. Why: the sitemap tracks pages automatically.
+- Catalogue artwork uses ArtworkImage with bounded Cloudflare widths and original fallback; uploads keep new object keys, avatars keep shorter caching. Why: controls transformation usage and prevents stale replacement images without caching private playback.
