@@ -40,12 +40,12 @@ export function EpisodeCarousel({ episodes, currentId, backdrop }: { episodes: E
             <div className="relative aspect-video overflow-hidden rounded-md bg-surface">
               {src ? <img src={src} alt={ep.title} loading="lazy" draggable={false} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="flex size-full items-center justify-center"><Play className="size-8 text-muted-foreground" /></div>}
               <span className="absolute left-3 top-3 rounded-sm bg-scrim px-2 py-1 text-xs font-medium text-media-ink">{String(ep.episode_number).padStart(2, "0")}</span>
-              <span className={cn("absolute bottom-3 left-3 rounded-sm px-2 py-1 text-xs font-medium", active ? "bg-primary text-primary-foreground" : "bg-scrim text-media-ink")}>{active ? "Now playing" : ep.is_free ? "Free" : formatDuration(ep.duration_seconds)}</span>
+              <span className={cn("absolute bottom-3 left-3 rounded-sm px-2 py-1 text-xs font-medium", active ? "bg-primary text-primary-foreground" : "bg-scrim text-media-ink")}>{active ? "Now playing" : ep.is_free ? "Free" : formatDuration(ep.duration_seconds ?? 0)}</span>
               <span className={cn("absolute right-3 bottom-3 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity", active ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100")}><Play className="size-4 fill-current" /></span>
               {active ? <div className="absolute inset-x-0 bottom-0 h-0.5 bg-primary" /> : null}
             </div>
             <h3 className={cn("mt-3 truncate text-base font-medium", active ? "text-primary" : "text-foreground")}>{ep.title}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">Episode {ep.episode_number} · {formatDuration(ep.duration_seconds)}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Episode {ep.episode_number} · {formatDuration(ep.duration_seconds ?? 0)}</p>
           </Link>
         </li>;
       })}

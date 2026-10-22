@@ -233,7 +233,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
       if (!hls) return;
       const cap = networkQualityCap(connection?.downlink, connection?.saveData);
       const eligible = hls.levels.map((level, index) => ({ height: level.height, index })).filter(level => level.height <= cap);
-      hls.autoLevelCapping = eligible.length ? eligible[eligible.length - 1].index : 0;
+      hls.autoLevelCapping = eligible.at(-1)?.index ?? 0;
     };
     update();
     connection?.addEventListener("change", update);
