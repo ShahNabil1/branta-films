@@ -16,6 +16,11 @@ export default defineConfig({
         "@tiptap/extension-text-style",
         "@tiptap/extension-text-align",
         "@radix-ui/react-switch",
+        "@dnd-kit/core",
+        "@dnd-kit/sortable",
+        "@dnd-kit/modifiers",
+        "@dnd-kit/utilities",
+        "react-easy-crop",
       ],
       // Reject stale optimizer URLs instead of mixing React generations after installs.
       ignoreOutdatedRequests: false,

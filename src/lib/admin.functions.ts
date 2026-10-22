@@ -39,7 +39,7 @@ export const getAdminOverview = createServerFn({ method: "POST" }).middleware([r
     }
   }
   const [series, episodes, users, roles, unlocks, activity] = await Promise.all([
-    all((a, b) => sb.from("series").select("*").order("created_at").order("id").range(a, b)),
+    all((a, b) => sb.from("series").select("*").order("sort_order").order("created_at").order("id").range(a, b)),
     all((a, b) => sb.from("episodes").select("*").order("series_id").order("episode_number").range(a, b)),
     all((a, b) => sb.from("profiles").select("*").order("created_at").order("id").range(a, b)),
     all((a, b) => sb.from("user_roles").select("*").order("id").range(a, b)),
@@ -180,5 +180,15 @@ export const finishAdminVideo = createServerFn({ method: "POST" }).middleware([r
     const { supabaseAdmin: sb } = await import("@/integrations/supabase/client.server");
     const { error } = await sb.from("episode_media").upsert({ episode_id: data.episodeId, video_key: data.key, size_bytes: data.size, content_type: "video/mp4" });
     if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+/** Saves the series display order: position i gets sort_order i * 10. */
+export const reorderAdminSeries = createServerFn({ method: "POST" }).middleware([requireAdmin])
+  .inputValidator((input: unknown) => z.object({ ids: z.array(id).min(1).max(1000) }).parse(input))
+  .handler(async ({ data, context }) => {
+    for (const [i, seriesId] of data.ids.entries()) {
+      const { error } = await context.supabase.from("series").update({ sort_order: i * 10 }).eq("id", seriesId);
+      if (error) throw new Error(error.message);
+    }
     return { ok: true };
   });

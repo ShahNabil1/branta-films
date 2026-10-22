@@ -38,14 +38,14 @@ export function ImageCropDialog({ file, slot, onClose, onDone }: { file: File | 
 
   return <BrandedDialog open={Boolean(file)} onClose={() => !busy && onClose()} title={`Crop ${spec.label.toLowerCase()}`} description={`Exports at ${spec.width} × ${spec.height} px (${spec.ratio}). ${spec.hint}`} className="max-w-3xl">
     <div className="space-y-4">
-      <div className="relative h-[min(60vh,440px)] overflow-hidden rounded-xl bg-[repeating-conic-gradient(hsl(var(--muted))_0_25%,transparent_0_50%)] [background-size:20px_20px]">
+      <div className="relative h-[min(60vh,440px)] overflow-hidden rounded-xl bg-muted">
         {src ? <Cropper image={src} crop={crop} zoom={zoom} rotation={rotation} aspect={spec.aspect} minZoom={minZoom} maxZoom={5} zoomSpeed={0.15}
           objectFit={natural && natural.w / natural.h > spec.aspect ? "vertical-cover" : "horizontal-cover"} restrictPosition={fit === "cover"}
           onCropChange={setCrop} onZoomChange={setZoom} onRotationChange={setRotation} onCropComplete={onComplete} showGrid /> : null}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <button type="button" aria-label="Zoom out" className={tool} onClick={() => setZoom((z) => Math.max(minZoom, +(z - 0.1).toFixed(2)))}><ZoomOut /></button>
-        <input type="range" aria-label="Zoom" min={minZoom} max={5} step={0.01} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="h-1.5 min-w-32 flex-1 cursor-pointer accent-[hsl(var(--primary))]" />
+        <input type="range" aria-label="Zoom" min={minZoom} max={5} step={0.01} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="h-1.5 min-w-32 flex-1 cursor-pointer accent-primary" />
         <button type="button" aria-label="Zoom in" className={tool} onClick={() => setZoom((z) => Math.min(5, +(z + 0.1).toFixed(2)))}><ZoomIn /></button>
         <span className="w-12 text-right text-xs tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
       </div>
