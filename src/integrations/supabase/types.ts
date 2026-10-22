@@ -49,39 +49,6 @@ export type Database = {
           },
         ]
       }
-      activity_log: {
-        Row: {
-          action: string
-          actor_id: string | null
-          created_at: string
-          details: Json
-          id: string
-          ip: string | null
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          created_at?: string
-          details?: Json
-          id?: string
-          ip?: string | null
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          created_at?: string
-          details?: Json
-          id?: string
-          ip?: string | null
-          user_agent?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       episode_media: {
         Row: {
           content_type: string
