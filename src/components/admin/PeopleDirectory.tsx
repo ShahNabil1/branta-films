@@ -15,8 +15,8 @@ import { BrandedDialog } from '@/components/ui/branded-dialog';
 import { Chip, Field, PageHeader, Panel } from './AdminKit';
 
 export function PersonAvatar({name,url,large=false}:{name:string;url:string|null;large?:boolean}) {
-  const [failed,setFailed]=useState(false);
-  return <span className={`${large?'size-20 text-2xl':'size-11 text-sm'} grid shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 font-bold text-primary ring-1 ring-primary/20`}>{url&&!failed?<img alt={name} src={mediaUrl(url)??undefined} onError={()=>setFailed(true)} className="size-full object-cover"/>:name.slice(0,1).toUpperCase()}</span>;
+  const [failedUrl,setFailedUrl]=useState<string|null>(null);
+  return <span className={`${large?'size-20 text-2xl':'size-11 text-sm'} grid shrink-0 place-items-center overflow-hidden rounded-full bg-primary/10 font-bold text-primary ring-1 ring-primary/20`}>{url&&failedUrl!==url?<img alt={name} src={mediaUrl(url)??undefined} referrerPolicy="no-referrer" onError={()=>setFailedUrl(url)} className="size-full object-cover"/>:name.slice(0,1).toUpperCase()}</span>;
 }
 export function PeopleDirectory({staff,search,page,onSearch,onPage}:{staff:boolean;search:string;page:number;onSearch:(v:string)=>void;onPage:(v:number)=>void}) {
   const {data}=useSuspenseQuery(directoryQuery(staff,search,page));

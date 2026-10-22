@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { requireAccountAccess } from './security-middleware';
 import { assertTarget, hasPaidAccess, presenceStatus } from './people-rules';
 import { validateNewPassword, PASSWORD_REUSED_MESSAGE } from './validation';
+import { profilePicture } from './profile-picture';
 
 const requirePeopleAdmin=createMiddleware({type:'function'}).middleware([requireAccountAccess]).server(async({context,next})=>{
   const {data,error}=await context.supabase.rpc('has_role',{_user_id:context.userId,_role:'admin'});
@@ -26,7 +27,14 @@ export const getPeopleDirectory=createServerFn({method:'POST'}).middleware([requ
       return {...p,role:roles.find(r=>r.user_id===p.id&&r.role==='admin')?.role??roles.find(r=>r.user_id===p.id)?.role??'viewer',status,paid:hasPaidAccess(unlocks.filter(u=>u.user_id===p.id),series),watching:series.find(s=>s.id===episode?.series_id)?.title??null,watched_seconds:devices.reduce((a,s)=>a+Number(s.watched_seconds),0),last_seen_at:devices.map(s=>s.last_seen_at).sort().at(-1)??null,banned_until:restrictions.find(r=>r.user_id===p.id)?.banned_until??null};
     });
     const filtered=audience.filter(p=>`${p.full_name} ${p.email}`.toLowerCase().includes(data.search.toLowerCase()));
-    return {people:filtered.slice(data.page*25,data.page*25+25),total:filtered.length,stats:{total:audience.length,active:audience.filter(p=>p.status==='active').length,idle:audience.filter(p=>p.status==='idle').length,watching:audience.filter(p=>p.status==='watching').length,paid:audience.filter(p=>p.paid).length,free:audience.filter(p=>!p.paid).length}};
+    // Only resolve Auth pictures for this page, and never return Auth metadata.
+    const people=await Promise.all(filtered.slice(data.page*25,data.page*25+25).map(async p=>{
+      if(p.avatar_url?.trim())return p;
+      const {data:account,error}=await sb.auth.admin.getUserById(p.id);
+      if(error)throw new Error('Could not load account pictures.');
+      return {...p,avatar_url:profilePicture(p,account.user)};
+    }));
+    return {people,total:filtered.length,stats:{total:audience.length,active:audience.filter(p=>p.status==='active').length,idle:audience.filter(p=>p.status==='idle').length,watching:audience.filter(p=>p.status==='watching').length,paid:audience.filter(p=>p.paid).length,free:audience.filter(p=>!p.paid).length}};
   });
 
 export const getPersonDetail=createServerFn({method:'POST'}).middleware([requirePeopleAdmin]).inputValidator((v:unknown)=>targetSchema.extend({page:z.number().int().min(0).default(0)}).parse(v)).handler(async({data})=>{
@@ -40,7 +48,7 @@ export const getPersonDetail=createServerFn({method:'POST'}).middleware([require
   const blocks=await all((a,b)=>sb.from('security_blocks').select('id,kind,value,reason').order('id').range(a,b));
   const user=account.data.user;
   const identifiers=new Set([profile.data.email.toLowerCase(),...(sessions.data??[]).flatMap(s=>[s.ip,s.device_hash])]);
-  return {profile:profile.data,auth:{last_sign_in_at:user.last_sign_in_at??null,email_confirmed_at:user.email_confirmed_at??null,providers:(user.identities??[]).map(i=>i.provider),banned_until:user.banned_until??null},roles:roles.data??[],sessions:sessions.data??[],passkeys:keys.data??[],unlocks:unlocks.data??[],history:history.data??[],progress:progress.data??[],activity:activity.data??[],restriction:restriction.data,series:series.data??[],blocks:(blocks.data??[]).filter(b=>identifiers.has(b.value)),page:data.page};
+  return {profile:{...profile.data,avatar_url:profilePicture(profile.data,user)},auth:{last_sign_in_at:user.last_sign_in_at??null,email_confirmed_at:user.email_confirmed_at??null,providers:(user.identities??[]).map(i=>i.provider),banned_until:user.banned_until??null},roles:roles.data??[],sessions:sessions.data??[],passkeys:keys.data??[],unlocks:unlocks.data??[],history:history.data??[],progress:progress.data??[],activity:activity.data??[],restriction:restriction.data,series:series.data??[],blocks:(blocks.data??[]).filter(b=>identifiers.has(b.value)),page:data.page};
 });
 
 export const administerPerson=createServerFn({method:'POST'}).middleware([requirePeopleAdmin])
