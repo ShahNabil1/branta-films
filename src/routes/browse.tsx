@@ -16,6 +16,7 @@ export const Route = createFileRoute("/browse")({
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
   }),
+  loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   head: ({ loaderData }) => {
     const s = loaderData?.find((x) => x.is_featured && x.backdrop_url) ?? loaderData?.find((x) => x.backdrop_url);
     const img = absoluteMediaUrl(s?.backdrop_url);
@@ -31,7 +32,6 @@ export const Route = createFileRoute("/browse")({
     ],
     };
   },
-  loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: BrowsePage,
 });
 
