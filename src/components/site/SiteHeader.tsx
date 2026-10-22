@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpRight, Search } from "lucide-react";
+import { ArrowUpRight, Compass, House, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand/Logo";
 import { useAuth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import { UserMenu } from "./UserMenu";
 
 const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/browse", label: "Browse" },
+  { to: "/", label: "Home", icon: House },
+  { to: "/browse", label: "Browse", icon: Compass },
 ] as const;
 
 const itemCls =
@@ -45,25 +46,30 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <ul className="flex items-center gap-0.5">
             {NAV.map((item) => (
               <li key={item.to}>
-                <Link to={item.to} activeOptions={{ exact: item.to === "/" }} className={cn(itemCls, "group")}>
+                <Button asChild variant="ghost" className="site-nav-action group h-11 gap-2 px-2 text-muted-foreground sm:px-4">
+                <Link to={item.to} activeOptions={{ exact: item.to === "/" }}>
+                  <item.icon aria-hidden className="hidden sm:block" />
                   {item.label}
                   <span
                     aria-hidden
                     className="absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 scale-0 rounded-full bg-primary transition-transform duration-200 group-data-[status=active]:scale-100"
                   />
                 </Link>
+                </Button>
               </li>
             ))}
           </ul>
         </nav>
         <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+          <Button asChild variant="ghost" size="icon" className="site-nav-action size-11 text-muted-foreground hover:text-foreground">
           <Link
             to="/browse"
             aria-label="Search series"
-            className="grid size-9 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
+            title="Search series"
           >
             <Search className="size-[18px]" />
           </Link>
+          </Button>
           {loading ? (
             <div className="size-9" aria-hidden="true" />
           ) : user ? (

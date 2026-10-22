@@ -153,6 +153,9 @@
   --dur-micro: 200ms;
   --dur-reveal: 600ms;
   --dur-cinematic: 1000ms;
+  --ease-tap: cubic-bezier(0.2, 0.9, 0.25, 1.3);
+  --action-highlight: oklch(1 0 0 / 0.2);
+  --action-depth: 0 3px 0 color-mix(in oklab, var(--primary) 65%, var(--background));
   color-scheme: dark;
 }
 
@@ -362,6 +365,57 @@
 }
 
 /* ---------- Motion (Branta Tech) ---------- */
+.cinema-action,
+.site-nav-action {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 240ms var(--ease-tap), background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.cinema-action { border: 1px solid transparent; box-shadow: var(--action-depth); }
+.cinema-action::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(115deg, transparent 25%, var(--action-highlight) 48%, transparent 70%);
+  transform: translateX(-125%);
+  transition: transform 600ms ease;
+  pointer-events: none;
+}
+.cinema-action-secondary {
+  background: var(--surface-raised);
+  border-color: color-mix(in oklab, var(--foreground) 25%, var(--border));
+  box-shadow: none;
+}
+.cinema-action svg,
+.site-nav-action svg { transition: transform 260ms var(--ease-tap); }
+.site-nav-action[data-status="active"] {
+  background: var(--accent);
+  color: var(--foreground);
+}
+@media (hover: hover) {
+  .cinema-action:hover { transform: translateY(-2px); }
+  .cinema-action:hover::before { transform: translateX(125%); }
+  .cinema-action:hover svg { transform: translateX(2px) rotate(-8deg); }
+  .cinema-action-secondary:hover { background: var(--muted); border-color: var(--foreground); }
+  .site-nav-action:hover svg { transform: translateY(-1px) rotate(-10deg); }
+}
+.cinema-action:active,
+.site-nav-action:active {
+  transform: scale(0.94);
+  transition-duration: 80ms;
+}
+.cinema-action:active { box-shadow: none; }
+.site-nav-action:active { background: var(--accent); }
+@media (prefers-reduced-motion: reduce) {
+  .cinema-action, .site-nav-action, .cinema-action svg, .site-nav-action svg { transition: none; }
+  .cinema-action::before { display: none; }
+  .cinema-action:hover, .cinema-action:active, .site-nav-action:active,
+  .cinema-action:hover svg, .site-nav-action:hover svg { transform: none; }
+}
 @utility reveal {
   opacity: 0;
   transform: translateY(24px);
