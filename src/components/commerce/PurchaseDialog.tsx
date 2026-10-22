@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Check, Layers, ShoppingCart, Sparkles, Ticket, Zap } from "lucide-react";
+import { Check, Layers, ShoppingCart, Ticket, Film, Clapperboard, ArrowRight } from "lucide-react";
 import { BrandedDialog } from "@/components/ui/branded-dialog";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartEntry } from "@/lib/cart";
@@ -51,7 +51,7 @@ export function PurchaseDialog({ open, onClose, series, episodes, focusEpisodeId
     if (checkout) void navigate({ to: "/checkout" });
   };
 
-  const Option = ({ value, icon: Icon, title, sub, price, badge }: { value: typeof mode; icon: typeof Zap; title: string; sub: string; price?: { final: number; original: number | null }; badge?: string }) => (
+  const Option = ({ value, icon: Icon, title, sub, price, badge }: { value: typeof mode; icon: typeof Film; title: string; sub: string; price?: { final: number; original: number | null }; badge?: string }) => (
     <button type="button" onClick={() => setMode(value)} aria-pressed={mode === value}
       className={cn("relative flex w-full items-center gap-3 rounded-xl border p-3.5 text-left transition-all duration-200 active:scale-[0.99]", mode === value ? "border-primary bg-primary/10 shadow-[0_0_0_1px_var(--color-primary)]" : "border-border hover:border-primary/40 hover:bg-secondary")}>
       <span className={cn("grid size-10 shrink-0 place-items-center rounded-full", mode === value ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground")}><Icon className="size-4" /></span>
@@ -65,8 +65,8 @@ export function PurchaseDialog({ open, onClose, series, episodes, focusEpisodeId
   return (
     <BrandedDialog open={open} onClose={onClose} title={focus ? `Unlock episode ${focus.episode_number}` : `Unlock ${series.title}`} description="Pay with bKash, Nagad or Rocket. Access opens as soon as your payment is verified." className="max-w-lg">
       <div className="space-y-2.5">
-        {focus ? <Option value="episode" icon={Zap} title={`Only episode ${focus.episode_number}`} sub={focus.title} price={priceOf([toEntry(focus)])} /> : null}
-        {series.price_bdt > 0 ? <Option value="series" icon={Sparkles} title="Full series" sub="Every episode, now and future" price={priceOf([seriesEntry])} badge={save > 0 ? `Save ${formatTaka(save)}` : "Best value"} /> : null}
+        {focus ? <Option value="episode" icon={Film} title={`Only episode ${focus.episode_number}`} sub={focus.title} price={priceOf([toEntry(focus)])} /> : null}
+        {series.price_bdt > 0 ? <Option value="series" icon={Clapperboard} title="Full series" sub="Every episode, now and future" price={priceOf([seriesEntry])} badge={save > 0 ? `Save ${formatTaka(save)}` : "Best value"} /> : null}
         {sellable.length > 1 ? <Option value="multi" icon={Layers} title="Choose episodes" sub="Pick several and pay once" /> : null}
         {mode === "multi" ? <ul className="max-h-56 space-y-1 overflow-y-auto rounded-xl border border-border p-1.5">
           {sellable.map((e) => { const on = picked.has(e.id); const p = priceOf([toEntry(e)]); return <li key={e.id}><button type="button" aria-pressed={on} onClick={() => setPicked((prev) => { const n = new Set(prev); if (n.has(e.id)) n.delete(e.id); else n.add(e.id); return n; })} className={cn("flex w-full items-center gap-3 rounded-lg p-2 text-left text-sm transition-colors", on ? "bg-primary/10" : "hover:bg-secondary")}>
@@ -82,7 +82,7 @@ export function PurchaseDialog({ open, onClose, series, episodes, focusEpisodeId
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button variant="outline" disabled={!selection.length} onClick={() => go(false)}><ShoppingCart />Add to cart</Button>
-        <Button disabled={!selection.length} onClick={() => go(true)}><Zap />Buy now</Button>
+        <Button disabled={!selection.length} onClick={() => go(true)}>Buy now<ArrowRight /></Button>
       </div>
     </BrandedDialog>
   );
