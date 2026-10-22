@@ -11,6 +11,10 @@
 
 # Architecture rules
 
+- People detail routes use protected functions, authenticated heartbeat observations and private security tables, not resume positions, for presence and watch time. Why: observed duration is distinct from seeking.
+- Shared account-access middleware and restrictive RLS enforce bans/revoked sessions; browser fingerprints are best-effort. Why: UI-only checks cannot secure playback.
+- View-as keeps admin identity and offers an audited read-only account preview, never viewer credentials. Why: avoid privilege confusion.
+
 - Prebundle all Tiptap editor packages at startup and reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: late editor discovery invalidates in-flight module URLs, while mixing dependency generations crashes React hooks.
 
 - Video files live only in private Cloudflare R2; `episode_media.video_key` is service-role only and links are issued by `getPlaybackSource` after `decidePlayback` (src/lib/access.ts). Why: no client can ever learn a permanent video address.

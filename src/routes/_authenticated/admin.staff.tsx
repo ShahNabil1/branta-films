@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, type SearchSchemaInput } from "@tanstack/react-router";
 import { PeopleDirectory } from "@/components/admin/PeopleDirectory";
 import { directoryQuery } from "@/lib/people-queries";
 export const Route = createFileRoute("/_authenticated/admin/staff")({
-  validateSearch: (s: { search?: unknown; page?: unknown }) => ({ search: typeof s['search'] === 'string' ? s['search'].slice(0, 200) : '', page: Math.max(0, Math.floor(Number(s['page']) || 0)) }),
+  validateSearch: (s: { search?: unknown; page?: unknown } & SearchSchemaInput) => ({ search: typeof s['search'] === 'string' ? s['search'].slice(0, 200) : '', page: Math.max(0, Math.floor(Number(s['page']) || 0)) }),
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(directoryQuery(true, deps.search, deps.page)),
   errorComponent: ({ error }) => <p role="alert">{error instanceof Error ? error.message : 'Accounts unavailable.'}</p>,
