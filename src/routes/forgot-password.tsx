@@ -161,10 +161,11 @@ function ForgotPasswordPage() {
             maxLength={254}
             disabled={busy}
           />
+          <Turnstile key="email" ref={captchaRef} onToken={setCaptcha} action="recover" />
           {formError ? <FormAlert>{formError}</FormAlert> : null}
           <Button
             type="submit"
-            disabled={busy}
+            disabled={busy || !captcha}
             size="lg" className="w-full"
           >
             {busy ? "Sending…" : "Send code"}
