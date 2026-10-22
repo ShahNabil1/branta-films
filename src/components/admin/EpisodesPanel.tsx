@@ -10,8 +10,7 @@ import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { adminQuery } from "@/lib/admin-queries";
 import { deleteAdminContent, reorderAdminEpisodes } from "@/lib/admin.functions";
 import { mediaUrl } from "@/lib/media";
-
-const minutes = (s: number) => (s ? `${Math.round(s / 60)} min` : "No duration");
+import { formatDuration } from "@/lib/format";
 
 /** Episodes of one series: create, reorder, edit and delete — lives inside the series page. */
 export function EpisodesPanel({ seriesId }: { seriesId: string }) {
@@ -43,7 +42,7 @@ export function EpisodesPanel({ seriesId }: { seriesId: string }) {
           {art ? <img src={art} alt="" loading="lazy" className="size-full object-cover transition-transform duration-500 group-hover:scale-105" /> : <span className="grid size-full place-items-center text-muted-foreground"><Clapperboard className="size-5" /></span>}
           <span className="absolute left-1.5 top-1.5 rounded-md bg-scrim px-1.5 py-0.5 text-[10px] font-bold text-foreground backdrop-blur">E{i + 1}</span>
         </div>
-        <div className="min-w-0 flex-1"><p className="truncate font-semibold">{e.title}</p><div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"><Chip tone={e.is_published ? "success" : "neutral"}>{e.is_published ? "Published" : "Draft"}</Chip>{e.is_free ? <Chip tone="brand">Free</Chip> : null}<span>{minutes(e.duration_seconds)}</span></div></div>
+        <div className="min-w-0 flex-1"><p className="truncate font-semibold">{e.title}</p><div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground"><Chip tone={e.is_published ? "success" : "neutral"}>{e.is_published ? "Published" : "Draft"}</Chip>{e.is_free ? <Chip tone="brand">Free</Chip> : null}<span>{e.duration_seconds ? formatDuration(e.duration_seconds) : "No duration"}</span></div></div>
         <div className="flex gap-2"><Link className={editActionClass} to="/admin/series/$id/episodes/$episodeId" params={{ id: seriesId, episodeId: e.id }} aria-label={`Edit ${e.title}`}><Pencil />Edit</Link><button type="button" className={deleteActionClass} disabled={busy} aria-label={`Delete ${e.title}`} onClick={() => setRemove({ id: e.id, title: e.title })}><Trash2 />Delete</button></div>
       </div>;
     }} /> : <div className="rounded-2xl border border-dashed border-primary/25 bg-background/50 px-6 py-12 text-center"><p className="text-sm font-bold">No episodes yet</p><p className="mt-1 text-sm text-muted-foreground">Use the New episode button above.</p></div>}

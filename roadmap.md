@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Episode counts and runtimes
+- [ ] Consistent icon-led episode counts across catalogue and dashboard
+- [ ] Readable hour/minute runtimes throughout content metadata; preserve player timestamps
+- [ ] Verify duration rules and mobile/desktop series presentation
+
 ## Current request — Google One Tap and post-login passkey setup
 - [x] Add optional Google account suggestions using GIS and existing Supabase accounts, preserving OAuth fallback
 - [x] Offer optional passkey enrollment after a fresh sign-in/confirmed signup, excluding existing keys and invite/recovery flows

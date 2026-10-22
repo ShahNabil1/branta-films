@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { mediaUrl } from "@/lib/media";
 import { ArtworkImage } from "./ArtworkImage";
+import { EpisodeCount } from "./EpisodeCount";
 import { formatTaka } from "@/lib/format";
 import { seriesPrice } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
@@ -78,10 +79,11 @@ export function SeriesCard({
           <h3 className="text-body mt-1 truncate font-medium text-foreground/85 transition-colors duration-300 group-hover:text-foreground">
             {title}
           </h3>
-          <p className="text-caption mt-0.5 truncate text-muted-foreground">
-            {[release_year, episodeCount ? `${episodeCount} episodes` : null, price_bdt > 0 ? formatTaka(seriesPrice(price_bdt, discount_price_bdt).final) : null]
+          <p className="text-caption mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground">
+            {episodeCount != null ? <EpisodeCount count={episodeCount} /> : null}
+            <span>{[release_year, price_bdt > 0 ? formatTaka(seriesPrice(price_bdt, discount_price_bdt).final) : null]
               .filter(Boolean)
-              .join(" · ")}
+              .join(" · ")}</span>
           </p>
         </div>
         <span aria-hidden className="mt-5 text-primary opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 group-focus-visible:opacity-100">

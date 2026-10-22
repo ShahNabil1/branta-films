@@ -9,7 +9,7 @@ import { mediaUrl } from "@/lib/media";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { formatClock } from "@/lib/format";
+import { formatDuration } from "@/lib/format";
 import { adminQuery } from "@/lib/admin-queries";
 
 export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, onUpload }: { episodeId: string; title: string; thumbnail: string | null; editing: boolean; busy: boolean; onUpload: (file: File | undefined) => Promise<void> }) {
@@ -71,7 +71,7 @@ export function AdminEpisodeVideo({ episodeId, title, thumbnail, editing, busy, 
     {data?.status === "ready" ? <><div className="overflow-hidden rounded-lg"><VideoPlayer key={data.source?.url} getSource={getSource} poster={mediaUrl(thumbnail)} title={title} onProgress={() => {}} /></div>
     <div className="flex flex-wrap items-center justify-between gap-2 text-xs"><span className="flex items-center gap-1.5 font-semibold text-success"><Check className="size-4" />Saved video · MP4</span>{data.sizeBytes != null ? <span className="tabular-nums text-muted-foreground">{(data.sizeBytes / 1024 / 1024).toFixed(1)} MB</span> : null}</div></> : <p className="text-sm text-muted-foreground">{data?.status === "missing" ? "Saved video file is missing. Replace it to restore playback." : "No video uploaded yet."}</p>}
     {data?.cleanupPending ? <div className="flex flex-wrap items-center gap-2"><p role="status" className="text-xs text-warning">Old video cleanup is pending.</p><Button type="button" variant="outline" size="sm" onClick={() => void refetch()}><RefreshCw />Retry cleanup</Button></div> : null}
-    {durationSeconds != null ? <p className="text-sm tabular-nums text-muted-foreground">Duration · {formatClock(durationSeconds)}</p> : null}
+    {durationSeconds != null ? <p className="text-sm tabular-nums text-muted-foreground">Duration · {formatDuration(durationSeconds)}</p> : null}
     <div className="flex flex-wrap gap-2">
       <input ref={input} type="file" className="sr-only" aria-label="Upload episode video" accept="video/mp4" disabled={busy || deleting} onChange={(e) => { void onUpload(e.target.files?.[0]); e.target.value = ""; }} />
       <Button type="button" title={!editing ? "Select Edit to change the video" : undefined} disabled={!editing || busy || deleting} onClick={() => input.current?.click()}><Upload />{hasVideo ? "Replace video" : "Upload video"}</Button>

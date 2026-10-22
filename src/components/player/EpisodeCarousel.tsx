@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { mediaUrl } from "@/lib/media";
 import { ArtworkImage } from "@/components/catalog/ArtworkImage";
+import { EpisodeCount } from "@/components/catalog/EpisodeCount";
 import { formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -26,7 +27,7 @@ export function EpisodeCarousel({ episodes, currentId, backdrop, to = "/watch/$e
   const scroll = (dir: number) => row.current?.scrollBy({ left: dir * row.current.clientWidth * 0.8, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   return <section aria-label="Episodes" className="min-w-0 border-t border-border pt-7">
     <div className="flex items-center justify-between gap-4">
-      <h2 className="text-2xl font-medium">Episodes <span className="ml-2 text-sm text-muted-foreground">{episodes.length}</span></h2>
+      <h2 className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xl font-medium">Episodes <EpisodeCount count={episodes.length} className="text-sm text-muted-foreground" /></h2>
       <div className="flex gap-2">
         <Button variant="secondary" size="icon" className="site-nav-action" aria-label="Scroll episodes left" title="Previous episodes" disabled={!edges.left} onClick={() => scroll(-1)}><ChevronLeft /></Button>
         <Button variant="secondary" size="icon" className="site-nav-action" aria-label="Scroll episodes right" title="More episodes" disabled={!edges.right} onClick={() => scroll(1)}><ChevronRight /></Button>
