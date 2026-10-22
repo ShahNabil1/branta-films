@@ -54,6 +54,9 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(0);
+  // While dragging the timeline, the bar follows the finger/cursor instead of the video clock.
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [hoverT, setHoverT] = useState<number | null>(null);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [muted, setMuted] = useState(false);
@@ -282,7 +285,11 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     return () => connection?.removeEventListener("change", update);
   }, [levels]);
 
-  const pct = duration ? (time / duration) * 100 : 0;
+  const livePct = duration ? (Math.min(scrub ?? time, duration) / duration) * 100 : 0;
+  const scrubAt = (el: HTMLElement, clientX: number) => {
+    const r = el.getBoundingClientRect();
+    return Math.min(1, Math.max(0, (clientX - r.left) / (r.width || 1))) * duration;
+  };
   const bufPct = duration ? (buffered / duration) * 100 : 0;
 
   return (
@@ -441,7 +448,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           aria-valuemin={0}
           aria-valuemax={Math.round(duration || 0)}
           aria-valuenow={Math.round(scrub ?? time)}
-          aria-valuetext={`${fmt(scrub ?? time)} of ${fmt(duration)}`}
+          aria-valuetext={`${formatClock(scrub ?? time)} of ${formatClock(duration)}`}
           className="pointer-events-auto group/bar relative mx-2 h-6 cursor-pointer touch-none select-none outline-none sm:mx-0"
           onPointerDown={(e) => {
             if (!duration) return;
@@ -488,7 +495,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
               className="pointer-events-none absolute bottom-full mb-2 -translate-x-1/2 rounded-[3px] bg-scrim px-2 py-1 text-xs font-medium tabular-nums text-media-ink backdrop-blur-sm"
               style={{ left: `${Math.min(94, Math.max(6, (((scrub ?? hoverT ?? 0) / (duration || 1)) * 100)))}%` }}
             >
-              {fmt(scrub ?? hoverT ?? 0)}
+              {formatClock(scrub ?? hoverT ?? 0)}
             </span>
           ) : null}
         </div>
@@ -539,7 +546,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
             </div>
           </div>
           <span className="ml-1 min-w-0 truncate whitespace-nowrap text-[11px] tabular-nums text-media-ink/80 sm:ml-3 sm:text-xs">
-            {formatClock(time)} / {formatClock(duration)}
+            {formatClock(scrub ?? time)} / {formatClock(duration)}
           </span>
           <span className="ml-auto hidden min-w-0 truncate pr-3 text-sm text-media-ink/80 md:block">{title}</span>
           <span className="ml-auto md:ml-0" />
