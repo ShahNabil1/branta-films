@@ -122,7 +122,7 @@ function CheckoutPage() {
               <div className="mt-4 rounded-xl bg-secondary/60 p-4 text-sm">
                 <ol className="list-decimal space-y-1 pl-5 text-muted-foreground"><li>Open your {METHODS.find((m) => m.id === method)?.label} app and choose <b className="text-foreground">Send Money</b>.</li><li>Send the exact amount below to the number shown.</li><li>Copy the Transaction ID from the confirmation SMS and enter it below.</li></ol>{numbers.data?.instructions ? <p className="mt-2 text-muted-foreground">{numbers.data.instructions}</p> : null}
                 <div className="mt-3 flex items-center justify-between gap-3"><div><p className="text-xs text-muted-foreground">Send Money to ({METHODS.find((m) => m.id === method)?.label} Personal)</p><p className="font-mono text-xl font-bold tracking-wider">{merchant}</p></div>
-                  <Button type="button" variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(merchant); toast.success("Number copied"); }}><Copy />Copy</Button></div>
+                  <Button type="button" variant="outline" size="sm" aria-live="polite" onClick={copyMerchant} className={cn("gap-1.5 transition-all duration-300 active:scale-95", copied && "border-success/50 bg-success/10 text-success hover:bg-success/15 hover:text-success")}>{copied ? <Check className="size-4 animate-in zoom-in-50 duration-300" /> : <Copy className="size-4" />}<span className={cn(copied && "animate-in fade-in slide-in-from-left-1 duration-300")}>{copied ? "Copied" : "Copy"}</span></Button></div>
                 {q ? <p className="mt-3">Amount: <span className="font-bold tabular-nums">{formatTaka(q.total)}</span></p> : null}
               </div>
             </>}
