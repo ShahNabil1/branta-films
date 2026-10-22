@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_restrictions: {
+        Row: {
+          banned_until: string | null
+          created_at: string
+          reason: string
+          updated_at: string
+          updated_by: string | null
+          user_id: string
+        }
+        Insert: {
+          banned_until?: string | null
+          created_at?: string
+          reason?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id: string
+        }
+        Update: {
+          banned_until?: string | null
+          created_at?: string
+          reason?: string
+          updated_at?: string
+          updated_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_restrictions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       activity_log: {
         Row: {
           action: string
@@ -213,6 +248,36 @@ export type Database = {
         }
         Relationships: []
       }
+      security_blocks: {
+        Row: {
+          blocked_by: string
+          created_at: string
+          id: string
+          kind: string
+          reason: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          blocked_by: string
+          created_at?: string
+          id?: string
+          kind: string
+          reason?: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          blocked_by?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          reason?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       series: {
         Row: {
           backdrop_url: string | null
@@ -332,6 +397,139 @@ export type Database = {
         }
         Relationships: []
       }
+      viewer_sessions: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          current_episode_id: string | null
+          device_hash: string
+          device_name: string
+          first_touch: Json
+          ip: string | null
+          last_seen_at: string
+          last_touch: Json
+          revoked_at: string | null
+          session_id: string
+          state: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+          watched_seconds: number
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          current_episode_id?: string | null
+          device_hash: string
+          device_name: string
+          first_touch?: Json
+          ip?: string | null
+          last_seen_at?: string
+          last_touch?: Json
+          revoked_at?: string | null
+          session_id: string
+          state?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+          watched_seconds?: number
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          current_episode_id?: string | null
+          device_hash?: string
+          device_name?: string
+          first_touch?: Json
+          ip?: string | null
+          last_seen_at?: string
+          last_touch?: Json
+          revoked_at?: string | null
+          session_id?: string
+          state?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+          watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewer_sessions_current_episode_id_fkey"
+            columns: ["current_episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewer_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      viewer_watch_history: {
+        Row: {
+          created_at: string
+          episode_id: string
+          id: string
+          last_watched_at: string
+          session_id: string
+          started_at: string
+          updated_at: string
+          user_id: string
+          watched_seconds: number
+        }
+        Insert: {
+          created_at?: string
+          episode_id: string
+          id?: string
+          last_watched_at?: string
+          session_id: string
+          started_at?: string
+          updated_at?: string
+          user_id: string
+          watched_seconds?: number
+        }
+        Update: {
+          created_at?: string
+          episode_id?: string
+          id?: string
+          last_watched_at?: string
+          session_id?: string
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+          watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "viewer_watch_history_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "viewer_watch_history_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "viewer_sessions"
+            referencedColumns: ["session_id"]
+          },
+          {
+            foreignKeyName: "viewer_watch_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       watch_progress: {
         Row: {
           completed: boolean
@@ -409,6 +607,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      account_access_allowed: { Args: never; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -420,6 +619,22 @@ export type Database = {
       password_is_reused: {
         Args: { _password: string; _user_id: string }
         Returns: boolean
+      }
+      record_viewer_presence: {
+        Args: {
+          p_agent: string
+          p_city: string
+          p_country: string
+          p_device: string
+          p_episode: string
+          p_ip: string
+          p_name: string
+          p_session: string
+          p_state: string
+          p_touch: Json
+          p_user: string
+        }
+        Returns: undefined
       }
       snapshot_current_password: {
         Args: { _user_id: string }
