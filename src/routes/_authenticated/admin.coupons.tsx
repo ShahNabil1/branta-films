@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { toast } from "sonner";
-import { BadgePercent, CalendarDays, Check, Film, Loader2, Package, Pencil, Percent, Plus, RotateCcw, Search, Ticket, Trash2, Users, X, Zap } from "lucide-react";
+import { BadgePercent, CalendarDays, Check, Film, Loader2, Package, Pencil, Percent, Plus, RotateCcw, Search, Ticket, Trash2, Users, X, RefreshCw } from "lucide-react";
 import { PageHeader, Panel } from "@/components/admin/AdminKit";
 import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ function CouponsPage() {
                 const label = r.deleted_at ? "Deleted" : expired ? "Expired" : r.is_active ? "Active" : "Inactive";
                 const cls = r.deleted_at ? "bg-destructive/10 text-destructive ring-destructive/25" : expired ? "bg-primary/10 text-accent-foreground ring-primary/25" : r.is_active ? "bg-success/10 text-success ring-success/25" : "bg-muted text-muted-foreground ring-border";
                 return <tr key={r.id} className="border-t border-border transition-colors hover:bg-accent/40">
-                  <td className="p-3"><div className="flex items-center gap-1.5 font-mono text-sm font-bold tracking-wider">{r.code}{r.auto_apply ? <span title="Applies automatically" className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 font-sans text-[10px] font-bold tracking-normal text-primary"><Zap className="size-3" />Auto</span> : null}</div><div className="text-xs text-muted-foreground">{r.name}</div></td>
+                  <td className="p-3"><div className="flex items-center gap-1.5 font-mono text-sm font-bold tracking-wider">{r.code}{r.auto_apply ? <span title="Applies automatically" className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 font-sans text-[10px] font-bold tracking-normal text-primary"><RefreshCw className="size-3" />Auto</span> : null}</div><div className="text-xs text-muted-foreground">{r.name}</div></td>
                   <td className="p-3">{r.discount_type === "percent" ? `${r.discount_value}%${r.cap_amount ? ` (max ${bdt(r.cap_amount)})` : ""}` : `${bdt(r.discount_value)} off`}{r.min_spend > 0 ? <div className="text-[11px] text-muted-foreground">Min spend {bdt(r.min_spend)}</div> : null}</td>
                   <td className="p-3 text-xs capitalize">{r.applies_to === "all" ? "Everything" : `${r.applies_to} (${r.targets.length})`}</td>
                   <td className="p-3 text-xs tabular-nums">{r.uses_count}{r.max_uses_total ? ` / ${r.max_uses_total}` : ""}{r.max_uses_per_customer ? <div className="text-[11px] text-muted-foreground">{r.max_uses_per_customer}/viewer</div> : null}</td>
