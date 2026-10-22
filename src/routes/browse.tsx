@@ -19,7 +19,7 @@ export const Route = createFileRoute("/browse")({
     genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
-  head: () => {
+  head: ({ loaderData }) => {
     const img = SITE_OG_IMAGE;
     return {
     meta: [
