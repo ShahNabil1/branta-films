@@ -36,7 +36,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
     <section
       aria-roledescription="carousel"
       aria-label="Featured series"
-      className="relative isolate flex min-h-[600px] items-end overflow-hidden h-[min(94svh,900px)]"
+      className="relative isolate flex min-h-[560px] items-end overflow-hidden h-[min(88svh,780px)] md:min-h-[600px] md:h-[min(94svh,900px)]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -49,7 +49,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
           <div
             key={s.id}
             aria-hidden="true"
-            className={cn("absolute inset-0 -z-20 overflow-hidden transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0")}
+            className={cn("absolute inset-x-0 top-0 -z-20 aspect-[4/5] max-h-[72%] overflow-hidden [mask-image:linear-gradient(to_bottom,black_55%,transparent)] md:inset-0 md:aspect-auto md:max-h-none md:[mask-image:none] transition-opacity duration-[1200ms] ease-out", active ? "opacity-100" : "opacity-0")}
           >
             {src ? (
               <ArtworkImage
@@ -67,14 +67,16 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
           </div>
         );
       })}
-      <div className="cinema-mask absolute inset-0 -z-10" />
+      <div className="cinema-mask absolute inset-0 -z-10 hidden md:block" />
+      {/* Portrait screens: image framed in the upper area, text on a deep vertical scrim below. */}
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,transparent_0%,transparent_30%,color-mix(in_oklab,var(--background)_70%,transparent)_52%,var(--background)_72%)] md:hidden" />
       {autoplay ? (
         // Invisible timer shared by every screen size; the visible bars run the same animation in sync.
         <span key={index} aria-hidden="true" className="animate-fill-x pointer-events-none absolute size-px opacity-0" style={fillStyle} onAnimationEnd={next} />
       ) : null}
 
-      <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-36 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
-        <div key={current.id} className="max-w-2xl">
+      <div className="mx-auto grid w-full max-w-[1440px] items-end gap-10 px-[clamp(1.25rem,4vw,3rem)] pb-28 pt-28 md:pb-40 lg:grid-cols-[minmax(0,1fr)_auto]">
+        <div key={current.id} className="max-w-2xl max-md:text-center max-md:[&_ul]:justify-center max-md:[&>div]:justify-center max-md:[&>p]:justify-center max-md:[&_h2]:mx-auto max-md:[&_p]:mx-auto">
           <p className="animate-fade-up text-eyebrow flex items-center gap-2 text-foreground/75">
             <span aria-hidden className="size-1.5 rounded-full bg-primary" />
             AI-generated series · {current.genres.join(" / ")}
@@ -169,7 +171,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
       </div>
 
       {count > 1 ? (
-        <div className="absolute inset-x-0 bottom-24 flex justify-center gap-1 md:bottom-32 lg:hidden">
+        <div className="absolute inset-x-0 bottom-14 flex justify-center gap-1 md:bottom-32 lg:hidden">
           {slides.map((s, i) => (
             <button key={s.id} type="button" aria-label={`Show ${s.title}`} aria-current={i === index} onClick={() => setIndex(i)} className="grid h-8 w-8 place-items-center">
               <span className={cn("block h-1.5 rounded-full transition-all duration-500", i === index ? "w-7 bg-primary" : "w-1.5 bg-foreground/40")} />

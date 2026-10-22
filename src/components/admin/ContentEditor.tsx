@@ -137,6 +137,10 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="Any size MP4, sent in resumable parts and stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
+            {upload.resumable && !upload.active ? <div role="status" className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <p className="min-w-0 break-words"><span className="font-semibold">Interrupted upload found:</span> {upload.resumable.name} — {Math.round(Math.min(100, (upload.resumable.done.length * upload.resumable.partSize / upload.resumable.size) * 100))}% sent. Choose the same file again to continue from there.</p>
+              <Button type="button" variant="outline" size="sm" onClick={upload.discard}>Discard</Button>
+            </div> : null}
             <VideoUploadStatus status={upload.status} onRetry={() => void upload.retry()} />
           </div>}</Panel> : null}
         </div>

@@ -3,6 +3,16 @@ import { useServerFn } from "@tanstack/react-start";
 import { startAdminMultipartVideo, signAdminVideoParts, completeAdminMultipartVideo } from "@/lib/admin.functions";
 import { uploadActive, uploadMetrics, type UploadStatus } from "@/lib/upload-metrics";
 
+type Saved = { fp: string; name: string; size: number; key: string; uploadId: string; partSize: number; done: [number, string][]; savedAt: number };
+const storeKey = (episodeId: string) => `branta.upload.${episodeId}`;
+const fingerprint = (f: File) => `${f.name}|${f.size}|${f.lastModified}`;
+/** R2 keeps incomplete multipart uploads ~7 days; older sessions are discarded. */
+const MAX_AGE = 6 * 24 * 3600 * 1000;
+export function readSavedUpload(episodeId: string): Saved | null {
+  try { const v = JSON.parse(localStorage.getItem(storeKey(episodeId)) ?? "null") as Saved | null;
+    if (!v || Date.now() - v.savedAt > MAX_AGE) { localStorage.removeItem(storeKey(episodeId)); return null; } return v; } catch { return null; }
+}
+
 export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) => Promise<void>) {
   const [status, setStatus] = useState<UploadStatus | null>(null);
   const fileRef = useRef<File | null>(null);
@@ -15,6 +25,11 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
   const session = useRef<{ key: string; uploadId: string; partSize: number; done: Map<number, string> } | null>(null);
   const xhrs = useRef(new Set<XMLHttpRequest>());
   const active = uploadActive(status?.phase);
+  const [resumable, setResumable] = useState<Saved | null>(null);
+  useEffect(() => { setResumable(readSavedUpload(episodeId)); }, [episodeId]);
+  const persist = (f: File) => { const s = session.current; if (!s) return;
+    try { localStorage.setItem(storeKey(episodeId), JSON.stringify({ fp: fingerprint(f), name: f.name, size: f.size, key: s.key, uploadId: s.uploadId, partSize: s.partSize, done: [...s.done], savedAt: Date.now() } satisfies Saved)); } catch { /* storage full */ } };
+  const forget = () => { try { localStorage.removeItem(storeKey(episodeId)); } catch { /* ignore */ } setResumable(null); };
   useEffect(() => () => { xhrs.current.forEach(x => x.abort()); }, []);
   useEffect(() => {
     if (!active) return;
@@ -33,6 +48,9 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
     if (file) {
       if (file.type !== "video/mp4" || file.size > 200 * 1024 ** 3 || !file.size) throw new Error("Choose an MP4 video under 200 GB.");
       fileRef.current = file; completedKey.current = null; session.current = null;
+      const saved = readSavedUpload(episodeId);
+      if (saved && saved.fp === fingerprint(file)) session.current = { key: saved.key, uploadId: saved.uploadId, partSize: saved.partSize, done: new Map(saved.done) };
+      else if (saved) forget();
     }
     const selected = fileRef.current;
     if (!selected) return;
@@ -50,7 +68,9 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
         const partSize = Math.max(16 * 1024 ** 2, Math.ceil(selected.size / 9000));
         const created = await startUpload({ data: { episodeId } });
         session.current = { ...created, partSize, done: new Map() };
+        persist(selected);
       }
+      setResumable(null);
       const s = session.current;
       const count = Math.ceil(selected.size / s.partSize);
       const sizeOf = (n: number) => Math.min(s.partSize, selected.size - (n - 1) * s.partSize);
@@ -76,8 +96,9 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
           try {
             const { urls } = await signParts({ data: { episodeId, key: s.key, uploadId: s.uploadId, parts: [n] } });
             const etag = await sendPart(n, urls[0]!.url);
-            s.done.set(n, etag); recompute(); return;
+            s.done.set(n, etag); recompute(); persist(selected); return;
           } catch (err) {
+            if (/NoSuchUpload|not found/i.test(String((err as Error).message))) { forget(); session.current = null; throw new Error("The saved upload expired on R2. Choose the file again to start fresh."); }
             if ((err as { aborted?: boolean }).aborted || attempt >= 6 || String((err as Error).message).includes("ETag")) throw err;
             if (!navigator.onLine) await new Promise<void>(r => window.addEventListener("online", () => r(), { once: true }));
             await new Promise(r => setTimeout(r, Math.min(30_000, 1000 * 2 ** attempt)));
@@ -89,7 +110,7 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
       await Promise.all(Array.from({ length: Math.min(4, pending.length) }, worker));
       loaded = selected.size; update("verifying");
       const result = await complete({ data: { episodeId, key: s.key, uploadId: s.uploadId, parts: [...s.done].map(([partNumber, etag]) => ({ partNumber, etag })) } });
-      update("complete"); fileRef.current = null; completedKey.current = null; session.current = null;
+      update("complete"); forget(); fileRef.current = null; completedKey.current = null; session.current = null;
       try { await onSaved(result.cleanupPending); } catch { /* The file is saved even if the preview refresh fails. */ }
     } catch (error) {
       xhrs.current.forEach(x => x.abort());
@@ -97,5 +118,5 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
     }
     finally { window.clearInterval(ticker); running.current = false; }
   }
-  return { status, active, start, retry: () => start() };
+  return { status, active, start, retry: () => start(), resumable, discard: forget };
 }
