@@ -1,0 +1,4 @@
+ALTER TABLE public.series ADD COLUMN meta_title text, ADD COLUMN meta_description text, ADD COLUMN og_title text, ADD COLUMN og_description text, ADD COLUMN og_image text;
+ALTER TABLE public.episodes ADD COLUMN meta_title text, ADD COLUMN meta_description text, ADD COLUMN og_title text, ADD COLUMN og_description text, ADD COLUMN og_image text;
+COMMENT ON COLUMN public.series.og_image IS 'Optional images/series/ R2 key for public share artwork; null uses series artwork.';
+COMMENT ON COLUMN public.episodes.og_image IS 'Optional images/episodes/ R2 key for public share artwork; null uses episode thumbnail.';

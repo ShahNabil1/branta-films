@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — AI-generated identity and content SEO
+- [ ] Update site identity, titles, social metadata and structured data
+- [ ] Persist validated optional series/episode metadata overrides and add admin controls
+- [ ] Apply automatic defaults and overrides to series/episode pages; keep private playback protected
+- [ ] Verify metadata rules and public pages; authenticated editing unavailable on external Supabase
+
 ## Current request — Payments, coupons, popups (3 phases)
 - [x] Phase 1: per-episode prices, cart, purchase popup on locked episodes, checkout (bKash/Nagad/Rocket + TrxID), viewer Orders page, admin Payments approve/reject + receiving numbers
 - [x] Phase 2: Panjabi-style coupon builder; series discounts migrated to auto-apply coupons; per-item auto discount, single "applied" label, server-side validation and limits

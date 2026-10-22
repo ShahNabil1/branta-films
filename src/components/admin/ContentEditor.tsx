@@ -22,6 +22,7 @@ import { AdminEpisodeVideo } from "./AdminEpisodeVideo";
 import { useVideoUpload } from "@/hooks/use-video-upload";
 import { VideoUploadStatus } from "./VideoUploadStatus";
 import { BrandedDialog } from "@/components/ui/branded-dialog";
+import { ContentSeoFields } from "./ContentSeoFields";
 
 export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episodes"; id: string; seriesId?: string }) {
   const { data } = useSuspenseQuery(adminQuery);
@@ -40,6 +41,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
     parent: episode?.series_id ?? seriesId ?? "", number: episode?.episode_number ?? (Math.max(0, ...data.episodes.filter((e) => e.series_id === seriesId).map((e) => e.episode_number)) + 1),
     free: episode?.is_free ?? false, poster: series?.poster_url ?? null as string | null, backdrop: series?.backdrop_url ?? null as string | null,
     thumbnail: episode?.thumbnail_url ?? null as string | null,
+    metaTitle: existing?.meta_title ?? "", metaDescription: existing?.meta_description ?? "", ogTitle: existing?.og_title ?? "", ogDescription: existing?.og_description ?? "", ogImage: existing?.og_image ?? null as string | null,
   };
   const [values, setValues] = useState(initial);
   const [saving, setBusy] = useState(false);
@@ -65,17 +67,21 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
   async function save(e: React.FormEvent) {
     e.preventDefault(); setBusy(true);
     try {
+      const seo = { meta_title: values.metaTitle, meta_description: values.metaDescription, og_title: values.ogTitle, og_description: values.ogDescription, og_image: values.ogImage };
       const row = kind === "series" ? await saveAdminSeries({ data: {
+        ...seo,
         ...(id === "new" ? {} : { id }), title: values.title, slug: values.slug, tagline: values.tagline, description_html: values.html,
         genres: values.genres, release_year: values.year ? Number(values.year) : null,
         maturity_rating: values.maturity, price_bdt: values.price, sort_order: values.order, is_featured: values.featured, is_published: values.published,
         poster_url: values.poster, backdrop_url: values.backdrop,
       } }) : await saveAdminEpisode({ data: {
+        ...seo,
         ...(id === "new" ? {} : { id }), series_id: values.parent, title: values.title, episode_number: values.number,
         synopsis_html: values.html, is_free: values.free, price_bdt: values.free || values.epPrice.trim() === "" ? null : Number(values.epPrice), is_published: values.published, thumbnail_url: values.thumbnail,
       } });
       await qc.invalidateQueries({ queryKey: adminQuery.queryKey });
       await qc.invalidateQueries({ queryKey: ["catalog"] });
+      await Promise.all([qc.invalidateQueries({ queryKey: ["series"] }), qc.invalidateQueries({ queryKey: ["episode-details"] })]);
       toast.success("Content saved");
       setEditing(false);
       if (kind === "series") await navigate({ to: "/admin/series/$id", params: { id: row.id }, replace: true });
@@ -127,6 +133,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
             </>}
           </div></Panel>
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
+          <ContentSeoFields values={values} onChange={seo => setValues(v => ({ ...v, ...seo }))} content={{ title: values.title, description_html: values.html, tagline: values.tagline, poster_url: values.poster, backdrop_url: values.backdrop, thumbnail_url: values.thumbnail }} episode={kind === "episodes" ? { seriesTitle: parentSeries?.title ?? "", number: values.number, fallbackImage: parentSeries?.backdrop_url ?? parentSeries?.poster_url } : undefined} onImage={file => pickImage(file, "ogImage")} />
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
