@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAccountAccess } from "./security-middleware";
 
 const RP_NAME = "Branta Films";
 
@@ -12,7 +12,7 @@ async function rpFromRequest() {
 }
 
 export const passkeyRegisterOptions = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .handler(async ({ context }) => {
     const { generateRegistrationOptions } = await import("@simplewebauthn/server");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -48,7 +48,7 @@ export const passkeyRegisterOptions = createServerFn({ method: "POST" })
   });
 
 export const passkeyRegisterVerify = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -136,7 +136,7 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
       .gt("expires_at", new Date().toISOString())
       .select("challenge")
       .maybeSingle();
-    if (!challenge) fail();
+    if (!challenge) return fail();
 
     const credentialId = typeof data.response["id"] === "string" ? (data.response["id"] as string) : "";
     const { data: cred } = await supabaseAdmin
@@ -144,18 +144,18 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
       .select("id, user_id, credential_id, public_key, counter, transports")
       .eq("credential_id", credentialId)
       .maybeSingle();
-    if (!cred) fail();
+    if (!cred) return fail();
 
     const verification = await verifyAuthenticationResponse({
       response: data.response as never,
-      expectedChallenge: challenge!.challenge,
+      expectedChallenge: challenge.challenge,
       expectedOrigin: origin,
       expectedRPID: rpID,
       credential: {
-        id: cred!.credential_id,
-        publicKey: isoBase64URL.toBuffer(cred!.public_key),
-        counter: Number(cred!.counter),
-        transports: cred!.transports as never,
+        id: cred.credential_id,
+        publicKey: isoBase64URL.toBuffer(cred.public_key),
+        counter: Number(cred.counter),
+        transports: cred.transports as never,
       },
       requireUserVerification: false,
     });
@@ -164,15 +164,17 @@ export const passkeyLoginVerify = createServerFn({ method: "POST" })
     await supabaseAdmin
       .from("passkey_credentials")
       .update({ counter: verification.authenticationInfo.newCounter, last_used_at: new Date().toISOString() })
-      .eq("id", cred!.id);
+      .eq("id", cred.id);
 
-    const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(cred!.user_id);
+    const { data: userRes } = await supabaseAdmin.auth.admin.getUserById(cred.user_id);
+    const { ensureAccountAccess } = await import("./security.server");
+    await ensureAccountAccess(cred.user_id, {});
     const email = userRes?.user?.email;
-    if (!email) fail();
-    const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email: email! });
-    if (error || !link?.properties?.hashed_token) fail();
+    if (!email) return fail();
+    const { data: link, error } = await supabaseAdmin.auth.admin.generateLink({ type: "magiclink", email: email });
+    if (error || !link?.properties?.hashed_token) return fail();
 
     const { logActivityAs } = await import("./request-meta.server");
-    await logActivityAs(cred!.user_id, "sign_in", { method: "passkey" });
-    return { tokenHash: link!.properties!.hashed_token as string };
+    await logActivityAs(cred.user_id, "sign_in", { method: "passkey" });
+    return { tokenHash: link.properties.hashed_token as string };
   });

@@ -16,7 +16,7 @@ export const recordPresence = createServerFn({ method: 'POST' }).middleware([req
       if (!e.is_free && !staff && !unlock) throw new Error('Unlock this series first.');
     }
     const meta = trustedRequestMeta();
-    const { error } = await sb.rpc('record_viewer_presence', { p_user: context.userId,p_session:sid,p_device:data.device,p_name:data.name,p_ip:meta.ip ?? '',p_country:meta.country ?? '',p_city:meta.city ?? '',p_agent:meta.user_agent ?? '',p_touch:data.touch,p_state:data.state,p_episode:data.episode });
+    const { error } = await sb.rpc('record_viewer_presence', { p_user: context.userId,p_session:sid,p_device:data.device,p_name:data.name,p_ip:meta.ip ?? '',p_country:meta.country ?? '',p_city:meta.city ?? '',p_agent:meta.user_agent ?? '',p_touch:data.touch,p_state:data.state,...(data.episode ? { p_episode: data.episode } : {}) });
     if (error) throw new Error('Could not update your session.');
     return { ok: true };
   });
