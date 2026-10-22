@@ -38,7 +38,7 @@ const request = {
   } },
 };
 // The mock runs the real function handler and its admin middleware with server context.
-const readMedia = getAdminEpisodeMedia as unknown as (input: typeof request) => Promise<Record<string, unknown>>;
+const readMedia = getAdminEpisodeMedia as unknown as (input: typeof request) => ReturnType<typeof getAdminEpisodeMedia>;
 
 describe("Saved episode admin media", () => {
   beforeEach(() => {
