@@ -1,3 +1,4 @@
+import type React from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -18,7 +19,11 @@ type CartState = {
 };
 
 const KEY = "branta_cart_v1";
-const Ctx = createContext<CartState | null>(null);
+// Keep one context instance across hot reloads so provider and consumers always match.
+const g = globalThis as unknown as { __brantaCartCtx?: React.Context<CartState | null> };
+const Ctx = (g.__brantaCartCtx ??= createContext<CartState | null>(null));
+// Fallback for trees rendered outside the provider (root error/not-found screens).
+const EMPTY: CartState = { items: [], quote: quoteCart([], [], null), open: false, setOpen: () => {}, add: () => {}, remove: () => {}, clear: () => {}, has: () => false };
 export const offersQuery = { queryKey: ["offers"], queryFn: () => listOffers(), staleTime: 60_000 } as const;
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -58,6 +63,5 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
 export function useCart() {
   const c = useContext(Ctx);
-  if (!c) throw new Error("useCart must be inside CartProvider");
-  return c;
+  return c ?? EMPTY;
 }
