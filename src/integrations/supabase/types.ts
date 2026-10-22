@@ -216,6 +216,11 @@ export type Database = {
           id: string
           is_free: boolean
           is_published: boolean
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
           price_bdt: number | null
           series_id: string
           synopsis_html: string
@@ -230,6 +235,11 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           price_bdt?: number | null
           series_id: string
           synopsis_html?: string
@@ -244,6 +254,11 @@ export type Database = {
           id?: string
           is_free?: boolean
           is_published?: boolean
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           price_bdt?: number | null
           series_id?: string
           synopsis_html?: string
@@ -580,6 +595,11 @@ export type Database = {
           is_featured: boolean
           is_published: boolean
           maturity_rating: string
+          meta_description: string | null
+          meta_title: string | null
+          og_description: string | null
+          og_image: string | null
+          og_title: string | null
           poster_url: string | null
           price_bdt: number
           release_year: number | null
@@ -598,6 +618,11 @@ export type Database = {
           is_featured?: boolean
           is_published?: boolean
           maturity_rating?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           poster_url?: string | null
           price_bdt?: number
           release_year?: number | null
@@ -616,6 +641,11 @@ export type Database = {
           is_featured?: boolean
           is_published?: boolean
           maturity_rating?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_description?: string | null
+          og_image?: string | null
+          og_title?: string | null
           poster_url?: string | null
           price_bdt?: number
           release_year?: number | null
