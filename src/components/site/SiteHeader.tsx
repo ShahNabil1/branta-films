@@ -11,8 +11,8 @@ import { CartButton } from "@/components/commerce/CartSheet";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const NAV = [
-  { to: "/", label: "Home" },
-  { to: "/browse", label: "Browse" },
+  { to: "/", label: "Home", tone: "nav-home" },
+  { to: "/browse", label: "Browse", tone: "nav-browse" },
 ] as const;
 
 /**
@@ -47,7 +47,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
           <ul className="flex items-center gap-1 md:gap-3">
             {NAV.map((item) => (
               <li key={item.to}>
-                <Button asChild variant="ghost" className="header-nav group h-11 rounded-sm px-3 md:px-4">
+                <Button asChild variant="ghost" className={cn("header-nav group h-11 rounded-sm px-3 md:px-4", item.tone)}>
                 <Link to={item.to} activeOptions={{ exact: item.to === "/" }}>
                   {item.label}
                   <span
@@ -63,7 +63,7 @@ export function SiteHeader({ overlay = false }: { overlay?: boolean }) {
         <div className="ml-auto flex shrink-0 items-center justify-end gap-1 sm:ml-0 sm:gap-2">
           <Tooltip>
           <TooltipTrigger asChild>
-          <Button asChild variant="ghost" size="icon" className="header-utility size-11">
+          <Button asChild variant="ghost" size="icon" className="header-utility nav-search size-11">
           <Link
             to="/browse"
             aria-label="Search series"
