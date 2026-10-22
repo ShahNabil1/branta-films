@@ -1,11 +1,11 @@
 # Branta Films roadmap
 
 ## Current request — Audience and staff management
-- [ ] Replace Users/Staff lists with presence, viewing, free/paid and avatar summaries
-- [ ] Add account detail pages, security/session controls, watch history and series access
-- [ ] Track first/last source, devices, trusted IP and available location; enforce identifier blocks
-- [ ] Add audited account administration and safe view-as account preview
-- [ ] Validate permissions, presence rules and public/administration layouts
+- [x] Replace Users/Staff lists with presence, viewing, free/paid and avatar summaries
+- [x] Add account detail pages, security/session controls, watch history and series access
+- [x] Track first/last source, devices, trusted IP and available location; enforce identifier blocks
+- [x] Add audited account administration and safe read-only view-as account preview
+- [ ] Validate authenticated administration controls and layouts — blocked: external Supabase supplies no managed test session. Rule tests and signed-out access checks pass.
 
 ## Current request — Panjabi Shop BD admin design
 - [x] Adapt reference sidebar and top bar for admin only
@@ -47,7 +47,7 @@
 - [ ] Direct-to-R2 multipart video upload with live progress
 - [x] Poster/backdrop upload
 - [x] Staff/Manager section: invite and role management (no self sign-up) — invite email redirects to /set-password
-- [ ] Users + staff lists, activity history, one-click impersonation with amber exit banner
+- [x] Users + staff lists, activity history, read-only account preview with amber exit banner
 
 ## Phase 3 — Payments
 - [ ] bKash/Nagad manual payment (TrxID + phone, unique TrxID), admin approve → unlock

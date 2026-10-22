@@ -38,7 +38,7 @@ export function PersonDetail({id,staff=false,page=0,onPage}:{id:string;staff?:bo
   const confirm=(title:string,description:string,action:()=>Promise<unknown>,destructive=false)=>setConfirmation({title,description,action,destructive});
   const selection=(x:Identifier)=>selected.some(s=>s.kind===x.kind&&s.value===x.value);
   return <>
-    <PageHeader title={data.profile.full_name||'Account details'} back={{to:staff?'/admin/staff':'/admin/users',label:staff?'Staff':'Users'}} action={!data.roles.length?<Button disabled={busy} onClick={()=>void run(async()=>{await administer({data:{id,action:'preview'}});await router.navigate({to:'/admin/view-as/$id',params:{id}});},'Read-only account preview opened')}><Eye/>View as user</Button>:undefined}/>
+    <PageHeader title={data.profile.full_name||'Account details'} back={{to:staff?'/admin/staff':'/admin/users',label:staff?'Staff':'Users'}} action={!data.roles.length?<Button disabled={busy} onClick={()=>void router.navigate({to:'/admin/view-as/$id',params:{id}})}><Eye/>View as user</Button>:undefined}/>
     <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
       <div className="min-w-0 space-y-5">
         <Panel title="Account" action={<Button size="sm" variant="outline" disabled={editing} onClick={()=>{setName(data.profile.full_name);setRole(initialRole);setEditing(true);}}><Pencil/>Edit</Button>}>

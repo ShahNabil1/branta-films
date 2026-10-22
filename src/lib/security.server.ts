@@ -18,7 +18,7 @@ export async function ensureAccountAccess(userId: string, claims: Record<string,
     sessionId ? sb.from('viewer_sessions').select('revoked_at,device_hash').eq('session_id', sessionId).maybeSingle() : Promise.resolve({ data: null, error: null }),
   ]);
   if (restriction.error || session.error) throw new Error('Account security check unavailable. Please try again.');
-  if (isRestricted(restriction.data?.banned_until) || session.data?.revoked_at) throw new Error('This account or session has been restricted. Contact support.');
+  if (isRestricted(account.user.banned_until) || isRestricted(restriction.data?.banned_until) || session.data?.revoked_at) throw new Error('This account or session has been restricted. Contact support.');
   const observed = trustedRequestMeta();
   const email = account.user.email?.toLowerCase();
   const fingerprint = device ?? session.data?.device_hash;
