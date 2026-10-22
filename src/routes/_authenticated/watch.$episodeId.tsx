@@ -76,7 +76,7 @@ function WatchPage() {
       if (cancelled) return;
       firstRef.current = res;
       setInitial(res);
-    });
+    }).catch(() => { if (!cancelled) setInitial({ status: "unavailable" }); });
     return () => {
       cancelled = true;
     };
@@ -133,6 +133,7 @@ function WatchPage() {
                 poster={mediaUrl(data.series.backdrop_url)}
                 title={`${data.series.title} · E${data.episode.episode_number} ${data.episode.title}`}
                 onProgress={onProgress}
+                onPlayingChange={playing => window.dispatchEvent(new CustomEvent('branta-playback', { detail: { episode: episodeId, playing } }))}
                 onEnded={() => next && void navigate({ to: "/watch/$episodeId", params: { episodeId: next.id } })}
               />
             ) : initial.status === "locked" ? (

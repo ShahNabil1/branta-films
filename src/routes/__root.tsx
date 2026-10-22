@@ -17,6 +17,7 @@ import { DevToolsShield } from "@/components/security/DevToolsShield";
 import { Toaster } from "@/components/ui/sonner";
 import { buttonVariants } from "@/components/ui/button";
 import { Eyebrow } from "@/components/layout/primitives";
+import { ViewerPresence } from "@/components/security/ViewerPresence";
 
 function NotFoundComponent() {
   return (
@@ -111,6 +112,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <ViewerPresence />
         <DevToolsShield>
           <Outlet />
         </DevToolsShield>

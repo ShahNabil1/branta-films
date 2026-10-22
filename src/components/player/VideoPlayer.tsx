@@ -12,13 +12,14 @@ type Props = {
   title: string;
   onProgress: (position: number, duration: number, completed: boolean) => void;
   onEnded?: () => void;
+  onPlayingChange?: (playing: boolean) => void;
 };
 
 /**
  * Branded HTML5 player. Never stores the video address in the page —
  * the signed link is attached to the element only and refreshed before expiry.
  */
-export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress, onEnded }: Props) {
+export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress, onEnded, onPlayingChange }: Props) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const expiresRef = useRef(0);
@@ -61,6 +62,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
     void load(startAt, false);
     const v = videoRef.current;
     return () => {
+      onPlayingChange?.(false);
       if (v) {
         if (v.currentTime > 0) onProgress(v.currentTime, v.duration || 0, isCompleted(v.currentTime, v.duration || 0));
         v.removeAttribute("src");
@@ -167,14 +169,16 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           setLoading(false);
           setError(null);
         }}
-        onWaiting={() => setLoading(true)}
-        onCanPlay={() => setLoading(false)}
+        onWaiting={() => { setLoading(true); onPlayingChange?.(false); }}
+        onCanPlay={() => { setLoading(false); }}
+        onPlaying={() => onPlayingChange?.(true)}
         onPlay={() => {
           setPlaying(true);
           poke();
         }}
         onPause={(e) => {
           setPlaying(false);
+          onPlayingChange?.(false);
           setControls(true);
           const v = e.currentTarget;
           onProgress(v.currentTime, v.duration || 0, isCompleted(v.currentTime, v.duration || 0));
@@ -189,11 +193,13 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
           }
         }}
         onEnded={(e) => {
+          onPlayingChange?.(false);
           const v = e.currentTarget;
           onProgress(v.duration || v.currentTime, v.duration || 0, true);
           onEnded?.();
         }}
         onError={() => {
+          onPlayingChange?.(false);
           // An expired link fails here: fetch a fresh one and resume.
           const v = videoRef.current;
           if (v && Date.now() > expiresRef.current - 60_000) void load(v.currentTime || resumeRef.current, true);

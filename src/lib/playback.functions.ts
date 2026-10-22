@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAccountAccess } from "./security-middleware";
 import { decidePlayback, PLAYBACK_LINK_TTL_SECONDS, type PlaybackDecision } from "./access";
 
 export type PlaybackResult =
@@ -12,7 +12,7 @@ export type PlaybackResult =
  * access in the database. The storage key itself never leaves the server.
  */
 export const getPlaybackSource = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAccountAccess])
   .inputValidator((input: unknown) => z.object({ episodeId: z.string().uuid() }).parse(input))
   .handler(async ({ data, context }): Promise<PlaybackResult> => {
     const { supabase, userId } = context;
