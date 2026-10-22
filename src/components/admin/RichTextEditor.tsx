@@ -25,13 +25,15 @@ export function RichTextEditor({ value, onChange }: { value: string; onChange: (
     { label: "Undo", icon: Undo, run: () => editor.chain().focus().undo().run() },
     { label: "Redo", icon: Redo, run: () => editor.chain().focus().redo().run() },
   ];
-  return <div className="overflow-hidden rounded-md border border-input bg-background">
-    <div className="flex flex-wrap items-center gap-1 border-b border-border p-2">
-      {actions.map((action) => <Button key={action.label} type="button" size="icon" variant="ghost" title={action.label} aria-label={action.label} onClick={action.run}><action.icon className="size-4" /></Button>)}
-      <select aria-label="Font size" className="rounded-md border border-input bg-background p-2 text-small" onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()} defaultValue="16px">
+  const isOn = (label: string) => ({ Bold: editor.isActive("bold"), Italic: editor.isActive("italic"), Underline: editor.isActive("underline"), "Bullet list": editor.isActive("bulletList"), "Numbered list": editor.isActive("orderedList"), "Align left": editor.isActive({ textAlign: "left" }), "Align center": editor.isActive({ textAlign: "center" }), "Align right": editor.isActive({ textAlign: "right" }) } as Record<string, boolean>)[label] ?? false;
+  return <div className="overflow-hidden rounded-xl border border-border bg-background/70 transition-all duration-200 focus-within:border-primary/60 focus-within:ring-4 focus-within:ring-primary/15">
+    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/60 p-1.5">
+      {actions.map((action) => <Button key={action.label} type="button" size="icon" variant="ghost" title={action.label} aria-label={action.label} aria-pressed={isOn(action.label)} onClick={action.run} className={`size-8 rounded-lg transition-all duration-200 hover:-translate-y-0.5 hover:bg-card hover:text-primary ${isOn(action.label) ? "bg-primary/10 text-primary" : "text-muted-foreground"}`}><action.icon className="size-4" /></Button>)}
+      <span className="mx-1 h-5 w-px bg-border" />
+      <select aria-label="Font size" className="h-8 rounded-lg border border-border bg-card px-2 text-xs font-semibold" onChange={(e) => editor.chain().focus().setFontSize(e.target.value).run()} defaultValue="16px">
         {["14px", "16px", "20px", "24px", "32px"].map((s) => <option key={s}>{s}</option>)}
       </select>
-      <label title="Text color" className="flex items-center gap-2 px-2 text-small">Color<input type="color" aria-label="Text color" className="size-7" onChange={(e) => editor.chain().focus().setColor(e.target.value).run()} /></label>
+      <label title="Text color" className="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-2 text-xs font-semibold">Colour<input type="color" aria-label="Text color" className="size-5 cursor-pointer rounded border-0 bg-transparent p-0" onChange={(e) => editor.chain().focus().setColor(e.target.value).run()} /></label>
     </div>
     <EditorContent editor={editor} />
   </div>;
