@@ -29,7 +29,7 @@ Subdirectories have their own `AGENTS.md`; read it before changing files there.
 - Catalogue uses MediaRow/SeriesCard/HeroCarousel; watch uses EpisodeCarousel for shared styling and touch navigation.
 - Video changes queue old keys privately; admin operations drain the queue, retaining failed R2 deletes for retry. Why: no orphaned videos.
 - Avatars use `profilePicture`, saved images first; protected people reads resolve Auth pictures for private-safe consistency.
-- Metadata uses tested defaults; durations use Mediabunny private MP4 reads, never form input. Why: clocks match files.
+- Content SEO uses content-seo defaults plus nullable admin overrides; public episode details never return playback media. Why: shareable SSR metadata without weakening viewing access. Durations use Mediabunny private MP4 reads, never form input.
 - Player menus/volume stay inside the player, never dialogs; dynamic HLS. Why: works in fullscreen.
 - Design system mirrors the brantatech-com project: typography scale/motion are `@utility` classes in `src/styles.css`, `:root` is the dark palette and the `.light` class re-themes a subtree to the warm light palette; page primitives (`SiteContainer`, `Eyebrow`) live in `src/components/layout/primitives.tsx`; shadcn `Button` is the pill button. Why: one place to keep every page on the reference design.
 - Backend is the owner's own Supabase project (not Lovable Cloud); OAuth (Google) uses `supabase.auth.signInWithOAuth` directly, never the Lovable broker, and providers/redirect URLs are configured in the Supabase dashboard. Why: the Lovable broker only serves Cloud projects.

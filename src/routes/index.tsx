@@ -1,4 +1,5 @@
 import { absoluteMediaUrl } from "@/lib/media";
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_URL, jsonLd } from "@/lib/content-seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -19,13 +20,16 @@ export const Route = createFileRoute("/")({
   head: ({ loaderData }) => ({
     meta: [
       ...shareImage(loaderData),
-      { title: "Branta Films — Original series by Branta Tech" },
-      { name: "description", content: "Stream premium original series from Branta Tech. Start free with episode one, unlock full seasons with bKash or Nagad." },
-      { property: "og:title", content: "Branta Films — Original series by Branta Tech" },
-      { property: "og:description", content: "Stream premium original series. Start free with episode one." },
+      { title: SITE_TITLE },
+      { name: "description", content: SITE_DESCRIPTION },
+      { property: "og:title", content: SITE_TITLE },
+      { property: "og:description", content: SITE_DESCRIPTION },
+      { property: "og:url", content: SITE_URL + "/" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: SITE_URL + "/" }],
+    scripts: [jsonLd({ "@context": "https://schema.org", "@type": "WebSite", "@id": SITE_URL + "/#website", name: "Branta Films", url: SITE_URL + "/", description: SITE_DESCRIPTION, publisher: { "@type": "Organization", name: "Branta Tech", url: "https://brantatech.com" }, inLanguage: "en" })],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: HomePage,
@@ -54,7 +58,7 @@ function HomePage() {
 
   return (
     <SiteShell overlayHeader>
-      <h1 className="sr-only">Stream Branta Films original series — start free with episode one</h1>
+      <h1 className="sr-only">Branta Films — AI-generated web series OTT</h1>
       <HeroCarousel slides={hero} />
 
       <div className="relative z-10 -mt-20 mx-auto max-w-[1440px] space-y-14 px-[clamp(1.25rem,4vw,3rem)] pb-20 md:-mt-28">
@@ -141,9 +145,9 @@ function PromoBanner({ backdrop }: { backdrop: string | null }) {
       <div className="hairline-glow absolute inset-x-0 top-0 h-px" aria-hidden="true" />
       <div className="flex flex-col items-start gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-12">
         <div className="max-w-xl">
-          <Eyebrow>One payment, whole season</Eyebrow>
-          <h2 className="mt-5 text-h2">Unlock every episode of a series — pay once with bKash or Nagad.</h2>
-          <p className="text-body mt-4 text-muted-foreground">No subscription. Episode one is always free, so you can try before you unlock.</p>
+          <Eyebrow>AI-generated storytelling</Eyebrow>
+          <h2 className="mt-5 text-h2">Bangladesh’s first complete AI-generated web series, and its OTT home.</h2>
+          <p className="text-body mt-4 text-muted-foreground">Discover Branta Tech’s curated AI-generated stories. Watch available free episodes or unlock a series and individual episodes with bKash or Nagad.</p>
         </div>
         <Button asChild size="xl" className="discover-action discover-action-solid shrink-0">
           <Link to="/browse">

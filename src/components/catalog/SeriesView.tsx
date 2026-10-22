@@ -74,7 +74,7 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
           <div className="max-w-3xl">
             <p className="animate-fade-up text-eyebrow flex items-center gap-2 text-foreground/75">
               <span aria-hidden className="size-1.5 rounded-full bg-primary" />
-              Branta Original · {series.genres.join(" / ")}
+              AI-generated series · {series.genres.join(" / ")}
             </p>
             <h1 className={cn("animate-fade-up text-cinema-shadow mt-6 [animation-delay:60ms]", inDashboard ? "text-h1 font-semibold" : "text-hero")}>
               {series.title}
@@ -163,6 +163,7 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
                       <RichText html={ep.synopsis_html} className="mt-1.5 line-clamp-2 text-sm text-muted-foreground sm:line-clamp-3" />
                     </div>
                   </Link>
+                  {!inDashboard ? <Link to="/episode/$episodeId" params={{ episodeId: ep.id }} className="mb-3 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline">Episode details</Link> : null}
                 </li>
               );
             })}

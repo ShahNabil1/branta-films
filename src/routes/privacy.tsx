@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/content/LegalPage";
 
-const description = "How Branta Films, a Branta Tech service, collects, uses and protects your information.";
+const description = "How Branta Films, Branta Tech’s AI-generated web-series OTT service, collects, uses and protects your information.";
 
 export const Route = createFileRoute("/privacy")({
   staticData: { sitemap: true },
@@ -13,7 +13,9 @@ export const Route = createFileRoute("/privacy")({
       { property: "og:description", content: description },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://films.brantatech.com/privacy" },
     ],
+    links: [{ rel: "canonical", href: "https://films.brantatech.com/privacy" }],
   }),
   component: () => (
     <LegalPage

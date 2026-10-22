@@ -34,7 +34,7 @@ export const Route = createFileRoute("/auth")({
           "Sign in or create your Branta Films account with Google, password or passkey.",
       },
       { property: "og:title", content: "Sign in — Branta Films" },
-      { property: "og:description", content: "Sign in to keep watching Branta Films originals." },
+      { property: "og:description", content: "Sign in to watch Branta Films’ AI-generated web series." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

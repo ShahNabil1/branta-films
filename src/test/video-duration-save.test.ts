@@ -39,4 +39,8 @@ describe("Persisted video duration rules", () => {
     expect(values).toMatchObject({ title: "The Tip" });
     expect(values).not.toHaveProperty("duration_seconds");
   });
+  it("persists optional episode search and sharing overrides", async () => {
+    await call(saveAdminEpisode, { id: episodeId, series_id: "11111111-1111-4111-8111-000000000001", title: "The Tip", episode_number: 1, synopsis_html: "", is_free: true, is_published: true, thumbnail_url: null, meta_title: "Custom title", meta_description: "Custom description", og_title: "Share title", og_description: "Share description", og_image: `images/episodes/${episodeId}/ogImage.webp` });
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({ meta_title: "Custom title", meta_description: "Custom description", og_title: "Share title", og_description: "Share description", og_image: `images/episodes/${episodeId}/ogImage.webp` }));
+  });
 });

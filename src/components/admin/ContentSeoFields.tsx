@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { contentSeo, type SeoContent } from "@/lib/content-seo";
 
 export interface SeoEditorValues { metaTitle: string; metaDescription: string; ogTitle: string; ogDescription: string; ogImage: string | null }
-export function ContentSeoFields({ values, onChange, content, episode, onImage }: { values: SeoEditorValues; onChange: (v: SeoEditorValues) => void; content: SeoContent; episode?: { seriesTitle: string; number: number; fallbackImage?: string | null }; onImage: (file: File) => void }) {
+export function ContentSeoFields({ values, onChange, content, episode, onImage }: { values: SeoEditorValues; onChange: (v: SeoEditorValues) => void; content: SeoContent; episode?: { seriesTitle: string; number: number; fallbackImage?: string | null } | undefined; onImage: (file: File) => void }) {
   const seo = contentSeo({ ...content, meta_title: values.metaTitle, meta_description: values.metaDescription, og_title: values.ogTitle, og_description: values.ogDescription, og_image: values.ogImage }, episode);
   const update = (key: keyof SeoEditorValues, value: string | null) => onChange({ ...values, [key]: value });
   return <Panel title="Search & sharing"><div className="space-y-5">
