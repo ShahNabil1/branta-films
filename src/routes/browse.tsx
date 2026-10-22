@@ -27,7 +27,7 @@ export const Route = createFileRoute("/browse")({
       { title: "Browse AI-generated series — Branta Films" },
       { name: "description", content: "Explore Branta Films’ curated AI-generated web series by genre and discover your next story." },
       { property: "og:title", content: "Browse AI-generated series — Branta Films" },
-      { property: "og:description", content: "Curated AI-generated web series in one place." },
+      { property: "og:description", content: "Explore Branta Films’ curated AI-generated web series by genre, search titles, and discover your next series to watch." },
       { property: "og:url", content: SITE_URL + "/browse" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
