@@ -1,3 +1,4 @@
+import { isDirty } from "@/lib/dirty";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
@@ -42,7 +43,8 @@ function ProfilePage() {
   }, [profile]);
 
   const original = profile?.full_name ?? "";
-  const dirty = name.trim() !== original.trim();
+  const dirty = isDirty(name, original);
+  const [editing, setEditing] = useState(false);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -60,6 +62,7 @@ function ProfilePage() {
       return;
     }
     toast.success("Profile saved");
+    setEditing(false);
     await queryClient.invalidateQueries({ queryKey: ["me"] });
   }
 
@@ -138,11 +141,14 @@ function ProfilePage() {
             icon={<UserRound />}
             maxLength={100}
             autoComplete="name"
-            disabled={busy === "save"}
+            disabled={!editing || busy === "save"}
           />
-          <Button type="submit" disabled={!dirty || busy !== null}>
-            {busy === "save" ? "Saving…" : "Save changes"}
-          </Button>
+          {editing ? <div className="flex gap-3">
+            <Button type="submit" disabled={!dirty || busy !== null}>
+              {busy === "save" ? "Saving…" : "Save changes"}
+            </Button>
+            <Button type="button" variant="outline" disabled={busy !== null} onClick={() => { setName(original); setError(undefined); setEditing(false); }}>Cancel</Button>
+          </div> : <Button type="button" variant="outline" onClick={() => setEditing(true)}>Edit name</Button>}
         </form>
       </Panel>
 
