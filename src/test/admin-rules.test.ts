@@ -4,6 +4,8 @@ import { assertOtherAccount, canAdminister, loginDestination } from "@/lib/admin
 describe("Administrator controls", () => {
   it("opens the admin panel for an administrator after login", () => {
     expect(loginDestination(["admin"], "/")).toBe("/admin");
+    expect(loginDestination([], "/")).toBe("/account");
+    expect(loginDestination([], "/watch/abc")).toBe("/watch/abc");
   });
   it("does not grant full CRUD to viewers or managers", () => {
     expect(canAdminister([])).toBe(false);
