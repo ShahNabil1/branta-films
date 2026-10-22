@@ -1,5 +1,13 @@
 # Branta Films roadmap
 
+## Current request — Payments, coupons, popups (3 phases)
+- [x] Phase 1: per-episode prices, cart, purchase popup on locked episodes, checkout (bKash/Nagad/Rocket + TrxID), viewer Orders page, admin Payments approve/reject + receiving numbers
+- [x] Phase 2: Panjabi-style coupon builder; series discounts migrated to auto-apply coupons; per-item auto discount, single "applied" label, server-side validation and limits
+- [x] Phase 3: admin Popups (image, delay, placement, frequency, schedule, link or Purchase now → cart), multiple popups queued
+- [x] 106 tests pass; public series page and cart verified in browser; build OK
+- [ ] Signed-in checkout → admin approval end-to-end — blocked: external Supabase has no managed test session
+
+
 ## Current request — Mobile player and upload status
 - [x] Fix mobile play hit targets, adjustable volume and unclipped playback settings
 - [x] Add real upload bytes, percentage, speed/ETA, stage/error/retry states, navigation/close warnings and best-effort screen wake lock

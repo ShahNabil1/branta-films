@@ -11,14 +11,11 @@
 
 # Architecture rules
 
-- People detail routes use protected functions, authenticated heartbeat observations and private security tables, not resume positions, for presence and watch time. Why: observed duration is distinct from seeking.
+Subdirectories have their own `AGENTS.md`; read it before changing files there.
+
 - Shared account-access middleware and restrictive RLS enforce bans/revoked sessions; browser fingerprints are best-effort. Why: UI-only checks cannot secure playback.
-- View-as keeps admin identity and offers a read-only account preview, never viewer credentials. Why: avoid privilege confusion.
-
 - Prebundle all Tiptap editor packages at startup and reject outdated Vite optimizer requests with `optimizeDeps.ignoreOutdatedRequests: false`. Why: late editor discovery invalidates in-flight module URLs, while mixing dependency generations crashes React hooks.
-
-- Private R2 video keys stay service-role only. Viewer links use `getPlaybackSource`/`decidePlayback`; admin previews use role-verified `getAdminEpisodeMedia`, short-lived links and no watch-history writes. Why: private previews are not viewing activity.
-- Playback uses tested `decidePlayback` as one source of truth.
+- Private R2 video keys stay service-role only; tested `decidePlayback` is the single playback rule. Viewer links use `getPlaybackSource`/`decidePlayback`; admin previews use role-verified `getAdminEpisodeMedia`, short-lived links and no watch-history writes. Why: private previews are not viewing activity.
 - All files (images and videos) live only in the private R2 bucket; Supabase Storage is not used. Images sit under `images/` (series/, episodes/, avatars/) and are proxied by `/api/public/media/*` (prefix + extension allow-list); videos sit under `videos/` and are never proxied. Why: owner wants every file in R2, and videos must stay behind access checks.
 - Roles are in `user_roles` (`admin`, `manager`); `is_staff()` / `has_role()` gate RLS. Viewers have no role row. Why: avoids privilege escalation via profile edits.
 - Password changes and resets go through server functions that check `password_is_reused` (current + `password_history`). Why: users must never reuse old passwords.
@@ -33,12 +30,9 @@
 - Metadata uses tested defaults; durations use Mediabunny private MP4 reads, never form input. Why: clocks match files.
 - Player menus/volume stay inside the player, never dialogs; dynamic HLS. Why: works in fullscreen.
 - Design system mirrors the brantatech-com project: typography scale/motion are `@utility` classes in `src/styles.css`, `:root` is the dark palette and the `.light` class re-themes a subtree to the warm light palette; page primitives (`SiteContainer`, `Eyebrow`) live in `src/components/layout/primitives.tsx`; shadcn `Button` is the pill button. Why: one place to keep every page on the reference design.
-- Viewer accounts use `DashboardShell`/`DashboardKit`; admin uses `AdminShell`/`AdminKit` and scoped `.admin-theme` tokens, with navigation passed as data. Why: admin reference styling can change without altering viewer or public pages.
-- Admin operations use shared server middleware validating `has_role` as the caller before privileged access; full-page content editors use Tiptap, sanitized on save, and protected loaders query paginated collections. Why: all CRUD paths enforce the same permissions and drafts remain visible to administrators.
 - Backend is the owner's own Supabase project (not Lovable Cloud); OAuth (Google) uses `supabase.auth.signInWithOAuth` directly, never the Lovable broker, and providers/redirect URLs are configured in the Supabase dashboard. Why: the Lovable broker only serves Cloud projects.
 - Staff invites land on `/set-password` (AuthProvider routes any fresh `invite` session there; `completeInvite` requires an invite `amr` < 24h and no existing password), then the user signs out and signs in with email + password. Staff-section invites must pass `redirectTo: <origin>/set-password`. Why: invite is the only link-based auth email; all others use 6-digit codes.
-- Episodes are managed only inside their series page (`EpisodesPanel` in the series editor, route `/admin/series/$id/episodes/$episodeId`); `/admin/episodes` redirects to series. Reordering uses `reorderAdminEpisodes` (two-pass renumber for the unique series+number rule). Why: owner wants episodes strictly scoped to each series.
 - Auth attempts omit absent captcha tokens and render Turnstile only after Supabase requests captcha; recovery uses a publishable client. Invite password setting relies on verified invite auth, not a fake captcha gate. Why: public Auth settings omit the captcha toggle; Supabase alone enforces it.
-- Ordering uses `SortableList` and reorder server functions; `ImageCropDialog` exports WebP with `ARTWORK_SPECS`. Why: stable ordering/artwork.
-- Uploads use `useVideoUpload` for XHR metrics, file/verification retry and wake lock; router/unload guards protect active uploads. Why: honest progress and interruption safeguards.
-- Series pricing goes through `seriesPrice` (src/lib/pricing.ts) and `PriceTag`; `discount_price_bdt` is optional and must be below `price_bdt` (DB check + server validation). Why: one rule decides what a viewer pays everywhere.
+- Discounts exist only as coupons (`coupons`/`coupon_targets`); `auto_apply` coupons drive sale prices. `quoteCart` (src/lib/cart-pricing.ts, tested) prices carts — best single offer per line, never stacked, never whole-cart for targeted offers — and `placeOrder` re-runs it server-side from DB values. Catalogue `discount_price_bdt` is computed, not stored. Why: one rule decides what a viewer pays; browsers can't set prices.
+- Manual payments create `orders`/`order_items`; only admin `reviewAdminOrder` writes `series_unlocks`/`episode_unlocks`. Playback allows series OR episode unlock. Why: unlocks only after verification.
+- Popups live in `popups` (R2 `images/popups/`), rendered by `PopupRunner` in `__root` using `popup-schedule` areas; they close only via [X] or their action. Why: admin-scheduled, one at a time.

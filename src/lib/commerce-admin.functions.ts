@@ -82,9 +82,7 @@ export const saveAdminCoupon = createServerFn({ method: "POST" }).middleware([re
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
     const { id: rowId, targets, ...values } = data;
-    const payload = { ...values, targets: undefined } as Record<string, unknown>;
-    delete payload["targets"];
-    const query = rowId ? sb.from("coupons").update(payload).eq("id", rowId) : sb.from("coupons").insert(payload as never);
+    const query = rowId ? sb.from("coupons").update(values).eq("id", rowId) : sb.from("coupons").insert(values);
     const { data: row, error } = await query.select("id").single();
     if (error) throw new Error(error.code === "23505" ? "Another coupon already uses this code." : error.message);
     const { error: delError } = await sb.from("coupon_targets").delete().eq("coupon_id", row.id);
