@@ -15,6 +15,7 @@ export default defineConfig({
         "@tiptap/starter-kit",
         "@tiptap/extension-text-style",
         "@tiptap/extension-text-align",
+        "@radix-ui/react-switch",
       ],
       // Reject stale optimizer URLs instead of mixing React generations after installs.
       ignoreOutdatedRequests: false,
