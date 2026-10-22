@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
+import { Turnstile, type TurnstileHandle } from "@/components/auth/Turnstile";
 import { supabase } from "@/integrations/supabase/client";
 import { completeInvite } from "@/lib/account.functions";
 import { amrFromAccessToken, isFreshInviteSession } from "@/lib/invite";
@@ -67,6 +68,9 @@ function SetPasswordPage() {
     };
   }, []);
 
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const next = {
@@ -75,6 +79,7 @@ function SetPasswordPage() {
     };
     setErrors(next);
     if (next.pw || next.confirm || busy) return;
+    if (!captcha) { setFormError("Please complete the security check."); return; }
     setBusy(true);
     setFormError(null);
     try {
@@ -84,6 +89,7 @@ function SetPasswordPage() {
       await navigate({ to: "/auth", replace: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Could not set your password.");
+      captchaRef.current?.reset();
       setBusy(false);
     }
   }
