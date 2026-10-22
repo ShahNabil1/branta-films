@@ -133,7 +133,7 @@ export function ContentEditor({ kind, id, seriesId }: { kind: "series" | "episod
             </>}
           </div></Panel>
           <Panel title={kind === "series" ? "Description" : "Synopsis"}><RichTextEditor value={values.html} onChange={(html) => set("html", html)} onReady={onEditorReady} editable={editing} /></Panel>
-          <ContentSeoFields values={values} onChange={seo => setValues(v => ({ ...v, ...seo }))} content={{ title: values.title, description_html: values.html, tagline: values.tagline, poster_url: values.poster, backdrop_url: values.backdrop, thumbnail_url: values.thumbnail }} episode={kind === "episodes" ? { seriesTitle: parentSeries?.title ?? "", number: values.number, fallbackImage: parentSeries?.backdrop_url ?? parentSeries?.poster_url } : undefined} onImage={file => pickImage(file, "ogImage")} />
+          <ContentSeoFields values={values} onChange={seo => setValues(v => ({ ...v, ...seo }))} content={{ title: values.title, description_html: values.html, tagline: values.tagline, poster_url: values.poster, backdrop_url: values.backdrop, thumbnail_url: values.thumbnail }} episode={kind === "episodes" ? { seriesTitle: parentSeries?.title ?? "", number: values.number, fallbackImage: parentSeries?.backdrop_url ?? parentSeries?.poster_url ?? null } : undefined} onImage={file => pickImage(file, "ogImage")} />
           </fieldset>
           {kind === "episodes" ? <Panel title="Episode video" description="MP4 up to 5 GB, stored privately.">{id === "new" ? <p className="text-sm text-muted-foreground">Save this episode to upload its video.</p> : <div className="space-y-4">
             <AdminEpisodeVideo episodeId={id} title={values.title} thumbnail={values.thumbnail} editing={editing} busy={busy} onUpload={video} />
