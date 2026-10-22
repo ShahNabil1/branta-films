@@ -8,6 +8,16 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   vite: {
+    environments: {
+      client: {
+        build: {
+          sourcemap: true,
+          rolldownOptions: {
+            output: { sourcemapExcludeSources: true },
+          },
+        },
+      },
+    },
     optimizeDeps: {
       // Prebundle the editor at startup, not during an admin-page request.
       include: [
