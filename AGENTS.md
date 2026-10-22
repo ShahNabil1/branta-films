@@ -31,7 +31,7 @@ Subdirectories have their own `AGENTS.md`; read it before changing files there.
 - Passkey sign-in verifies with @simplewebauthn on the server, then returns a one-time magic-link token hash the browser exchanges via `verifyOtp`. Why: Cloud Auth has no native passkey provider.
 - Admin-authored HTML is sanitised with `sanitizeRichText` (xss allow-list) both when rendering on server and client. Why: identical rendering, no script injection.
 - Modals use `BrandedDialog`/`ConfirmDialog` (close only via X or explicit action); never native confirm/alert. Why: owner's UX rule.
-- DevToolsShield (in `__root.tsx`) is inert on localhost, preview hosts and iframes. Why: production-only friction.
+- DevToolsShield: tested /account scope, cancellable timer; off on localhost/preview/iframes. Why: no public/admin detector cost.
 - Catalogue uses MediaRow/SeriesCard/HeroCarousel; watch uses EpisodeCarousel for shared styling and touch navigation.
 - Video changes queue old keys privately; admin operations drain the queue, retaining failed R2 deletes for retry. Why: no orphaned videos.
 - Avatars use `profilePicture`, saved images first; protected people reads resolve Auth pictures for private-safe consistency.
