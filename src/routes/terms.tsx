@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/content/LegalPage";
 
-const description = "The terms that apply when you use Branta Films, a streaming service by Branta Tech.";
+const description = "The terms that apply when you use Branta Films, the AI-generated web-series streaming service by Branta Tech.";
 
 export const Route = createFileRoute("/terms")({
   staticData: { sitemap: true },

@@ -21,6 +21,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
+import { Route as EpisodeEpisodeIdRouteImport } from './routes/episode.$episodeId'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
 import { Route as AuthenticatedAccountExploreRouteImport } from './routes/_authenticated/account.explore'
@@ -105,6 +106,11 @@ const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const EpisodeEpisodeIdRoute = EpisodeEpisodeIdRouteImport.update({
+  id: '/episode/$episodeId',
+  path: '/episode/$episodeId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const SeriesSlugRoute = SeriesSlugRouteImport.update({
   id: '/series/$slug',
@@ -264,6 +270,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRouteWithChildren
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout': typeof AuthenticatedCheckoutRoute
+  '/episode/$episodeId': typeof EpisodeEpisodeIdRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/explore': typeof AuthenticatedAccountExploreRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
+  '/episode/$episodeId': typeof EpisodeEpisodeIdRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/account/explore': typeof AuthenticatedAccountExploreRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRouteWithChildren
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
+  '/episode/$episodeId': typeof EpisodeEpisodeIdRoute
   '/series/$slug': typeof SeriesSlugRoute
   '/_authenticated/account/explore': typeof AuthenticatedAccountExploreRoute
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/checkout'
+    | '/episode/$episodeId'
     | '/series/$slug'
     | '/account/explore'
     | '/account/library'
@@ -416,6 +426,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/checkout'
+    | '/episode/$episodeId'
     | '/series/$slug'
     | '/account/explore'
     | '/account/library'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/admin'
     | '/_authenticated/checkout'
+    | '/episode/$episodeId'
     | '/series/$slug'
     | '/_authenticated/account/explore'
     | '/_authenticated/account/library'
@@ -492,6 +504,7 @@ export interface RootRouteChildren {
   SetPasswordRoute: typeof SetPasswordRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  EpisodeEpisodeIdRoute: typeof EpisodeEpisodeIdRoute
   SeriesSlugRoute: typeof SeriesSlugRoute
   ApiPublicMediaSplatRoute: typeof ApiPublicMediaSplatRoute
 }
@@ -581,6 +594,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/checkout'
       preLoaderRoute: typeof AuthenticatedCheckoutRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/episode/$episodeId': {
+      id: '/episode/$episodeId'
+      path: '/episode/$episodeId'
+      fullPath: '/episode/$episodeId'
+      preLoaderRoute: typeof EpisodeEpisodeIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/series/$slug': {
       id: '/series/$slug'
@@ -851,6 +871,7 @@ const rootRouteChildren: RootRouteChildren = {
   SetPasswordRoute: SetPasswordRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  EpisodeEpisodeIdRoute: EpisodeEpisodeIdRoute,
   SeriesSlugRoute: SeriesSlugRoute,
   ApiPublicMediaSplatRoute: ApiPublicMediaSplatRoute,
 }

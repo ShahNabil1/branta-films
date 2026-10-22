@@ -1,4 +1,5 @@
 import { absoluteMediaUrl } from "@/lib/media";
+import { SITE_URL, jsonLd } from "@/lib/content-seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Search, X } from "lucide-react";
@@ -23,13 +24,16 @@ export const Route = createFileRoute("/browse")({
     return {
     meta: [
       ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
-      { title: "Browse series — Branta Films" },
-      { name: "description", content: "Browse every Branta Films original series by genre — thrillers, family dramas, mysteries and more." },
-      { property: "og:title", content: "Browse series — Branta Films" },
-      { property: "og:description", content: "Every Branta Films original series in one place." },
+      { title: "Browse AI-generated series — Branta Films" },
+      { name: "description", content: "Explore Branta Films’ curated AI-generated web series by genre and discover your next story." },
+      { property: "og:title", content: "Browse AI-generated series — Branta Films" },
+      { property: "og:description", content: "Curated AI-generated web series in one place." },
+      { property: "og:url", content: SITE_URL + "/browse" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: SITE_URL + "/browse" }],
+    scripts: [jsonLd({ "@context": "https://schema.org", "@type": "CollectionPage", name: "Browse AI-generated series", url: SITE_URL + "/browse", mainEntity: { "@type": "ItemList", itemListElement: (loaderData ?? []).map((series, i) => ({ "@type": "ListItem", position: i + 1, name: series.title, url: `${SITE_URL}/series/${series.slug}` })) } })],
     };
   },
   component: BrowsePage,
@@ -54,7 +58,7 @@ function BrowsePage() {
         <div className="mx-auto max-w-[1440px] px-[clamp(1.25rem,4vw,3rem)] pb-20 pt-16 md:pt-20">
           <Eyebrow>Library</Eyebrow>
           <h1 className="text-display mt-6">Browse series<span className="text-primary">.</span></h1>
-          <p className="text-body-lg mt-6 max-w-xl text-muted-foreground">Every Branta original in one place. Episode one is always free.</p>
+          <p className="text-body-lg mt-6 max-w-xl text-muted-foreground">Curated AI-generated web series, all in one place.</p>
 
           <div className="sticky top-16 z-30 -mx-2 mt-8 px-2 py-3">
             <div className="flex flex-col gap-3 rounded-md border border-border bg-background/90 p-3 backdrop-blur-xl md:flex-row md:items-center">

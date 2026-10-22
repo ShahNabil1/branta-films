@@ -25,7 +25,8 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
   }, [count]);
 
   if (!count) return null;
-  const current = slides[index] ?? slides[0]!;
+  const current = slides[index] ?? slides[0];
+  if (!current) return null;
   const freeEp = current.episodes.find((e) => e.is_free);
   const next = () => setIndex((i) => (i + 1) % count);
   const fillStyle = { ["--fill-duration" as string]: `${SLIDE_MS}ms`, animationPlayState: paused ? "paused" : "running" } as CSSProperties;
@@ -73,7 +74,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
         <div key={current.id} className="max-w-2xl">
           <p className="animate-fade-up text-eyebrow flex items-center gap-2 text-foreground/75">
             <span aria-hidden className="size-1.5 rounded-full bg-primary" />
-            Branta Original · {current.genres.join(" / ")}
+            AI-generated series · {current.genres.join(" / ")}
           </p>
           <h2 className="animate-fade-up text-cinema-shadow text-hero mt-6 max-w-[14ch] [animation-delay:60ms]">
             {current.title}

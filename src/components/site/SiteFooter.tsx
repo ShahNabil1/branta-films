@@ -36,7 +36,7 @@ export function SiteFooter() {
         <div className="grid gap-10 border-b border-border pb-16 md:pb-24 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-8">
             <Eyebrow className="text-foreground/60">Start watching</Eyebrow>
-            <h2 className="text-display mt-6 max-w-[16ch] font-medium">Episode one is always on us.</h2>
+            <h2 className="text-display mt-6 max-w-[16ch] font-medium">AI-generated stories. A new world to watch.</h2>
           </div>
           <div className="flex flex-wrap gap-x-10 gap-y-4 lg:col-span-4 lg:justify-end">
             <Link to="/browse" className="footer-cta group text-h4 inline-flex items-center gap-2 pb-1 font-medium">
@@ -52,9 +52,9 @@ export function SiteFooter() {
 
         <div className="grid gap-12 py-16 lg:grid-cols-12">
           <div className="lg:col-span-4">
-            <p className="text-h4 font-medium">Original series by Branta Tech.</p>
+            <p className="text-h4 font-medium">AI-generated series by Branta Tech.</p>
             <p className="text-body mt-4 max-w-xs text-foreground/65">
-              Premium Bangladeshi stories, streamed in full quality on every screen.
+              The OTT home of Branta Tech’s curated AI-generated web series from Bangladesh.
             </p>
             <address className="text-small mt-8 grid gap-2 not-italic">
               <a href="mailto:hello@brantatech.com" className={`${linkCls} w-fit`}>
