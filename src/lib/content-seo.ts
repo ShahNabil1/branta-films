@@ -3,6 +3,7 @@ import { absoluteMediaUrl } from "./media";
 import { richTextToPlain } from "./rich-text";
 
 export const SITE_URL = "https://films.brantatech.com";
+export const SITE_OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 export const SITE_TITLE = "Branta Films — AI-Generated Web Series OTT";
 export const SITE_DESCRIPTION = "Discover curated AI-generated web series on Branta Films by Branta Tech — home to Bangladesh's first complete AI-generated web series and its OTT platform.";
 const optionalText = (max: number) => z.string().trim().max(max).nullable().optional().transform(v => v || null);

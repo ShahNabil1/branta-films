@@ -20,12 +20,11 @@ export const Route = createFileRoute("/browse")({
     genre: typeof search["genre"] === "string" && search["genre"].length <= 60 ? search["genre"] : undefined,
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
-  head: ({ loaderData }) => {
-    const s = loaderData?.find((x) => x.is_featured && x.backdrop_url) ?? loaderData?.find((x) => x.backdrop_url);
-    const img = absoluteMediaUrl(s?.backdrop_url);
+  head: () => {
+    const img = SITE_OG_IMAGE;
     return {
     meta: [
-      ...(img ? [{ property: "og:image", content: img }, { name: "twitter:image", content: img }] : []),
+      { property: "og:image", content: img }, { name: "twitter:image", content: img },
       { title: "Browse AI-generated series — Branta Films" },
       { name: "description", content: "Explore Branta Films’ curated AI-generated web series by genre and discover your next story." },
       { property: "og:title", content: "Browse AI-generated series — Branta Films" },

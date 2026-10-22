@@ -1,5 +1,4 @@
-import { absoluteMediaUrl } from "@/lib/media";
-import { SITE_TITLE, SITE_DESCRIPTION, SITE_URL, jsonLd } from "@/lib/content-seo";
+import { SITE_TITLE, SITE_DESCRIPTION, SITE_URL, SITE_OG_IMAGE, jsonLd } from "@/lib/content-seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
@@ -41,10 +40,9 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-function shareImage(catalog: CatalogSeries[] | undefined) {
-  const s = catalog?.find((x) => x.is_featured && x.backdrop_url) ?? catalog?.find((x) => x.backdrop_url);
-  const url = absoluteMediaUrl(s?.backdrop_url);
-  return url ? [{ property: "og:image", content: url }, { name: "twitter:image", content: url }] : [];
+function shareImage(_catalog: CatalogSeries[] | undefined) {
+  const url = SITE_OG_IMAGE;
+  return [{ property: "og:image", content: url }, { name: "twitter:image", content: url }, { property: "og:image:width", content: "1200" }, { property: "og:image:height", content: "630" }, { property: "og:image:alt", content: "Branta Films" }];
 }
 
 function cardProps(s: CatalogSeries) {
