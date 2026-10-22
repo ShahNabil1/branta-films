@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Automatic video duration and visible controls
+- [ ] Remove manual duration entry; derive and persist actual MP4 duration for uploads and existing saved videos
+- [ ] Show Replace/Delete before Edit, preserving the explicit Edit requirement
+- [ ] Test duration rules, controls and public duration display; authenticated verification depends on external Supabase session
+
 ## Current request — Remove Activity
 - [x] Right-align overview numbers on small devices
 - [x] Remove Activity displays/page, logging and stored records; preserve watch/security records
