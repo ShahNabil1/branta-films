@@ -11,6 +11,8 @@
 
 # Architecture rules
 
+- BrandLogo owns the combined Branta image and Films wordmark styling for all shared logo placements. Why: public, account and admin logos must remain visually consistent.
+
 - All local mobile-number fields use BdPhoneInput and the browser-safe phone-input normalizer. Why: signup, checkout and profile must convert Bangla digits consistently before validation.
 
 Subdirectories have their own `AGENTS.md`; read it before changing files there.
