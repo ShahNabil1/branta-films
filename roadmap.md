@@ -1,5 +1,12 @@
 # Branta Films roadmap
 
+## Current request — Audience and staff management
+- [ ] Replace Users/Staff lists with presence, viewing, free/paid and avatar summaries
+- [ ] Add account detail pages, security/session controls, watch history and series access
+- [ ] Track first/last source, devices, trusted IP and available location; enforce identifier blocks
+- [ ] Add audited account administration and safe view-as account preview
+- [ ] Validate permissions, presence rules and public/administration layouts
+
 ## Current request — Panjabi Shop BD admin design
 - [x] Adapt reference sidebar and top bar for admin only
 - [x] Redesign overview, record lists and full-page editors
