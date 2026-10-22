@@ -34,7 +34,7 @@ export const sendPasswordRecoveryCode = createServerFn({ method: "POST" })
             return fetch(input, { ...init, headers: h });
           } },
         });
-        const { error } = await publicClient.auth.resetPasswordForEmail(email, { captchaToken: data.captchaToken });
+        const { error } = await publicClient.auth.resetPasswordForEmail(email, data.captchaToken ? { captchaToken: data.captchaToken } : {});
         if (error && /captcha/i.test(error.message)) throw new Error("The security check failed. Please try it again.");
         if (!error) return;
         if (error.status === 429 || /rate|seconds/i.test(error.message)) {

@@ -171,7 +171,7 @@ function AuthPage() {
           password,
           options: {
             emailRedirectTo: window.location.origin + "/auth",
-            captchaToken,
+            ...(captchaToken ? { captchaToken } : {}),
             data: { full_name: fullName.trim() },
           },
         });
@@ -183,7 +183,7 @@ function AuthPage() {
           return;
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password, options: { captchaToken } });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password, options: captchaToken ? { captchaToken } : {} });
         if (error) {
           if (/not confirmed/i.test(error.message)) {
             // Account exists but was never confirmed: ask for a fresh code (needs a new security check).
@@ -225,7 +225,7 @@ function AuthPage() {
     const captchaToken = captcha ?? undefined;
     setBusy("form");
     setFormError(null);
-    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail, options: { captchaToken } });
+    const { error } = await supabase.auth.resend({ type: "signup", email: confirmEmail, options: captchaToken ? { captchaToken } : {} });
     captchaRef.current?.reset();
     setBusy(null);
     if (error) {
