@@ -1,5 +1,11 @@
 # Branta Films roadmap
 
+## Current request — Google One Tap and post-login passkey setup
+- [ ] Add optional Google account suggestions using GIS and existing Supabase accounts, preserving OAuth fallback
+- [ ] Offer optional passkey enrollment after a fresh sign-in/confirmed signup, excluding existing keys and invite/recovery flows
+- [ ] Test eligibility, dismissals and nonce handling; verify public auth rendering
+- [ ] Enable and verify real Google One Tap — requires owner's Google OAuth web Client ID and authorized JavaScript origins; external Supabase cannot supply a managed test session
+
 ## Current request — Network dependency tree and LCP
 - [x] Shared first-slide selection and responsive image preload; conditional Bangla font preload on Home/Browse, preserving hashed fonts
 - [x] Auth/private-only Supabase preconnect; no redundant production same-origin or speculative captcha hints; 23 tests pass, browser confirms matching server image hint and auth-only connection hint, no runtime errors, build OK
