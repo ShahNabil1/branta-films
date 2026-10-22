@@ -28,7 +28,7 @@ export type CatalogSeries = Database["public"]["Tables"]["series"]["Row"] & {
 };
 
 /** Adds the automatic-offer sale price for a series and each of its episodes. */
-async function withOffers<T extends { id: string; price_bdt: number; episodes?: { id: string; price_bdt?: number | null }[] }>(rows: T[]) {
+async function withOffers<E extends { id: string; price_bdt?: number | null }, T extends { id: string; price_bdt: number; episodes?: E[] }>(rows: T[]): Promise<(Omit<T, "episodes"> & { discount_price_bdt: number | null; episodes: (E & { sale_price_bdt: number | null })[] })[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { loadAutoOffers } = await import("./commerce.server");
   const { salePrice } = await import("./cart-pricing");
