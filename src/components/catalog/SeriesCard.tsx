@@ -16,6 +16,8 @@ type Props = {
   episodeCount?: number;
   tagline?: string | null;
   className?: string;
+  /** Dashboard pages pass "/account/series/$slug" so viewers stay inside their account. */
+  to?: "/series/$slug" | "/account/series/$slug";
 };
 
 /** Branta Tech portfolio-style card: calm frame, slow image zoom, label + title + arrow on hover. */
@@ -30,11 +32,12 @@ export function SeriesCard({
   hasFreeEpisode,
   episodeCount,
   className,
+  to = "/series/$slug",
 }: Props) {
   const src = mediaUrl(poster_url);
   return (
     <Link
-      to="/series/$slug"
+      to={to}
       params={{ slug }}
       draggable={false}
       className={cn("group block min-w-0 rounded-[4px] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary", className)}

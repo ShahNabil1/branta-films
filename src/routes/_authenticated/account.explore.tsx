@@ -102,7 +102,7 @@ function ExplorePage() {
             return (
               <div key={s.id} className="flex min-w-0 flex-col gap-3">
                 <div className="relative">
-                  <SeriesCard {...s} hasFreeEpisode={s.episodes.some((e) => e.is_free)} episodeCount={s.episodes.length} />
+                  <SeriesCard {...s} to="/account/series/$slug" hasFreeEpisode={s.episodes.some((e) => e.is_free)} episodeCount={s.episodes.length} />
                   {isOwned ? (
                     <span className="text-caption pointer-events-none absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-success px-2 py-1 font-semibold text-background">
                       <CheckCircle2 className="size-3.5" />Unlocked
@@ -111,7 +111,7 @@ function ExplorePage() {
                 </div>
                 {isOwned ? (
                   <Button asChild size="sm" variant="outline" className="w-full">
-                    <Link to="/series/$slug" params={{ slug: s.slug }}><Play />Watch now</Link>
+                    <Link to="/account/series/$slug" params={{ slug: s.slug }}><Play />Watch now</Link>
                   </Button>
                 ) : (
                   <Button size="sm" className="w-full" onClick={() => setBuySlug(s.slug)}><ShoppingBag />Buy</Button>

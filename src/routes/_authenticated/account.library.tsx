@@ -64,7 +64,7 @@ function LibraryPage() {
         ) : data?.length ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4">
             {data.map((s) => (
-              <SeriesCard key={s.id} {...s} />
+              <SeriesCard key={s.id} {...s} to="/account/series/$slug" />
             ))}
           </div>
         ) : (
@@ -77,8 +77,8 @@ function LibraryPage() {
               Every series starts free with episode one. Unlock a full season to keep it here.
             </p>
             <Button asChild size="sm" className="mt-6">
-              <Link to="/browse">
-                <Compass /> Browse series
+              <Link to="/account/explore">
+                <Compass /> Explore series
               </Link>
             </Button>
           </div>
