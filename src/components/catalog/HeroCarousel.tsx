@@ -101,7 +101,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
               ))}
           </ul>
           <div className="animate-fade-up mt-8 flex flex-wrap gap-3 [animation-delay:220ms]">
-            <Button asChild size="xl">
+            <Button asChild size="xl" className="cinema-action">
               {freeEp ? (
                 <Link to="/watch/$episodeId" params={{ episodeId: freeEp.id }}>
                   <Play className="fill-current" /> Watch now
@@ -112,7 +112,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
                 </Link>
               )}
             </Button>
-            <Button asChild variant="glass" size="xl">
+            <Button asChild variant="secondary" size="xl" className="cinema-action cinema-action-secondary">
               <Link to="/series/$slug" params={{ slug: current.slug }}>
                 <Info /> Details
               </Link>
