@@ -24,8 +24,8 @@ export const sendPasswordRecoveryCode = createServerFn({ method: "POST" })
         // Publishable client so Supabase Attack Protection verifies the Turnstile token
         // (service-role requests skip the captcha check).
         const { createClient } = await import("@supabase/supabase-js");
-        const key = process.env["SUPABASE_PUBLISHABLE_KEY"]!;
-        const publicClient = createClient(process.env["SUPABASE_URL"]!, key, {
+        const key = (process.env["SUPABASE_PUBLISHABLE_KEY"] ?? process.env["VITE_SUPABASE_PUBLISHABLE_KEY"])!;
+        const publicClient = createClient((process.env["SUPABASE_URL"] ?? process.env["VITE_SUPABASE_URL"])!, key, {
           auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
           global: { fetch: (input, init) => {
             const h = new Headers(init?.headers);

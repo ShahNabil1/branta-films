@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowRight, KeyRound, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { AuthLayout, FormAlert, authLinkCls } from "@/components/auth/AuthLayout";
 import { CodeField } from "@/components/forms/CodeField";
 import { SmartField } from "@/components/forms/SmartField";
 import { Button } from "@/components/ui/button";
+import { Turnstile, type TurnstileHandle } from "@/components/auth/Turnstile";
 import { supabase } from "@/integrations/supabase/client";
 import { completePasswordReset } from "@/lib/account.functions";
 import { sendPasswordRecoveryCode } from "@/lib/password-recovery.functions";
@@ -49,17 +50,20 @@ function ForgotPasswordPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();
     const err = validateField("email", email);
     setEmailError(err);
     if (err || busy) return;
+    if (!captcha) { setFormError("Please complete the security check."); return; }
     setBusy(true);
     setFormError(null);
     setNotice(null);
     try {
-      const result = await sendPasswordRecoveryCode({ data: { email: email.trim() } });
+      const result = await sendPasswordRecoveryCode({ data: { email: email.trim(), captchaToken: captcha } });
       if (result.status === "not_found") {
         setStep("email");
         setCode("");
@@ -73,6 +77,7 @@ function ForgotPasswordPage() {
       setFormError(error instanceof Error ? error.message : "Could not send your reset code. Please try again.");
     } finally {
       setBusy(false);
+      captchaRef.current?.reset();
     }
   }
 
