@@ -249,7 +249,7 @@ export function VideoPlayer({ getSource, startAt = 0, poster, title, onProgress,
   // Collapse the touch volume slider on outside press.
   useEffect(() => {
     if (!volumeOpen) return;
-    const onDown = (e: PointerEvent) => { if (!volumeRef.current?.contains(e.target as Node)) setVolumeOpen(false); };
+    const onDown = (e: PointerEvent) => { if (!volumeRef.current?.contains(e.target as Node) && e.target !== videoRef.current) setVolumeOpen(false); };
     document.addEventListener("pointerdown", onDown);
     return () => document.removeEventListener("pointerdown", onDown);
   }, [volumeOpen]);
