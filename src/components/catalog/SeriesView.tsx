@@ -53,10 +53,12 @@ export function SeriesView({ slug, inDashboard = false }: { slug: string; inDash
           inDashboard ? "player-theme min-h-[420px] rounded-md bg-background text-foreground" : "min-h-[min(86svh,820px)]",
         )}
       >
-        <div className="absolute inset-0 -z-20 overflow-hidden" aria-hidden="true">
-          {backdrop ? <ArtworkImage path={series.backdrop_url ?? ""} variant="backdrop" sizes={inDashboard ? "(min-width: 1024px) calc(100vw - 300px), 100vw" : "100vw"} alt="" width={1920} height={1080} fetchPriority="high" className="animate-ken-burns size-full object-cover" /> : null}
+        <div className={cn("absolute -z-20 overflow-hidden", poster ? "inset-x-0 top-0 h-[78%] md:inset-0 md:h-auto" : "inset-0")} aria-hidden="true">
+          {poster ? <ArtworkImage path={series.poster_url ?? ""} variant="poster" sizes="100vw" alt="" width={1000} height={1500} fetchPriority="high" className="size-full object-cover object-top md:hidden" /> : null}
+          {backdrop ? <ArtworkImage path={series.backdrop_url ?? ""} variant="backdrop" sizes={inDashboard ? "(min-width: 1024px) calc(100vw - 300px), 100vw" : "100vw"} alt="" width={1920} height={1080} fetchPriority="high" className={cn("animate-ken-burns size-full object-cover", poster && "hidden md:block")} /> : null}
         </div>
-        <div className="cinema-mask absolute inset-0 -z-10" />
+        <div className={cn("cinema-mask absolute inset-0 -z-10", poster && "hidden md:block")} />
+        {poster ? <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,color-mix(in_oklab,var(--background)_55%,transparent)_0%,transparent_14%,transparent_34%,color-mix(in_oklab,var(--background)_75%,transparent)_56%,var(--background)_76%)] md:hidden" /> : null}
         <div
           className={cn(
             "grid w-full gap-10 md:items-end",
