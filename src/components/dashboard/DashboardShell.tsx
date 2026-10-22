@@ -167,7 +167,7 @@ export function DashboardShell({
           )}
         >
           <Clapperboard className="size-[19px] shrink-0" />
-          {!compact ? <span className="truncate">Back to Branta Films</span> : null}
+          {!compact ? <span className="truncate">Back to Main Site</span> : null}
         </Link>
         <button
           type="button"
