@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAccountAccess } from "./security-middleware";
 import { assertOtherAccount } from "./admin-rules";
 import { sanitizeRichText } from "./rich-text";
+import { seoFields } from "./content-seo";
 
 const requireAdmin = createMiddleware({ type: "function" })
   .middleware([requireAccountAccess])
@@ -14,6 +15,7 @@ const requireAdmin = createMiddleware({ type: "function" })
 
 const id = z.string().uuid();
 const seriesSchema = z.object({
+  ...seoFields("series"),
   id: id.optional(), title: z.string().trim().min(1).max(200), slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),
   tagline: z.string().max(500), description_html: z.string().max(100000), genres: z.array(z.string().trim().min(1).max(50)).max(20),
   release_year: z.number().int().min(1900).max(2200).nullable(), maturity_rating: z.string().min(1).max(20),
@@ -22,6 +24,7 @@ const seriesSchema = z.object({
 });
 const seriesWithRules = seriesSchema;
 const episodeSchema = z.object({
+  ...seoFields("episodes"),
   id: id.optional(), series_id: id, title: z.string().trim().min(1).max(200), episode_number: z.number().int().min(1),
   synopsis_html: z.string().max(100000), is_free: z.boolean(), price_bdt: z.number().int().min(1).max(100000).nullable().optional(), is_published: z.boolean(),
   thumbnail_url: z.string().startsWith("images/episodes/").nullable(),
@@ -185,7 +188,7 @@ export const manageAdminUnlock = createServerFn({ method: "POST" }).middleware([
   });
 
 export const uploadAdminImage = createServerFn({ method: "POST" }).middleware([requireAdmin])
-  .inputValidator((input: unknown) => z.object({ kind: z.enum(["series", "episodes"]), id, slot: z.enum(["poster", "backdrop", "thumbnail"]), contentType: z.enum(["image/jpeg", "image/png", "image/webp"]), base64: z.string().max(14000000) }).parse(input))
+  .inputValidator((input: unknown) => z.object({ kind: z.enum(["series", "episodes"]), id, slot: z.enum(["poster", "backdrop", "thumbnail", "ogImage"]), contentType: z.enum(["image/jpeg", "image/png", "image/webp"]), base64: z.string().max(14000000) }).parse(input))
   .handler(async ({ data }) => {
     const { r2PutObject } = await import("./r2.server");
     const ext = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" }[data.contentType];

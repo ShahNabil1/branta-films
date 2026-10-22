@@ -19,7 +19,7 @@ function publicClient() {
 }
 
 const SERIES_FIELDS =
-  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, is_featured, sort_order";
+  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, is_featured, sort_order, meta_title, meta_description, og_title, og_description, og_image";
 
 export type CatalogSeries = Database["public"]["Tables"]["series"]["Row"] & {
   /** Sale price from the best automatic coupon, or null when not discounted. */
@@ -64,12 +64,22 @@ export const getSeriesBySlug = createServerFn({ method: "GET" })
     const { data: series, error } = await sb
       .from("series")
       .select(
-        `${SERIES_FIELDS}, episodes(id, episode_number, title, synopsis_html, duration_seconds, thumbnail_url, is_free, price_bdt)`,
+        `${SERIES_FIELDS}, episodes(id, series_id, episode_number, title, synopsis_html, duration_seconds, thumbnail_url, is_free, price_bdt, meta_title, meta_description, og_title, og_description, og_image)`,
       )
       .eq("slug", data.slug)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!series) return null;
     const [priced] = await withOffers([{ ...series, episodes: [...(series.episodes ?? [])].sort((a, b) => a.episode_number - b.episode_number) }]);
-    return priced!;
+    return priced ?? null;
+  });
+
+/** Public episode information only; video media and playback access are never queried. */
+export const getEpisodeDetails = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) => z.object({ episodeId: z.string().uuid() }).parse(input))
+  .handler(async ({ data }) => {
+    const sb = publicClient();
+    const { data: episode, error } = await sb.from("episodes").select("id, episode_number, title, synopsis_html, duration_seconds, thumbnail_url, meta_title, meta_description, og_title, og_description, og_image, series(slug, title, backdrop_url, poster_url)").eq("id", data.episodeId).maybeSingle();
+    if (error) throw new Error("Could not load episode details.");
+    return episode?.series ? episode : null;
   });
