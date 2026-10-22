@@ -22,6 +22,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as SeriesSlugRouteImport } from './routes/series.$slug'
 import { Route as AuthenticatedAccountIndexRouteImport } from './routes/_authenticated/account.index'
+import { Route as AuthenticatedAccountExploreRouteImport } from './routes/_authenticated/account.explore'
 import { Route as AuthenticatedAccountLibraryRouteImport } from './routes/_authenticated/account.library'
 import { Route as AuthenticatedAccountOrdersRouteImport } from './routes/_authenticated/account.orders'
 import { Route as AuthenticatedAccountProfileRouteImport } from './routes/_authenticated/account.profile'
@@ -106,6 +107,12 @@ const AuthenticatedAccountIndexRoute =
   AuthenticatedAccountIndexRouteImport.update({
     id: '/',
     path: '/',
+    getParentRoute: () => AuthenticatedAccountRoute,
+  } as any)
+const AuthenticatedAccountExploreRoute =
+  AuthenticatedAccountExploreRouteImport.update({
+    id: '/explore',
+    path: '/explore',
     getParentRoute: () => AuthenticatedAccountRoute,
   } as any)
 const AuthenticatedAccountLibraryRoute =
@@ -237,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
+  '/account/explore': typeof AuthenticatedAccountExploreRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -269,6 +277,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
+  '/account/explore': typeof AuthenticatedAccountExploreRoute
   '/account/library': typeof AuthenticatedAccountLibraryRoute
   '/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/series/$slug': typeof SeriesSlugRoute
+  '/_authenticated/account/explore': typeof AuthenticatedAccountExploreRoute
   '/_authenticated/account/library': typeof AuthenticatedAccountLibraryRoute
   '/_authenticated/account/orders': typeof AuthenticatedAccountOrdersRoute
   '/_authenticated/account/profile': typeof AuthenticatedAccountProfileRoute
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/checkout'
     | '/series/$slug'
+    | '/account/explore'
     | '/account/library'
     | '/account/orders'
     | '/account/profile'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/checkout'
     | '/series/$slug'
+    | '/account/explore'
     | '/account/library'
     | '/account/orders'
     | '/account/profile'
@@ -408,6 +420,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/checkout'
     | '/series/$slug'
+    | '/_authenticated/account/explore'
     | '/_authenticated/account/library'
     | '/_authenticated/account/orders'
     | '/_authenticated/account/profile'
@@ -535,6 +548,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/account/'
       preLoaderRoute: typeof AuthenticatedAccountIndexRouteImport
+      parentRoute: typeof AuthenticatedAccountRoute
+    }
+    '/_authenticated/account/explore': {
+      id: '/_authenticated/account/explore'
+      path: '/explore'
+      fullPath: '/account/explore'
+      preLoaderRoute: typeof AuthenticatedAccountExploreRouteImport
       parentRoute: typeof AuthenticatedAccountRoute
     }
     '/_authenticated/account/library': {
@@ -681,6 +701,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAccountRouteChildren {
+  AuthenticatedAccountExploreRoute: typeof AuthenticatedAccountExploreRoute
   AuthenticatedAccountLibraryRoute: typeof AuthenticatedAccountLibraryRoute
   AuthenticatedAccountOrdersRoute: typeof AuthenticatedAccountOrdersRoute
   AuthenticatedAccountProfileRoute: typeof AuthenticatedAccountProfileRoute
@@ -689,6 +710,7 @@ interface AuthenticatedAccountRouteChildren {
 }
 
 const AuthenticatedAccountRouteChildren: AuthenticatedAccountRouteChildren = {
+  AuthenticatedAccountExploreRoute: AuthenticatedAccountExploreRoute,
   AuthenticatedAccountLibraryRoute: AuthenticatedAccountLibraryRoute,
   AuthenticatedAccountOrdersRoute: AuthenticatedAccountOrdersRoute,
   AuthenticatedAccountProfileRoute: AuthenticatedAccountProfileRoute,

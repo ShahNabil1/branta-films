@@ -3,6 +3,7 @@ import { Link, useRouterState, type LinkProps } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, Clapperboard, LogOut, Menu, X, type LucideIcon } from "lucide-react";
 import { BrandLogo } from "@/components/brand/Logo";
 import { UserAvatar } from "@/components/site/UserMenu";
+import { CartButton } from "@/components/commerce/CartSheet";
 import { ConfirmDialog } from "@/components/ui/branded-dialog";
 import { displayName, useAuth, useSignOut } from "@/lib/auth";
 import { cn } from "@/lib/utils";
@@ -208,6 +209,7 @@ export function DashboardShell({
       {/* Mobile top bar */}
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-xl lg:hidden">
         <BrandLogo />
+        <div className="flex items-center gap-1"><CartButton />
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -216,7 +218,7 @@ export function DashboardShell({
           className="grid size-10 place-items-center rounded-full text-foreground transition-colors hover:bg-foreground/10"
         >
           <Menu className="size-5" />
-        </button>
+        </button></div>
       </header>
 
       {/* Mobile drawer */}
