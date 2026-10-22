@@ -1,4 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { PriceTag } from "@/components/catalog/PriceTag";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { CheckCircle2, Lock, Play } from "lucide-react";
 import { SiteShell } from "@/components/site/SiteShell";
@@ -113,7 +114,7 @@ function SeriesPage() {
                 ) : (
                   <div className="flex flex-col gap-1.5">
                     <Button variant="glass" size="xl" disabled>
-                      <Lock /> Unlock all episodes · {formatTaka(series.price_bdt)}
+                      <Lock /> Unlock all episodes · <PriceTag price={series.price_bdt} discount={series.discount_price_bdt} />
                     </Button>
                     <span className="text-caption pl-6 text-muted-foreground">bKash & Nagad payments open soon.</span>
                   </div>
@@ -194,7 +195,7 @@ function SeriesPage() {
                 </>
               ) : null}
               <dt className="text-muted-foreground">Price</dt>
-              <dd className="tabular-nums">{series.price_bdt > 0 ? `${formatTaka(series.price_bdt)} · full season` : "Free"}</dd>
+              <dd className="tabular-nums">{series.price_bdt > 0 ? <><PriceTag price={series.price_bdt} discount={series.discount_price_bdt} /> · full season</> : "Free"}</dd>
             </dl>
           </div>
         </aside>

@@ -1,4 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
+import { seriesPrice } from "@/lib/pricing";
 import { Link } from "@tanstack/react-router";
 import { Info, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,7 @@ export function HeroCarousel({ slides }: { slides: CatalogSeries[] }) {
               current.release_year ? String(current.release_year) : null,
               `${current.episodes.length} episodes`,
               freeEp ? "Episode 1 free" : null,
-              current.price_bdt > 0 ? `Full season ${formatTaka(current.price_bdt)}` : null,
+              current.price_bdt > 0 ? (() => { const p = seriesPrice(current.price_bdt, current.discount_price_bdt); return `Full season ${formatTaka(p.final)}${p.percentOff ? ` · ${p.percentOff}% off` : ""}`; })() : null,
             ]
               .filter(Boolean)
               .map((item, i) => (

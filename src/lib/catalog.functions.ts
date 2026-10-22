@@ -19,7 +19,7 @@ function publicClient() {
 }
 
 const SERIES_FIELDS =
-  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, is_featured, sort_order";
+  "id, slug, title, tagline, description_html, poster_url, backdrop_url, genres, release_year, maturity_rating, price_bdt, discount_price_bdt, is_featured, sort_order";
 
 export type CatalogSeries = Database["public"]["Tables"]["series"]["Row"] & {
   episodes: { id: string; is_free: boolean }[];

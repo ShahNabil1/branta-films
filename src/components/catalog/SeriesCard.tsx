@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { mediaUrl } from "@/lib/media";
 import { formatTaka } from "@/lib/format";
+import { seriesPrice } from "@/lib/pricing";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -9,6 +10,7 @@ type Props = {
   poster_url: string | null;
   genres: string[];
   price_bdt: number;
+  discount_price_bdt?: number | null;
   release_year: number | null;
   hasFreeEpisode?: boolean;
   episodeCount?: number;
@@ -23,6 +25,7 @@ export function SeriesCard({
   poster_url,
   genres,
   price_bdt,
+  discount_price_bdt,
   release_year,
   hasFreeEpisode,
   episodeCount,
@@ -70,7 +73,7 @@ export function SeriesCard({
             {title}
           </h3>
           <p className="text-caption mt-0.5 truncate text-muted-foreground">
-            {[release_year, episodeCount ? `${episodeCount} episodes` : null, price_bdt > 0 ? formatTaka(price_bdt) : null]
+            {[release_year, episodeCount ? `${episodeCount} episodes` : null, price_bdt > 0 ? formatTaka(seriesPrice(price_bdt, discount_price_bdt).final) : null]
               .filter(Boolean)
               .join(" · ")}
           </p>

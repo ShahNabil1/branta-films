@@ -29,13 +29,13 @@ export function EpisodesPanel({ seriesId }: { seriesId: string }) {
     finally { setBusy(false); }
   }
   async function reorder(ids: string[]) {
-    try { await reorderAdminEpisodes({ data: { series_id: seriesId, ids } }); await qc.invalidateQueries({ queryKey: adminQuery.queryKey }); await qc.invalidateQueries({ queryKey: ["catalog"] }); toast.success("Episode order saved"); }
+    try { await reorderAdminEpisodes({ data: { series_id: seriesId, ids } }); await qc.invalidateQueries({ queryKey: adminQuery.queryKey }); await qc.invalidateQueries({ queryKey: ["catalog"] }); }
     catch (e) { toast.error(e instanceof Error ? e.message : "Could not save order"); throw e; }
   }
 
   return <Panel title="Episodes" description={`${episodes.length} episode${episodes.length === 1 ? "" : "s"} · drag ⠿ to change their order`}
     action={<Button asChild size="sm"><Link to="/admin/series/$id/episodes/$episodeId" params={{ id: seriesId, episodeId: "new" }}><Plus />New episode</Link></Button>}>
-    {episodes.length ? <SortableList items={episodes} disabled={busy} onReorder={reorder} render={(e, i, handle) => {
+    {episodes.length ? <SortableList noun="Episode order" items={episodes} disabled={busy} onReorder={reorder} render={(e, i, handle) => {
       const art = mediaUrl(e.thumbnail_url ?? series?.backdrop_url ?? null);
       return <div className="group flex flex-wrap items-center gap-3 rounded-xl border border-border bg-background/60 p-2.5 transition-all duration-300 hover:border-primary/30 hover:bg-card hover:shadow-md sm:flex-nowrap">
         {handle}

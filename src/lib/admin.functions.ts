@@ -17,9 +17,10 @@ const seriesSchema = z.object({
   id: id.optional(), title: z.string().trim().min(1).max(200), slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120),
   tagline: z.string().max(500), description_html: z.string().max(100000), genres: z.array(z.string().trim().min(1).max(50)).max(20),
   release_year: z.number().int().min(1900).max(2200).nullable(), maturity_rating: z.string().min(1).max(20),
-  price_bdt: z.number().int().min(0), sort_order: z.number().int(), is_featured: z.boolean(), is_published: z.boolean(),
+  price_bdt: z.number().int().min(0), discount_price_bdt: z.number().int().min(0).nullable(), sort_order: z.number().int(), is_featured: z.boolean(), is_published: z.boolean(),
   poster_url: z.string().startsWith("images/series/").nullable(), backdrop_url: z.string().startsWith("images/series/").nullable(),
 });
+const seriesWithRules = seriesSchema.refine((s) => s.discount_price_bdt == null || s.discount_price_bdt < s.price_bdt, { message: "Discounted price must be lower than the regular price.", path: ["discount_price_bdt"] });
 const episodeSchema = z.object({
   id: id.optional(), series_id: id, title: z.string().trim().min(1).max(200), episode_number: z.number().int().min(1),
   synopsis_html: z.string().max(100000), duration_seconds: z.number().int().min(0), is_free: z.boolean(), is_published: z.boolean(),
@@ -51,7 +52,7 @@ export const getAdminOverview = createServerFn({ method: "POST" }).middleware([r
 });
 
 export const saveAdminSeries = createServerFn({ method: "POST" }).middleware([requireAdmin])
-  .inputValidator((input: unknown) => seriesSchema.parse(input)).handler(async ({ data, context }) => {
+  .inputValidator((input: unknown) => seriesWithRules.parse(input)).handler(async ({ data, context }) => {
     const { id: rowId, ...values } = data;
     values.description_html = sanitizeRichText(values.description_html);
     const query = rowId ? context.supabase.from("series").update(values).eq("id", rowId) : context.supabase.from("series").insert(values);
