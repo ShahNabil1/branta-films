@@ -38,7 +38,7 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
     const started = performance.now();
     const update = (phase: UploadStatus["phase"], error?: string) => {
       const elapsed = (performance.now() - started) / 1000;
-      setStatus({ name: selected.name, total: selected.size, loaded, elapsed, speed: uploadMetrics(loaded, selected.size, elapsed).speed, phase, error });
+      setStatus({ name: selected.name, total: selected.size, loaded, elapsed, speed: uploadMetrics(loaded, selected.size, elapsed).speed, phase, ...(error ? { error } : {}) });
     };
     update(completedKey.current ? "verifying" : "preparing");
     try {
@@ -61,7 +61,7 @@ export function useVideoUpload(episodeId: string, onSaved: (pending: boolean) =>
       loaded = selected.size; update("verifying");
       const result = await finish({ data: { episodeId, key: completedKey.current, size: selected.size } });
       update("complete"); fileRef.current = null; completedKey.current = null;
-      await onSaved(result.cleanupPending);
+      try { await onSaved(result.cleanupPending); } catch { /* The file is saved even if the preview refresh fails. */ }
     } catch (error) { update("failed", error instanceof Error ? error.message : "Upload failed. Please retry."); }
     finally { running.current = false; }
   }
