@@ -6,7 +6,7 @@ export function mediaUrl(path: string | null | undefined): string | null {
 }
 
 /** Only the images/ folder is public through the media route; videos/ never is. */
-export const ALLOWED_MEDIA_PREFIXES = ["images/series/", "images/episodes/", "images/avatars/"] as const;
+export const ALLOWED_MEDIA_PREFIXES = ["images/series/", "images/episodes/", "images/avatars/", "images/popups/"] as const;
 
 export function isAllowedMediaPath(path: string): boolean {
   if (!path || path.includes("..") || path.includes("\\") || path.startsWith("/")) return false;
