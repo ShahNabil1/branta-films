@@ -7,7 +7,7 @@ import { formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 type Episode = { id: string; episode_number: number; title: string; duration_seconds: number | null; is_free: boolean; thumbnail_url: string | null };
-export function EpisodeCarousel({ episodes, currentId, backdrop }: { episodes: Episode[]; currentId: string; backdrop: string | null }) {
+export function EpisodeCarousel({ episodes, currentId, backdrop, to = "/watch/$episodeId" }: { episodes: Episode[]; currentId: string; backdrop: string | null; to?: "/watch/$episodeId" | "/account/watch/$episodeId" }) {
   const row = useRef<HTMLOListElement>(null);
   const [edges, setEdges] = useState({ left: false, right: false });
   useEffect(() => {
@@ -36,7 +36,7 @@ export function EpisodeCarousel({ episodes, currentId, backdrop }: { episodes: E
         const active = ep.id === currentId;
         const src = mediaUrl(ep.thumbnail_url ?? backdrop);
         return <li key={ep.id} className="w-[min(76vw,300px)] shrink-0 snap-start">
-          <Link to="/watch/$episodeId" params={{ episodeId: ep.id }} aria-current={active ? "true" : undefined} draggable={false} className="episode-card group block rounded-md outline-offset-4 focus-visible:outline-primary">
+          <Link to={to} params={{ episodeId: ep.id }} aria-current={active ? "true" : undefined} draggable={false} className="episode-card group block rounded-md outline-offset-4 focus-visible:outline-primary">
             <div className="relative aspect-video overflow-hidden rounded-md bg-surface">
               {src ? <img src={src} alt={ep.title} loading="lazy" draggable={false} className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" /> : <div className="flex size-full items-center justify-center"><Play className="size-8 text-muted-foreground" /></div>}
               <span className="absolute left-3 top-3 rounded-sm bg-scrim px-2 py-1 text-xs font-medium text-media-ink">{String(ep.episode_number).padStart(2, "0")}</span>
