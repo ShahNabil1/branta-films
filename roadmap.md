@@ -1,5 +1,10 @@
 # Branta Films roadmap
 
+## Current request — Header and Films wordmark
+- [ ] Research and simplify public header navigation and utilities
+- [ ] Match Films lettering to the Branta wordmark globally
+- [ ] Verify desktop/mobile navigation, cart and logo rendering
+
 ## Current request — Cloudflare image transformations and caching
 - [x] Link the new workspace Cloudflare connection
 - [x] Use bounded Cloudflare artwork transformations with original-image fallback
