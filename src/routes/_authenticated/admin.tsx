@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { Activity, Film, LayoutDashboard, Users, Shield, KeyRound } from "lucide-react";
+import { Film, LayoutDashboard, Users, Shield, KeyRound } from "lucide-react";
 import { type DashNavSection } from "@/components/dashboard/DashboardShell";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { adminQuery } from "@/lib/admin-queries";
@@ -13,5 +13,5 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const sections: DashNavSection[] = [
   { title: "Workspace", items: [{ to: "/admin", label: "Overview", icon: LayoutDashboard, exact: true }, { to: "/admin/series", label: "Series", icon: Film }] },
-  { title: "People & access", items: [{ to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/staff", label: "Staff", icon: Shield }, { to: "/admin/unlocks", label: "Series access", icon: KeyRound }, { to: "/admin/activity", label: "Activity", icon: Activity }] },
+  { title: "People & access", items: [{ to: "/admin/users", label: "Users", icon: Users }, { to: "/admin/staff", label: "Staff", icon: Shield }, { to: "/admin/unlocks", label: "Series access", icon: KeyRound }] },
 ];

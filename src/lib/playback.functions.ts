@@ -56,8 +56,6 @@ export const getPlaybackSource = createServerFn({ method: "POST" })
     try {
       if (!(await r2ObjectExists(media.video_key))) return { status: "not_uploaded" };
       const url = await presignR2Get(media.video_key, PLAYBACK_LINK_TTL_SECONDS);
-      const { logActivityAs } = await import("./request-meta.server");
-      await logActivityAs(userId, "play_episode", { episode_id: episode.id, series_id: episode.series_id });
       return {
         status: "allowed",
         url,
