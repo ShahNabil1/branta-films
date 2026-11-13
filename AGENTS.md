@@ -1,14 +1,3 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
-
 # Architecture rules
 
 - Browser builds emit source maps without source contents; server maps stay private. Why: safe production diagnostics.
@@ -38,7 +27,7 @@ Subdirectories have their own `AGENTS.md`; read it before changing files there.
 - Content SEO uses content-seo defaults plus nullable admin overrides; public episode details never return playback media. Why: shareable SSR metadata without weakening viewing access. Durations use Mediabunny private MP4 reads, never form input.
 - Player menus/volume stay inside the player, never dialogs; dynamic HLS. Why: works in fullscreen.
 - Design system mirrors the brantatech-com project: typography scale/motion are `@utility` classes in `src/styles.css`, `:root` is the dark palette and the `.light` class re-themes a subtree to the warm light palette; page primitives (`SiteContainer`, `Eyebrow`) live in `src/components/layout/primitives.tsx`; shadcn `Button` is the pill button. Why: one place to keep every page on the reference design.
-- External Supabase owns auth, never the Lovable broker. Google uses OAuth fallback and optional GIS One Tap (VITE_GOOGLE_CLIENT_ID, hashed nonce, id-token exchange). Why: same accounts and browser-controlled consent.
+- Supabase owns auth. Google uses OAuth and optional GIS One Tap (VITE_GOOGLE_CLIENT_ID, hashed nonce, id-token exchange). Why: same accounts and browser-controlled consent.
 - Staff invites land on `/set-password` (AuthProvider routes any fresh `invite` session there; `completeInvite` requires an invite `amr` < 24h and no existing password), then the user signs out and signs in with email + password. Staff-section invites must pass `redirectTo: <origin>/set-password`. Why: invite is the only link-based auth email; all others use 6-digit codes.
 - Auth attempts omit absent captcha tokens and render Turnstile only after Supabase requests captcha; recovery uses a publishable client. Invite password setting relies on verified invite auth, not a fake captcha gate. Why: public Auth settings omit the captcha toggle; Supabase alone enforces it.
 - Discounts exist only as coupons (`coupons`/`coupon_targets`); `auto_apply` coupons drive sale prices. `quoteCart` (src/lib/cart-pricing.ts, tested) prices carts — best single offer per line, never stacked, never whole-cart for targeted offers — and `placeOrder` re-runs it server-side from DB values. Catalogue `discount_price_bdt` is computed, not stored. Why: one rule decides what a viewer pays; browsers can't set prices.

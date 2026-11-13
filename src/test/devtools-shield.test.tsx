@@ -22,7 +22,7 @@ describe("Account-only DevTools shield", () => {
     const interval = vi.spyOn(window, "setInterval");
     const clear = vi.spyOn(window, "clearInterval");
     // Explicitly opt this isolated test into production behaviour on localhost.
-    const config = { disabledHostSuffixes: [], disableInIframe: false };
+    const config = { productionHosts: [window.location.hostname], disableInIframe: false };
     const { rerender } = render(<DevToolsShield enabled={false} config={config}>Page</DevToolsShield>);
     expect(interval).not.toHaveBeenCalled();
     rerender(<DevToolsShield enabled config={config}>Page</DevToolsShield>);

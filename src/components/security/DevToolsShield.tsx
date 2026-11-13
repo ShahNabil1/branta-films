@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import logo from "@/assets/brand/branta-logo-light.png";
+import { SITE_URL } from "@/lib/content-seo";
 
 /**
  * DevToolsShield:
@@ -7,7 +8,7 @@ import logo from "@/assets/brand/branta-logo-light.png";
  *  - Uses a lightweight debugger-timing loop only on account routes.
  *    No console-object probes or third-party permanent listeners.
  *  - Shows a full-screen blackout warning while DevTools is open.
- *  - Fully disabled on localhost, Lovable preview domains and inside iframes.
+ *  - Only active on the production host and outside iframes by default.
  *
  * This is friction, not a security boundary. Real protection lives in the
  * server: short-lived signed video links issued only after an access check.
@@ -23,7 +24,7 @@ export type DevToolsShieldConfig = {
   clearSamples: number;
   useDebuggerFallback: boolean;
   pauseWhenHidden: boolean;
-  disabledHostSuffixes: string[];
+  productionHosts: readonly string[];
   disableInIframe: boolean;
 };
 
@@ -34,12 +35,12 @@ export const DEFAULT_DEVTOOLS_SHIELD_CONFIG: DevToolsShieldConfig = {
   clearSamples: 2,
   useDebuggerFallback: true,
   pauseWhenHidden: true,
-  disabledHostSuffixes: [".lovableproject.com", ".lovable.app", ".lovable.dev", "localhost", "127.0.0.1"],
+  productionHosts: [new URL(SITE_URL).hostname],
   disableInIframe: true,
 };
 
-export function isShieldDisabledHost(host: string, suffixes: string[]) {
-  return suffixes.some((suffix) => (suffix.startsWith(".") ? host.endsWith(suffix) : host === suffix));
+export function isShieldEnabledHost(host: string, productionHosts: readonly string[]) {
+  return productionHosts.includes(host);
 }
 
 function Blackout() {
@@ -98,8 +99,7 @@ export function DevToolsShield({ children, enabled, config: userConfig }: { chil
   useEffect(() => {
     const host = window.location.hostname;
     const inIframe = window.self !== window.top;
-    const disabled = (config.disableInIframe && inIframe) || isShieldDisabledHost(host, config.disabledHostSuffixes);
-    setActive(!disabled);
+    setActive(isShieldEnabledHost(host, config.productionHosts) && !(config.disableInIframe && inIframe));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -14,8 +14,8 @@ import { formatTaka } from "@/lib/format";
 import { mediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { BdPhoneInput } from "@/components/forms/BdPhoneInput";
-import bkashLogo from "@/assets/bkash-logo.asset.json";
-import nagadLogo from "@/assets/nagad-logo.asset.json";
+import bkashLogo from "@/assets/bkash-logo.png";
+import nagadLogo from "@/assets/nagad-logo.png";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   staticData: { sitemap: false },
@@ -28,8 +28,8 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 });
 
 const METHODS = [
-  { id: "bkash", label: "bKash", logo: bkashLogo.url },
-  { id: "nagad", label: "Nagad", logo: nagadLogo.url },
+  { id: "bkash", label: "bKash", logo: bkashLogo },
+  { id: "nagad", label: "Nagad", logo: nagadLogo },
 ] as const;
 
 function CheckoutPage() {

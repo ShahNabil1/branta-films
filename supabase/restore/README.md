@@ -1,6 +1,6 @@
-# Branta Films — backend restore kit
+# Branta Films backend restore kit
 
-Snapshot taken 2026-10-21 from Lovable Cloud, before moving to an external Supabase project.
+Pre-migration snapshot from 2026-10-21. See the current Supabase migrations for later schema changes.
 
 ## Contents
 
@@ -18,5 +18,5 @@ At snapshot time there were no user accounts, profiles, unlocks, watch progress 
 1. Run `branta-full-setup.sql` (agent migration, or Supabase SQL editor).
 2. Upload `r2/` to the R2 bucket `branta-films` keeping the same folders (`images/series/<slug>/poster.webp`, `backdrop.webp`). Videos go in `videos/series/<slug>/e01.mp4` …
 3. Secrets the app needs (re-enter; values are not exported): `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`. `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` come from the Supabase connection.
-4. Auth settings in Supabase: enable Email (password + 6-digit email code, OTP expiry 600 s), enable Google provider, set Site URL `https://films.brantatech.com` and redirect URLs for the custom domain, `branta-films.lovable.app` and the preview domain. Turn off self sign-up only if staff-only — viewers do sign up.
+4. Enable Email and Google in Supabase Auth. Configure the email templates for 6-digit codes and set the Site URL to `https://films.brantatech.com`. Allow the app's `/auth` and `/set-password` redirect URLs on the environments you operate. Keep self-sign-up enabled for viewer accounts.
 5. Create the first admin: sign up, then insert a row into `public.user_roles (user_id, role) values ('<uuid>', 'admin')`.

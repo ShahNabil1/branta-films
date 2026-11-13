@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { detectTypingLanguage, safeRedirect, validateNewPassword } from "@/lib/validation";
 import { isAllowedMediaPath } from "@/lib/media";
-import { isShieldDisabledHost, DEFAULT_DEVTOOLS_SHIELD_CONFIG } from "@/components/security/DevToolsShield";
+import { isShieldEnabledHost, DEFAULT_DEVTOOLS_SHIELD_CONFIG } from "@/components/security/DevToolsShield";
 
 describe("Password rules", () => {
   it("new password cannot equal the current password", () => {
@@ -44,12 +44,12 @@ describe("Media route", () => {
 });
 
 describe("Security shield", () => {
-  const s = DEFAULT_DEVTOOLS_SHIELD_CONFIG.disabledHostSuffixes;
+  const hosts = DEFAULT_DEVTOOLS_SHIELD_CONFIG.productionHosts;
   it("is off on localhost and preview domains", () => {
-    expect(isShieldDisabledHost("localhost", s)).toBe(true);
-    expect(isShieldDisabledHost("id-preview--x.lovable.app", s)).toBe(true);
+    expect(isShieldEnabledHost("localhost", hosts)).toBe(false);
+    expect(isShieldEnabledHost("preview.films.brantatech.com", hosts)).toBe(false);
   });
   it("is on for the production domain", () => {
-    expect(isShieldDisabledHost("films.brantatech.com", s)).toBe(false);
+    expect(isShieldEnabledHost("films.brantatech.com", hosts)).toBe(true);
   });
 });

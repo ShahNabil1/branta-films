@@ -1,45 +1,80 @@
-// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
-// or the app will break with duplicate plugins:
-//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
-//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
-//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
-// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
-import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { fileURLToPath, URL } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
+import { devtools } from "@tanstack/devtools-vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import react from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig({
-  vite: {
-    environments: {
-      client: {
-        build: {
-          sourcemap: true,
-          rolldownOptions: {
-            output: { sourcemapExcludeSources: true },
-          },
+export default defineConfig(({ command, mode }) => ({
+  plugins: [
+    mode === "development" && devtools({
+      logging: false,
+      eventBusConfig: { enabled: false },
+      enhancedLogs: { enabled: false },
+      consolePiping: { enabled: false },
+      removeDevtoolsOnBuild: false,
+      injectSource: { enabled: true },
+    }),
+    tailwindcss(),
+    tsconfigPaths({ projects: ["./tsconfig.json"] }),
+    tanstackStart({
+      server: { entry: "server" },
+      importProtection: {
+        behavior: "error",
+        client: { files: ["**/server/**"], specifiers: ["server-only"] },
+      },
+    }),
+    command === "build" && nitro({ defaultPreset: "cloudflare-module" }),
+    react(),
+  ],
+  css: { transformer: "lightningcss" },
+  resolve: {
+    alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+    dedupe: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "@tanstack/react-query",
+      "@tanstack/query-core",
+    ],
+  },
+  server: { host: "::", port: 8080 },
+  environments: {
+    client: {
+      ...(command === "build" && mode === "development"
+        ? { define: { "process.env.NODE_ENV": JSON.stringify("development") } }
+        : {}),
+      build: {
+        sourcemap: true,
+        rolldownOptions: {
+          output: { sourcemapExcludeSources: true },
         },
       },
     },
-    optimizeDeps: {
-      // Prebundle the editor at startup, not during an admin-page request.
-      include: [
-        "@tiptap/react",
-        "@tiptap/starter-kit",
-        "@tiptap/extension-text-style",
-        "@tiptap/extension-text-align",
-        "@radix-ui/react-switch",
-        "@radix-ui/react-tooltip",
-        "@dnd-kit/core",
-        "@dnd-kit/sortable",
-        "@dnd-kit/modifiers",
-        "@dnd-kit/utilities",
-        "react-easy-crop",
-      ],
-      // Reject stale optimizer URLs instead of mixing React generations after installs.
-      ignoreOutdatedRequests: false,
-    },
   },
-  tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
-    server: { entry: "server" },
+  optimizeDeps: {
+    // Prebundle shared React and editor packages before the first admin navigation.
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "@tiptap/react",
+      "@tiptap/starter-kit",
+      "@tiptap/extension-text-style",
+      "@tiptap/extension-text-align",
+      "@radix-ui/react-switch",
+      "@radix-ui/react-tooltip",
+      "@dnd-kit/core",
+      "@dnd-kit/sortable",
+      "@dnd-kit/modifiers",
+      "@dnd-kit/utilities",
+      "react-easy-crop",
+    ],
+    ignoreOutdatedRequests: false,
   },
-});
+}));
